@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование профиля | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">Редактирование профиля</h1>
+        <p class="lead">Обновите информацию о себе</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Аватар -->
+                        <div class="mb-4">
+                            <label class="form-label">Текущий аватар</label>
+                            <div class="mb-3">
+                                {% if user_profile.avatar %}
+                                    <img src="{{ user_profile.avatar.url }}" alt="Аватар" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                                        <i class="fas fa-user fa-2x text-white"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.avatar.id_for_label }}" class="form-label">Загрузить новый аватар</label>
+                                {{ form.avatar }}
+                                {% if form.avatar.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.avatar.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Биография -->
+                        <div class="mb-3">
+                            <label for="{{ form.bio.id_for_label }}" class="form-label">О себе</label>
+                            {{ form.bio }}
+                            {% if form.bio.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.bio.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Веб-сайт -->
+                        <div class="mb-3">
+                            <label for="{{ form.website.id_for_label }}" class="form-label">Веб-сайт</label>
+                            {{ form.website }}
+                            {% if form.website.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.website.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Местоположение -->
+                        <div class="mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Местоположение</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.location.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Интересы -->
+                        <div class="mb-4">
+                            <label class="form-label">Интересы</label>
+                            <div class="interests-container">
+                                {{ form.interests }}
+                            </div>
+                            {% if form.interests.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.interests.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Сохранить изменения
+                            </button>
+                            <a href="{% url 'blog:profile' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .interests-container {
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+    }
+    
+    .interests-container label {
+        display: block;
+        padding: 5px;
+        margin: 0;
+        cursor: pointer;
+    }
+    
+    .interests-container label:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .form-control {
+        border-radius: 5px;
+    }
+    
+    textarea.form-control {
+        min-height: 100px;
+    }
+</style>
+{% endblock %} 

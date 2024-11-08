@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль {{ user.username }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-3 text-center">
+                {% if user_profile.avatar %}
+                    <div class="avatar-preview">
+                        <img src="{{ user_profile.avatar.url }}" alt="{{ user.username }}" 
+                             class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    </div>
+                {% else %}
+                    <div class="avatar-preview d-flex align-items-center justify-content-center bg-light rounded-circle" style="width: 150px; height: 150px;">
+                        <i class="fas fa-user fa-4x text-muted"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-9">
+                <h1 class="display-4">{{ user.username }}</h1>
+                <p class="lead">{{ user_profile.bio|default:"" }}</p>
+                <div class="d-flex gap-3">
+                    {% if user_profile.location %}
+                    <span><i class="fas fa-map-marker-alt me-2"></i>{{ user_profile.location }}</span>
+                    {% endif %}
+                    {% if user_profile.website %}
+                    <a href="{{ user_profile.website }}" target="_blank" class="text-white">
+                        <i class="fas fa-globe me-2"></i>Веб-сайт
+                    </a>
+                    {% endif %}
+                </div>
+                {% if user == request.user %}
+                <div class="mt-3">
+                    <a href="{% url 'blog:profile_edit' %}" class="btn btn-light">
+                        <i class="fas fa-edit me-2"></i>Редактировать профиль
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'blog:create_invite' %}" class="btn btn-light ms-2">
+                        <i class="fas fa-plus me-2"></i>Создать приглашение
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Статистика -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ total_posts }}</h3>
+                            <p class="card-text text-muted">Всего постов</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ published_posts.count }}</h3>
+                            <p class="card-text text-muted">Опубликовано</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ draft_posts.count }}</h3>
+                            <p class="card-text text-muted">Черновиков</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние посты -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-clock me-2"></i>Последние публикации
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for post in recent_posts %}
+                    <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <h5><a href="{% url 'blog:post_detail' pk=post.pk %}" class="text-decoration-none">{{ post.title }}</a></h5>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"d.m.Y" }}
+                            {% if post.category %}
+                            <span class="mx-2">|</span>
+                            <i class="fas fa-folder me-1"></i>{{ post.category.name }}
+                            {% endif %}
+                        </p>
+                        <p class="mb-0">{{ post.content|safe|truncatewords:30 }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted mb-0">Нет опубликованных постов</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Категории -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder me-2"></i>Категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for item in categories_with_counts %}
+                    <a href="{% url 'blog:category_detail' slug=item.category.slug %}" 
+                       class="btn btn-outline-primary mb-2 d-block">
+                        <i class="fas {{ item.category.icon }} me-2"></i>{{ item.category.name }}
+                        <span class="badge bg-secondary float-end">
+                            {{ item.post_count }}
+                        </span>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted mb-0">Нет публикаций в категориях</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Интересы -->
+            {% if user_profile.interests.exists %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tags me-2"></i>Интересы
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for interest in user_profile.interests.all %}
+                    <span class="badge bg-secondary me-2 mb-2">{{ interest.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

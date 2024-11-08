@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}О блоге | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">О блоге</h1>
+        <p class="lead">Узнайте больше о нашем проекте</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Наша миссия</h2>
+            <p class="lead">Создать платформу для обмена знаниями и опытом</p>
+            <p>Мы стремимся создать удобное пространство для авторов и читателей, где каждый может делиться своими мыслями, знаниями и опытом.</p>
+            
+            <h2 class="mt-5">Наши ценности</h2>
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>Инновации
+                            </h5>
+                            <p class="card-text">Мы постоянно развиваемся и внедряем новые идеи</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-users text-info me-2"></i>Сообщество
+                            </h5>
+                            <p class="card-text">Мы создаем дружное и поддерживающее сообщество</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Статистика</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-users text-primary me-2"></i>
+                            <strong>{{ users_count }}</strong> пользователей
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-file-alt text-success me-2"></i>
+                            <strong>{{ posts_count }}</strong> публикаций
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-folder text-warning me-2"></i>
+                            <strong>{{ categories_count }}</strong> категорий
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

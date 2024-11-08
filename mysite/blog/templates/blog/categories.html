@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Категории | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">Категории</h1>
+        <p class="lead">Найдите интересующие вас темы</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        {% for category in categories %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
+                    </h5>
+                    <p class="card-text text-muted">{{ category.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-primary">{{ category.posts_count }} публикаций</span>
+                        {% if category.slug %}
+                        <a href="{% url 'blog:category_detail' slug=category.slug %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>Просмотреть
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>Категории пока не созданы
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

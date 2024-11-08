@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">Регистрация</h1>
+        <p class="lead">Создайте новую учетную запись</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" class="register-form">
+                        {% csrf_token %}
+                        
+                        <!-- Имя пользователя -->
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Имя пользователя</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                {{ form.username }}
+                            </div>
+                            {% if form.username.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.username.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                {{ form.email }}
+                            </div>
+                            {% if form.email.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.email.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Пароль -->
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label">Пароль</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                {{ form.password1 }}
+                            </div>
+                            {% if form.password1.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.password1.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.password1.help_text }}</div>
+                        </div>
+
+                        <!-- Подтверждение пароля -->
+                        <div class="mb-3">
+                            <label for="id_password2" class="form-label">Подтверждение пароля</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                {{ form.password2 }}
+                            </div>
+                            {% if form.password2.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.password2.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Код приглашения -->
+                        <div class="mb-4">
+                            <label for="id_invite_code" class="form-label">Код приглашения</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-ticket-alt"></i></span>
+                                {{ form.invite_code }}
+                            </div>
+                            {% if form.invite_code.errors %}
+                            <div class="alert alert-danger mt-2">
+                                {{ form.invite_code.errors }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.invite_code.help_text }}</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                            </button>
+                            <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Уже есть аккаунт? Войти
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.register-form .input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.register-form .form-control {
+    border-left: none;
+}
+
+.register-form .form-control:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+}
+
+.register-form .input-group:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.register-form .input-group:focus-within .input-group-text,
+.register-form .input-group:focus-within .form-control {
+    border-color: #86b7fe;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+</style>
+{% endblock %} 

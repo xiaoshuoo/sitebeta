@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">Добро пожаловать в блог</h1>
+        <p class="lead">Делимся интересными мыслями и идеями</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="row">
+                {% for post in posts %}
+                <div class="col-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title h4">{{ post.title }}</h2>
+                            <div class="text-muted mb-3">
+                                <small>
+                                    <i class="fas fa-user me-1"></i>{{ post.author.username }}
+                                    <span class="mx-2">|</span>
+                                    <i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"d.m.Y" }}
+                                    {% if post.category %}
+                                    <span class="mx-2">|</span>
+                                    <i class="fas fa-folder me-1"></i>{{ post.category.name }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="card-text mb-3">
+                                {{ post.content|safe|truncatewords:50 }}
+                            </div>
+                            <a href="{% url 'blog:post_detail' pk=post.pk %}" class="btn btn-primary">
+                                <i class="fas fa-book-reader me-1"></i>Читать далее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Пока нет опубликованных постов.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder me-2"></i>Категории
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for category in categories %}
+                    {% if category.slug %}
+                    <a href="{% url 'blog:category_detail' slug=category.slug %}" class="btn btn-outline-primary mb-2 d-block">
+                        <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
+                        <span class="badge bg-secondary float-end">{{ category.posts_count }}</span>
+                    </a>
+                    {% endif %}
+                    {% empty %}
+                    <p class="text-muted mb-0">Категории пока не созданы</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

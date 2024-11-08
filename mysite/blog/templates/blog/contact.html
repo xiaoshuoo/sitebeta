@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Контакты | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">Свяжитесь с нами</h1>
+        <p class="lead">Мы всегда рады помочь вам</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Напишите нам</h2>
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Ваше имя</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Тема</label>
+                    <input type="text" class="form-control" id="subject" name="subject" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Сообщение</label>
+                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить</button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <h2>Контактная информация</h2>
+            <div class="mt-4">
+                <div class="d-flex mb-4">
+                    <i class="fas fa-map-marker-alt fa-2x text-primary me-3"></i>
+                    <div>
+                        <h5>Адрес</h5>
+                        <p>ул. Примерная, 123<br>г. Москва, 123456</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <i class="fas fa-phone fa-2x text-primary me-3"></i>
+                    <div>
+                        <h5>Телефон</h5>
+                        <p>+7 (999) 123-45-67</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <i class="fas fa-envelope fa-2x text-primary me-3"></i>
+                    <div>
+                        <h5>Email</h5>
+                        <p>contact@myblog.com</p>
+                    </div>
+                </div>
+                <div class="mt-5">
+                    <h5>Мы в социальных сетях</h5>
+                    <div class="mt-3">
+                        <a href="#" class="text-dark me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-dark me-3"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="#" class="text-dark me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                        <a href="#" class="text-dark"><i class="fab fa-telegram fa-2x"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

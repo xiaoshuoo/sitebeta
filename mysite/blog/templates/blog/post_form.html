@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if post %}Редактировать{% else %}Создать{% endif %} пост | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">{% if post %}Редактировать{% else %}Создать{% endif %} пост</h1>
+        <p class="lead">Поделитесь своими мыслями с миром</p>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="post-editor">
+                <form method="post" enctype="multipart/form-data" class="post-form needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Заголовок -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-heading me-2"></i>Заголовок
+                        </label>
+                        <input type="text" name="title" class="form-control custom-input" placeholder="Введите заголовок поста" required>
+                    </div>
+
+                    <!-- Категория -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-folder me-2"></i>Категория
+                        </label>
+                        {{ form.category }}
+                    </div>
+
+                    <!-- Редактор контента -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-pen-fancy me-2"></i>Содержание
+                        </label>
+                        {{ form.content }}
+                    </div>
+
+                    <!-- Настройки публикации -->
+                    <div class="publish-settings mb-4">
+                        <div class="form-check form-switch">
+                            <input type="checkbox" name="publish_now" class="form-check-input" id="publishNow">
+                            <label class="form-check-label" for="publishNow">
+                                <i class="fas fa-globe me-2"></i>Опубликовать сразу
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки управления -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-light" id="preview-btn">
+                            <i class="fas fa-eye me-2"></i>Предпросмотр
+                        </button>
+                        
+                        <div>
+                            <a href="{% url 'blog:home' %}" class="btn btn-outline-danger me-2">
+                                <i class="fas fa-times me-2"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                {% if post %}Сохранить{% else %}Опубликовать{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Основные стили формы */
+.post-editor {
+    background: rgba(20, 10, 30, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Улучшенные стили для полей ввода */
+.form-control, .custom-input {
+    background: rgba(40, 20, 60, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-radius: 12px;
+    padding: 12px 15px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .custom-input:focus {
+    background: rgba(50, 25, 75, 0.95) !important;
+    border-color: #9D4EDD !important;
+    box-shadow: 0 0 20px rgba(157, 78, 221, 0.2) !important;
+    color: white !important;
+}
+
+/* Стили для меток */
+.form-label {
+    color: white;
+    font-weight: 500;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* Улучшенные стили для CKEditor */
+.ck-editor__editable {
+    background: rgba(40, 20, 60, 0.95) !important;
+    color: white !important;
+    min-height: 400px !important;
+    font-size: 1.1rem !important;
+    line-height: 1.6 !important;
+    padding: 20px !important;
+}
+
+.ck-toolbar {
+    background: rgba(30, 15, 45, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.ck-button {
+    color: white !important;
+}
+
+.ck-button:hover {
+    background: rgba(157, 78, 221, 0.2) !important;
+}
+
+.ck-button.ck-on {
+    background: #9D4EDD !important;
+    color: white !important;
+}
+
+/* Стили для переключателя публикации */
+.publish-settings {
+    background: rgba(40, 20, 60, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-check-label {
+    color: white;
+    font-size: 1.1rem;
+}
+
+.form-switch .form-check-input {
+    width: 3em;
+    height: 1.5em;
+    margin-right: 1em;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #9D4EDD;
+    border-color: #7B2CBF;
+}
+
+/* Улучшенные стили для кнопок */
+.btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #9D4EDD, #7B2CBF);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(157, 78, 221, 0.4);
+}
+
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Анимации для элементов формы */
+.form-control, .btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Плейсхолдеры */
+::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Стили для выпадающего списка */
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+/* Улучшенная контрастность для текста ошибок */
+.invalid-feedback {
+    color: #ff6b6b;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Подсветка активных полей
+    const formControls = document.querySelectorAll('.form-control, .custom-input');
+    formControls.forEach(control => {
+        control.addEventListener('focus', function() {
+            this.closest('.mb-4').classList.add('is-focused');
+        });
+        control.addEventListener('blur', function() {
+            this.closest('.mb-4').classList.remove('is-focused');
+        });
+    });
+
+    // Предпросмотр
+    const previewBtn = document.getElementById('preview-btn');
+    const content = document.querySelector('.ck-editor__editable');
+    
+    previewBtn.addEventListener('click', function() {
+        // Здесь код для предпросмотра
+        alert('Предпросмотр контента: ' + content.innerHTML);
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4">
+            <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
+        </h1>
+        <p class="lead">{{ category.description }}</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        {% for post in posts %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="card-text text-muted">
+                        <small>
+                            <i class="fas fa-user me-1"></i>{{ post.author.username }}
+                            <span class="mx-2">|</span>
+                            <i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"d.m.Y" }}
+                        </small>
+                    </p>
+                    <div class="card-text mb-3">
+                        {{ post.content|safe|truncatewords:30 }}
+                    </div>
+                    <a href="{% url 'blog:post_detail' pk=post.pk %}" class="btn btn-primary">
+                        <i class="fas fa-book-reader me-1"></i>Читать далее
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>В этой категории пока нет постов.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
