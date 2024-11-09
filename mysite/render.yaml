@@ -2,11 +2,10 @@ services:
   - type: web
     name: django-blog
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: >
-      python manage.py migrate &&
-      python manage.py collectstatic --no-input &&
-      gunicorn config.wsgi:application
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --no-input
+    startCommand: gunicorn --workers=4 --threads=2 config.wsgi:application --bind=0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -20,6 +19,8 @@ services:
         value: false
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
+      - key: PYTHONPATH
+        value: /opt/render/project/src
     autoDeploy: true
 
 databases:
