@@ -1,1 +1,1 @@
-web: cd /opt/render/project/src && PYTHONPATH=/opt/render/project/src gunicorn --workers 4 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT config.wsgi:application 
+web: gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --workers=4 --threads=4 --timeout=120 --chdir=/opt/render/project/src 
