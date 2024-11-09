@@ -4,7 +4,7 @@ from . import views
 app_name = 'blog'
 
 urlpatterns = [
-    path('', views.home, name='home'),  # Главная страница
+    path('', views.home, name='home'),  # Корневой URL
     path('post/new/', views.create_post, name='create_post'),
     path('post/<int:pk>/', views.post_detail, name='post_detail'),
     path('post/<int:pk>/edit/', views.edit_post, name='edit_post'),

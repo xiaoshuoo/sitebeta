@@ -1,13 +1,13 @@
 import os
-from pathlib import Path
 import dj_database_url
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-secret-key-here')
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['sitebeta.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -123,8 +123,8 @@ CKEDITOR_CONFIGS = {
 
 # Настройки аутентификации
 LOGIN_REDIRECT_URL = 'blog:home'
-LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'blog:home'
+LOGIN_URL = 'login'
 
 # Добавьте эти настройки в settings.py
 CSRF_COOKIE_SECURE = False  # Установите True в production

@@ -22,20 +22,11 @@ services:
         fromDatabase:
           name: django-blog-db
           property: connectionString
-      - key: PORT
-        value: 8000
-      - key: STATIC_URL
-        value: /static/
-      - key: STATIC_ROOT
-        value: staticfiles
-      - key: MEDIA_URL
-        value: /media/
-      - key: MEDIA_ROOT
-        value: media
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
     staticPublishPath: staticfiles
 
 databases:
   - name: django-blog-db
     plan: free
     databaseName: django_blog
-    ipAllowList: []
