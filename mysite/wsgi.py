@@ -6,8 +6,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # Добавляем пути в sys.path
-sys.path.append(str(BASE_DIR))
-sys.path.append(str(BASE_DIR / 'config'))
+sys.path.insert(0, str(BASE_DIR))
 
 from django.core.wsgi import get_wsgi_application
 

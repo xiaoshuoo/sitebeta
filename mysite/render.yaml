@@ -8,13 +8,10 @@ services:
       pip install -r requirements.txt
       mkdir -p staticfiles media
     startCommand: |
-      echo "Current directory:" && pwd && \
-      echo "Directory contents:" && ls -la && \
-      echo "Config directory contents:" && ls -la config/ && \
-      export PYTHONPATH=$PYTHONPATH:/opt/render/project/src:/opt/render/project/src/config && \
+      cd /opt/render/project/src && \
       python manage.py migrate && \
       python manage.py collectstatic --noinput && \
-      gunicorn wsgi:application --bind=0.0.0.0:$PORT --log-file -
+      gunicorn --chdir /opt/render/project/src --pythonpath . wsgi:application --bind=0.0.0.0:$PORT --log-file -
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -30,8 +27,6 @@ services:
           property: connectionString
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
-      - key: PYTHONPATH
-        value: /opt/render/project/src:/opt/render/project/src/config
 
 databases:
   - name: django-blog-db
