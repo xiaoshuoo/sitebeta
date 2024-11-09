@@ -12,4 +12,4 @@ python create_static_dirs.py
 python manage.py collectstatic --no-input
 
 # Add the project root to PYTHONPATH
-export PYTHONPATH=$PYTHONPATH:$(pwd) 
+export PYTHONPATH="/opt/render/project/src:$PYTHONPATH"

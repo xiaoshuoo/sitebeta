@@ -1,7 +1,7 @@
 services:
   - type: web
     buildCommand: "./build.sh"
-    startCommand: "gunicorn wsgi:application --bind=0.0.0.0:$PORT"
+    startCommand: "gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --chdir /opt/render/project/src"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
