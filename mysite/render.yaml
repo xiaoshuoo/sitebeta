@@ -9,7 +9,7 @@ services:
       cd mysite && python manage.py collectstatic --noinput
       cd mysite && python manage.py migrate
     startCommand: |
-      cd /opt/render/project/src/mysite && PYTHONPATH=/opt/render/project/src/mysite gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --log-level debug
+      cd /opt/render/project/src/mysite && PYTHONPATH=/opt/render/project/src/mysite:/opt/render/project/src/mysite/blog gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -28,7 +28,7 @@ services:
       - key: PORT
         value: 8000
       - key: PYTHONPATH
-        value: /opt/render/project/src/mysite
+        value: /opt/render/project/src/mysite:/opt/render/project/src/mysite/blog
     staticPublishPath: mysite/staticfiles
 
 databases:
