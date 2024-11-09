@@ -4,7 +4,9 @@ import os
 directories = [
     'static/css',
     'static/js',
-    'static/img'
+    'static/img',
+    'staticfiles',
+    'media'
 ]
 
 # Создаем директории, если они не существуют
@@ -16,7 +18,9 @@ for directory in directories:
 gitkeep_files = [
     'static/css/.gitkeep',
     'static/js/.gitkeep',
-    'static/img/.gitkeep'
+    'static/img/.gitkeep',
+    'staticfiles/.gitkeep',
+    'media/.gitkeep'
 ]
 
 # Создаем .gitkeep файлы

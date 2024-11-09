@@ -4,15 +4,16 @@ services:
     env: python
     plan: free
     buildCommand: |
+      python -m pip install --upgrade pip
       pip install -r requirements.txt
-      mkdir -p staticfiles
-      python manage.py collectstatic --noinput
-    startCommand: |
+      python create_static_dirs.py
+      python manage.py makemigrations
       python manage.py migrate
-      gunicorn config.wsgi:application
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: 3.11.0
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
@@ -23,10 +24,14 @@ services:
         fromDatabase:
           name: django-blog-db
           property: connectionString
+      - key: STATIC_URL
+        value: /static/
       - key: STATIC_ROOT
         value: staticfiles
-      - key: DISABLE_COLLECTSTATIC
-        value: 0
+      - key: MEDIA_URL
+        value: /media/
+      - key: MEDIA_ROOT
+        value: media
 
 databases:
   - name: django-blog-db
