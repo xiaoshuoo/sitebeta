@@ -3,9 +3,11 @@ services:
     name: django-blog
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: |
+    buildCommand: |
+      pip install -r requirements.txt
+      mkdir -p staticfiles
       python manage.py collectstatic --noinput
+    startCommand: |
       python manage.py migrate
       gunicorn config.wsgi:application
     envVars:
@@ -21,6 +23,10 @@ services:
         fromDatabase:
           name: django-blog-db
           property: connectionString
+      - key: STATIC_ROOT
+        value: staticfiles
+      - key: DISABLE_COLLECTSTATIC
+        value: 0
 
 databases:
   - name: django-blog-db
