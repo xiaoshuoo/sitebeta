@@ -8,10 +8,9 @@ services:
       pip install -r requirements.txt
       mkdir -p staticfiles media
     startCommand: |
-      cd /opt/render/project/src && \
-      python manage.py migrate && \
-      python manage.py collectstatic --noinput && \
-      gunicorn --bind 0.0.0.0:$PORT config.wsgi:application
+      ls -la && \
+      pwd && \
+      PYTHONPATH=/opt/render/project/src gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --log-file - --chdir /opt/render/project/src --pythonpath /opt/render/project/src
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0

@@ -17,6 +17,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Выводим отладочную информацию
 print(f"BASE_DIR: {BASE_DIR}")
 print(f"Current working directory: {os.getcwd()}")
+print(f"Files in current directory: {os.listdir('.')}")
+print(f"Files in config directory: {os.listdir('config')}")
 print(f"Python path before: {sys.path}")
 
 # Добавляем путь к проекту в sys.path
@@ -25,14 +27,12 @@ if str(BASE_DIR) not in sys.path:
 
 print(f"Python path after: {sys.path}")
 
-# Проверяем наличие файлов
-config_init = BASE_DIR / 'config' / '__init__.py'
-config_settings = BASE_DIR / 'config' / 'settings.py'
-print(f"config/__init__.py exists: {config_init.exists()}")
-print(f"config/settings.py exists: {config_settings.exists()}")
-
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-application = get_wsgi_application()
+try:
+    application = get_wsgi_application()
+except Exception as e:
+    print(f"Error loading application: {e}")
+    raise
