@@ -6,14 +6,11 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip
       pip install -r requirements.txt
-      mkdir -p staticfiles
-      mkdir -p media
-      python manage.py makemigrations
-      python manage.py migrate
+      mkdir -p staticfiles media
       python manage.py collectstatic --noinput
-      python create_static_dirs.py
-    startCommand: |
-      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+      chmod +x build.sh
+      ./build.sh
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -39,12 +36,14 @@ services:
         value: 8000
       - key: DISABLE_COLLECTSTATIC
         value: 0
+    staticPublishPath: ./staticfiles
+    routes:
+      - type: rewrite
+        source: /static/*
+        destination: /staticfiles/*
 
 databases:
   - name: django-blog-db
     plan: free
     databaseName: django_blog
     ipAllowList: []
-
-# Добавляем статические файлы
-staticPublishPath: ./staticfiles
