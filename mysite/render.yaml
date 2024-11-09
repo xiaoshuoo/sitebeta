@@ -6,10 +6,10 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip
       pip install -r requirements.txt
-      python create_static_dirs.py
+      mkdir -p staticfiles media
+      python manage.py collectstatic --noinput --clear
       python manage.py makemigrations
       python manage.py migrate
-      python manage.py collectstatic --noinput
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
@@ -41,6 +41,9 @@ services:
       - type: rewrite
         source: /static/*
         destination: /staticfiles/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
 databases:
   - name: django-blog-db
