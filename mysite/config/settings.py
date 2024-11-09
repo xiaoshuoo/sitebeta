@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-secret-key-here')
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = ['sitebeta.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -122,8 +122,8 @@ CKEDITOR_CONFIGS = {
 }
 
 # Настройки аутентификации
-LOGIN_REDIRECT_URL = 'blog:home'  # Куда перенаправлять после успешного входа
-LOGIN_URL = 'login'  # URL для страницы входа 
+LOGIN_REDIRECT_URL = 'blog:home'
+LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'blog:home'
 
 # Добавьте эти настройки в settings.py
