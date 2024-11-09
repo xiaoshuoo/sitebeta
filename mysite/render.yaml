@@ -6,8 +6,9 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip
       pip install -r requirements.txt
-      python manage.py collectstatic --noinput
-    startCommand: gunicorn config.wsgi:application --bind=0.0.0.0:$PORT
+      mkdir -p staticfiles media
+      python manage.py collectstatic --noinput || true
+    startCommand: gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --log-file -
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -23,6 +24,14 @@ services:
           property: connectionString
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
+    buildFilter:
+      paths:
+      - manage.py
+      - config/**
+      - blog/**
+      - templates/**
+      - static/**
+      - requirements.txt
 
 databases:
   - name: django-blog-db

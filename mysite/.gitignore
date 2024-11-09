@@ -41,4 +41,16 @@ staticfiles/*
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Django
+*.pyc
+__pycache__
+db.sqlite3
+/static
+/media
+/staticfiles
+.env
+.venv
+venv/
+ENV/
