@@ -155,3 +155,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Максимальный размер загружаемых файлов
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+
+# Add these settings for proper port handling
+PORT = int(os.getenv('PORT', 8000))
+
+# Update the DATABASES setting to use the DATABASE_URL
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
+}
