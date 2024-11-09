@@ -15,15 +15,15 @@ services:
       python manage.py migrate
       python manage.py collectstatic --noinput
     startCommand: |
-      # Проверяем рабочую директорию и структуру
-      echo "Working directory:"
-      pwd
-      echo "Directory contents:"
-      ls -la
-      echo "Config directory contents:"
-      ls -la config/
-      # Запускаем gunicorn с подробным логированием
-      PYTHONPATH=/opt/render/project/src gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug --capture-output --enable-stdio-inheritance
+      # Проверяем структуру проекта
+      echo "Project structure before start:"
+      ls -R
+      # Проверяем Python path
+      echo "PYTHONPATH=$PYTHONPATH"
+      # Запускаем с явным указанием пути к модулю
+      cd /opt/render/project/src && \
+      PYTHONPATH=/opt/render/project/src \
+      python -m gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
