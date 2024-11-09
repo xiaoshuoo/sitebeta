@@ -27,4 +27,4 @@ gitkeep_files = [
 for file_path in gitkeep_files:
     with open(file_path, 'w') as f:
         pass  # Создаем пустой файл
-    print(f'Created file: {file_path}') 
+    print(f'Created file: {file_path}')
