@@ -69,12 +69,7 @@ def post_detail(request, pk):
     return render(request, 'blog/post_detail.html', {'post': post})
 
 def home(request):
-    posts = Post.objects.filter(is_published=True).order_by('-created_at')
-    categories = Category.objects.all()
-    return render(request, 'blog/home.html', {
-        'posts': posts,
-        'categories': categories
-    })
+    return render(request, 'blog/home.html')
 
 def categories(request):
     categories = Category.objects.all()
