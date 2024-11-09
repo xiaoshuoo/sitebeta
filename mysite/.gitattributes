@@ -22,4 +22,8 @@
 *.woff binary
 *.woff2 binary
 *.ttf binary
-*.eot binary 
+*.eot binary
+
+# Специальные файлы
+build.sh binary
+start.sh binary
