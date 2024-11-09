@@ -9,6 +9,7 @@ services:
       mkdir -p staticfiles media
     startCommand: |
       cd /opt/render/project/src && \
+      ls -la && \
       python manage.py migrate && \
       python manage.py collectstatic --noinput && \
       PYTHONPATH=/opt/render/project/src gunicorn wsgi:application --bind=0.0.0.0:$PORT --log-file -
@@ -29,6 +30,20 @@ services:
         value: config.settings
       - key: PYTHONPATH
         value: /opt/render/project/src
+    buildFilter:
+      paths:
+        - "**/*.py"
+        - "**/*.html"
+        - "**/*.css"
+        - "**/*.js"
+        - "config/**"
+        - "blog/**"
+        - "templates/**"
+        - "static/**"
+        - "requirements.txt"
+        - "render.yaml"
+        - "wsgi.py"
+        - "manage.py"
 
 databases:
   - name: django-blog-db
