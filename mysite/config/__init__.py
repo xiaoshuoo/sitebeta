@@ -1,1 +1,1 @@
-# This file is required for Python to treat the directory as a package
+# Этот файл нужен для работы Python пакета

@@ -4,13 +4,20 @@ services:
     env: python
     plan: free
     buildCommand: |
+      # Проверяем структуру проекта
+      ls -la
+      # Устанавливаем зависимости
       pip install -r requirements.txt
-      python manage.py collectstatic --noinput
+      # Проверяем настройки Django
+      python manage.py check --deploy
+      # Применяем миграции и собираем статику
       python manage.py migrate
+      python manage.py collectstatic --noinput
     startCommand: |
-      cd /opt/render/project/src && \
-      PYTHONPATH=/opt/render/project/src \
-      gunicorn --chdir /opt/render/project/src config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+      # Проверяем рабочую директорию
+      pwd && ls -la
+      # Запускаем gunicorn с подробным логированием
+      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -26,10 +33,6 @@ services:
           property: connectionString
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
-      - key: WEB_CONCURRENCY
-        value: 4
-      - key: PYTHONPATH
-        value: /opt/render/project/src
 
 databases:
   - name: django-blog-db

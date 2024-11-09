@@ -1,13 +1,13 @@
-import os
-import sys
 from pathlib import Path
+import os
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Добавляем путь к корневой директории проекта
-sys.path.insert(0, str(BASE_DIR))
+# Добавляем отладочную информацию
+print(f"Settings BASE_DIR: {BASE_DIR}")
+print(f"Settings directory contents: {os.listdir(BASE_DIR)}")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-default-secret-key-here')
