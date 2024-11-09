@@ -5,7 +5,8 @@ services:
     plan: free
     buildCommand: |
       # Проверяем структуру проекта
-      ls -la
+      echo "Project structure:"
+      ls -R
       # Устанавливаем зависимости
       pip install -r requirements.txt
       # Проверяем настройки Django
@@ -14,10 +15,15 @@ services:
       python manage.py migrate
       python manage.py collectstatic --noinput
     startCommand: |
-      # Проверяем рабочую директорию
-      pwd && ls -la
+      # Проверяем рабочую директорию и структуру
+      echo "Working directory:"
+      pwd
+      echo "Directory contents:"
+      ls -la
+      echo "Config directory contents:"
+      ls -la config/
       # Запускаем gunicorn с подробным логированием
-      gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug
+      PYTHONPATH=/opt/render/project/src gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug --capture-output --enable-stdio-inheritance
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -33,6 +39,8 @@ services:
           property: connectionString
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
+      - key: PYTHONPATH
+        value: /opt/render/project/src
 
 databases:
   - name: django-blog-db
