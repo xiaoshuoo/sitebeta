@@ -7,8 +7,11 @@ services:
       python -m pip install --upgrade pip
       pip install -r requirements.txt
       mkdir -p staticfiles media
+      export PYTHONPATH=$PYTHONPATH:/opt/render/project/src
       python manage.py collectstatic --noinput || true
-    startCommand: gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --log-file -
+    startCommand: |
+      export PYTHONPATH=$PYTHONPATH:/opt/render/project/src
+      gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --log-file -
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -24,6 +27,8 @@ services:
           property: connectionString
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
+      - key: PYTHONPATH
+        value: /opt/render/project/src
     buildFilter:
       paths:
       - manage.py
