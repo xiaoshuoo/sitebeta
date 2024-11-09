@@ -1,10 +1,19 @@
 services:
   - type: web
+    plan: free
+    name: your-app-name
+    runtime: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --chdir /opt/render/project/src"
+    startCommand: "gunicorn wsgi:application --bind=0.0.0.0:$PORT"
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11
+      - key: DATABASE_URL
+        fromDatabase:
+          name: your-db-name
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
 
 databases:
   - name: django-blog-db
