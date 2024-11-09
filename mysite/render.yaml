@@ -3,28 +3,8 @@ services:
     name: django-blog
     env: python
     plan: free
-    buildCommand: |
-      # Устанавливаем зависимости
-      pip install -r requirements.txt
-      # Проверяем структуру проекта
-      echo "Project structure before collectstatic:"
-      ls -la
-      # Собираем статику и делаем миграции
-      python manage.py collectstatic --noinput
-      python manage.py migrate
-    startCommand: |
-      # Создаем символическую ссылку на config в корне проекта
-      ln -s /opt/render/project/src/config /opt/render/project/src/venv/lib/python3.11/site-packages/config
-      # Проверяем Python path и структуру
-      echo "PYTHONPATH=$PYTHONPATH"
-      echo "Current directory:"
-      pwd
-      echo "Directory contents:"
-      ls -la
-      # Запускаем с явным указанием путей
-      PYTHONPATH=/opt/render/project/src:/opt/render/project/src/venv/lib/python3.11/site-packages \
-      DJANGO_SETTINGS_MODULE=config.settings \
-      gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --chdir=/opt/render/project/src
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn --bind=0.0.0.0:$PORT config.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -40,8 +20,6 @@ services:
           property: connectionString
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
-      - key: PYTHONPATH
-        value: /opt/render/project/src:/opt/render/project/src/venv/lib/python3.11/site-packages
 
 databases:
   - name: django-blog-db
