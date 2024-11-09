@@ -3,7 +3,7 @@ services:
     name: django-blog
     env: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn config.wsgi:application"
+    startCommand: cd /opt/render/project/src && exec gunicorn --bind 0.0.0.0:$PORT config.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -21,6 +21,8 @@ services:
         value: config.settings
       - key: PORT
         value: 8000
+      - key: PYTHONPATH
+        value: /opt/render/project/src
     staticPublishPath: staticfiles
 
 databases:
