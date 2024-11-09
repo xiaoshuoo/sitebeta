@@ -3,69 +3,58 @@
 {% block title %}Главная | {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="container">
-        <h1 class="display-4">Добро пожаловать в блог</h1>
-        <p class="lead">Делимся интересными мыслями и идеями</p>
-    </div>
-</div>
-
-<div class="container">
+<div class="container mt-4">
     <div class="row">
-        <div class="col-md-8">
-            <div class="row">
+        <!-- Основной контент -->
+        <div class="col-lg-8">
+            {% if posts %}
                 {% for post in posts %}
-                <div class="col-12 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h2 class="card-title h4">{{ post.title }}</h2>
-                            <div class="text-muted mb-3">
-                                <small>
-                                    <i class="fas fa-user me-1"></i>{{ post.author.username }}
-                                    <span class="mx-2">|</span>
-                                    <i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"d.m.Y" }}
-                                    {% if post.category %}
-                                    <span class="mx-2">|</span>
-                                    <i class="fas fa-folder me-1"></i>{{ post.category.name }}
-                                    {% endif %}
-                                </small>
-                            </div>
-                            <div class="card-text mb-3">
-                                {{ post.content|safe|truncatewords:50 }}
-                            </div>
-                            <a href="{% url 'blog:post_detail' pk=post.pk %}" class="btn btn-primary">
-                                <i class="fas fa-book-reader me-1"></i>Читать далее
-                            </a>
+                <div class="card mb-4">
+                    {% if post.thumbnail %}
+                    <img src="{{ post.thumbnail.url }}" class="card-img-top" alt="{{ post.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h2 class="card-title">{{ post.title }}</h2>
+                        <p class="card-text">{{ post.content|safe|truncatewords:50 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'blog:post_detail' post.pk %}" class="btn btn-primary">Читать далее</a>
+                            <small class="text-muted">
+                                {{ post.created_at|date:"d.m.Y" }} | 
+                                Автор: {{ post.author.username }}
+                            </small>
                         </div>
                     </div>
                 </div>
-                {% empty %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>Пока нет опубликованных постов.
-                    </div>
-                </div>
                 {% endfor %}
-            </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Пока нет опубликованных постов.
+                </div>
+            {% endif %}
         </div>
-        <div class="col-md-4">
+
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-folder me-2"></i>Категории
-                    </h5>
+                    <h5 class="mb-0">Категории</h5>
                 </div>
                 <div class="card-body">
-                    {% for category in categories %}
-                    {% if category.slug %}
-                    <a href="{% url 'blog:category_detail' slug=category.slug %}" class="btn btn-outline-primary mb-2 d-block">
-                        <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
-                        <span class="badge bg-secondary float-end">{{ category.posts_count }}</span>
-                    </a>
-                    {% endif %}
-                    {% empty %}
-                    <p class="text-muted mb-0">Категории пока не созданы</p>
-                    {% endfor %}
+                    <ul class="list-unstyled mb-0">
+                        {% for category in categories %}
+                        <li>
+                            {% if category.slug %}
+                            <a href="{% url 'blog:category_detail' category.slug %}" class="text-decoration-none">
+                                <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
+                            </a>
+                            {% else %}
+                            <span class="text-muted">
+                                <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
+                            </span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>

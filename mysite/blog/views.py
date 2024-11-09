@@ -69,7 +69,14 @@ def post_detail(request, pk):
     return render(request, 'blog/post_detail.html', {'post': post})
 
 def home(request):
-    return render(request, 'blog/home.html')
+    posts = Post.objects.filter(is_published=True).order_by('-created_at')
+    categories = Category.objects.all()
+    
+    context = {
+        'posts': posts,
+        'categories': categories,
+    }
+    return render(request, 'blog/home.html', context)
 
 def categories(request):
     categories = Category.objects.all()
@@ -194,19 +201,10 @@ def register(request):
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = UserProfile
-    form_class = UserProfileForm
     template_name = 'blog/profile_edit.html'
+    fields = ['avatar', 'bio', 'website', 'location']
     success_url = reverse_lazy('blog:profile')
 
-    def get_object(self):
+    def get_object(self, queryset=None):
         return self.request.user.profile
-
-    def form_valid(self, form):
-        messages.success(self.request, 'Профиль успешно обновлен!')
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['user_profile'] = self.get_object()
-        return context
   

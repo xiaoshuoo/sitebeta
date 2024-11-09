@@ -127,6 +127,7 @@ CKEDITOR_CONFIGS = {
 # Настройки аутентификации
 LOGIN_REDIRECT_URL = 'blog:home'  # Куда перенаправлять после успешного входа
 LOGIN_URL = 'login'  # URL для страницы входа 
+LOGOUT_REDIRECT_URL = 'blog:home'
 
 # Добавьте эти настройки в settings.py
 CSRF_COOKIE_SECURE = False  # Установите True в production
