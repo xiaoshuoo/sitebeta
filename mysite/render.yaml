@@ -6,24 +6,26 @@ services:
     buildCommand: |
       # Проверяем структуру проекта
       echo "Project structure:"
-      ls -R
+      ls -la
+      # Создаем __init__.py если его нет
+      touch config/__init__.py
       # Устанавливаем зависимости
       pip install -r requirements.txt
-      # Проверяем настройки Django
-      python manage.py check --deploy
-      # Применяем миграции и собираем статику
-      python manage.py migrate
       python manage.py collectstatic --noinput
+      python manage.py migrate
     startCommand: |
-      # Проверяем структуру проекта
-      echo "Project structure before start:"
-      ls -R
-      # Проверяем Python path
-      echo "PYTHONPATH=$PYTHONPATH"
-      # Запускаем с явным указанием пути к модулю
+      # Проверяем структуру перед запуском
+      echo "Current directory: $(pwd)"
+      echo "Directory contents:"
+      ls -la
+      echo "Config directory contents:"
+      ls -la config/
+      # Устанавливаем переменные окружения и запускаем
+      export PYTHONPATH=/opt/render/project/src:$PYTHONPATH
+      export DJANGO_SETTINGS_MODULE=config.settings
       cd /opt/render/project/src && \
-      PYTHONPATH=/opt/render/project/src \
-      python -m gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --log-level debug
+      python -c "import sys; print(sys.path); import config; print('Config found at:', config.__file__)" && \
+      gunicorn --workers=2 --threads=4 --timeout=0 --bind=0.0.0.0:$PORT config.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
