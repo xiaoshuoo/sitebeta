@@ -8,4 +8,4 @@ worker_connections = 1000
 timeout = 120
 keepalive = 2
 chdir = '/opt/render/project/src'
-wsgi_app = 'config.wsgi:application' 
+wsgi_app = 'config.wsgi:application'

@@ -56,7 +56,7 @@ class InviteCode(models.Model):
 
     class Meta:
         verbose_name = "Код приглашения"
-        verbose_name_plural = "Коды приглашения"
+        verbose_name_plural = "Коды п��иглашения"
 
     def __str__(self):
         return f"Код: {self.code} ({self.created_by.username})"

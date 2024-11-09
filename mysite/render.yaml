@@ -9,7 +9,7 @@ services:
       python manage.py collectstatic --noinput
       python manage.py migrate
     startCommand: |
-      cd /opt/render/project/src && PYTHONPATH=/opt/render/project/src gunicorn --bind=0.0.0.0:$PORT mysite.config.wsgi:application --log-level debug
+      cd /opt/render/project/src && PYTHONPATH=/opt/render/project/src gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -24,13 +24,11 @@ services:
           name: django-blog-db
           property: connectionString
       - key: DJANGO_SETTINGS_MODULE
-        value: mysite.config.settings
+        value: config.settings
       - key: PORT
         value: 8000
       - key: PYTHONPATH
         value: /opt/render/project/src
-      - key: PYTHONUNBUFFERED
-        value: "1"
     staticPublishPath: staticfiles
 
 databases:
