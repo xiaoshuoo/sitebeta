@@ -41,9 +41,6 @@ services:
       - type: rewrite
         source: /static/*
         destination: /staticfiles/*
-      - type: rewrite
-        source: /*
-        destination: /index.html
 
 databases:
   - name: django-blog-db
