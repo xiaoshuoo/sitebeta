@@ -6,10 +6,10 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip
       pip install -r requirements.txt
-      mkdir -p staticfiles media
+      python manage.py makemigrations
+      python manage.py migrate
+      mkdir -p staticfiles
       python manage.py collectstatic --noinput
-      chmod +x build.sh
-      ./build.sh
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
