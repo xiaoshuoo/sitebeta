@@ -9,11 +9,17 @@ from pathlib import Path
 # Получаем абсолютный путь к директории проекта
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Добавляем путь к проекту в sys.path
-sys.path.insert(0, str(BASE_DIR))
+# Добавляем пути к проекту в sys.path
+sys.path.append(str(BASE_DIR))
+sys.path.append(os.path.join(BASE_DIR, 'config'))
 
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-application = get_wsgi_application()
+try:
+    application = get_wsgi_application()
+except Exception as e:
+    print(f"Error loading application: {e}")
+    print(f"sys.path: {sys.path}")
+    raise
