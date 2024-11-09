@@ -1,27 +1,10 @@
 services:
   - type: web
-    name: django-blog
-    runtime: python
-    buildCommand: |
-      pip install -r requirements.txt
-      python manage.py collectstatic --no-input
-    startCommand: gunicorn --workers=4 --threads=2 config.wsgi:application --bind=0.0.0.0:$PORT
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn wsgi:application --bind=0.0.0.0:$PORT"
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: django-blog-db
-          property: connectionString
-      - key: DJANGO_SECRET_KEY
-        generateValue: true
-      - key: DJANGO_ALLOWED_HOSTS
-        value: .onrender.com
-      - key: DJANGO_DEBUG
-        value: false
-      - key: DJANGO_SETTINGS_MODULE
-        value: config.settings
-      - key: PYTHONPATH
-        value: /opt/render/project/src
-    autoDeploy: true
+      - key: PYTHON_VERSION
+        value: 3.11
 
 databases:
   - name: django-blog-db
