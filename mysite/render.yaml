@@ -4,28 +4,27 @@ services:
     env: python
     plan: free
     buildCommand: |
-      # Проверяем структуру проекта
-      echo "Project structure:"
-      ls -la
-      # Создаем __init__.py если его нет
-      touch config/__init__.py
       # Устанавливаем зависимости
       pip install -r requirements.txt
+      # Проверяем структуру проекта
+      echo "Project structure before collectstatic:"
+      ls -la
+      # Собираем статику и делаем миграции
       python manage.py collectstatic --noinput
       python manage.py migrate
     startCommand: |
-      # Проверяем структуру перед запуском
-      echo "Current directory: $(pwd)"
+      # Создаем символическую ссылку на config в корне проекта
+      ln -s /opt/render/project/src/config /opt/render/project/src/venv/lib/python3.11/site-packages/config
+      # Проверяем Python path и структуру
+      echo "PYTHONPATH=$PYTHONPATH"
+      echo "Current directory:"
+      pwd
       echo "Directory contents:"
       ls -la
-      echo "Config directory contents:"
-      ls -la config/
-      # Устанавливаем переменные окружения и запускаем
-      export PYTHONPATH=/opt/render/project/src:$PYTHONPATH
-      export DJANGO_SETTINGS_MODULE=config.settings
-      cd /opt/render/project/src && \
-      python -c "import sys; print(sys.path); import config; print('Config found at:', config.__file__)" && \
-      gunicorn --workers=2 --threads=4 --timeout=0 --bind=0.0.0.0:$PORT config.wsgi:application
+      # Запускаем с явным указанием путей
+      PYTHONPATH=/opt/render/project/src:/opt/render/project/src/venv/lib/python3.11/site-packages \
+      DJANGO_SETTINGS_MODULE=config.settings \
+      gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --chdir=/opt/render/project/src
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -42,7 +41,7 @@ services:
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
       - key: PYTHONPATH
-        value: /opt/render/project/src
+        value: /opt/render/project/src:/opt/render/project/src/venv/lib/python3.11/site-packages
 
 databases:
   - name: django-blog-db
