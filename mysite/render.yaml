@@ -9,7 +9,7 @@ services:
       python manage.py collectstatic --noinput
       python manage.py migrate
     startCommand: |
-      gunicorn app:app --bind=0.0.0.0:$PORT --workers=4 --threads=4 --timeout=120
+      gunicorn wsgi:application --bind=0.0.0.0:$PORT --workers=4 --threads=4 --timeout=120 --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
