@@ -27,6 +27,15 @@ echo "Installing dependencies from requirements.txt"
 pip install --upgrade pip
 pip install -r requirements.txt
 
+# Create necessary directories
+echo "Creating necessary directories..."
+mkdir -p static staticfiles media
+mkdir -p static/css static/js static/img
+
+# Copy static files
+echo "Copying static files..."
+cp -r static/* staticfiles/ 2>/dev/null || true
+
 # Create necessary directories if script exists
 if [ -f "create_static_dirs.py" ]; then
     python create_static_dirs.py
@@ -78,7 +87,6 @@ categories = [
 for cat_data in categories:
     name = cat_data['name']
     slug = slugify(name)
-    # Проверяем существование категории по slug
     if not Category.objects.filter(slug=slug).exists():
         Category.objects.create(
             name=name,
@@ -92,4 +100,5 @@ for cat_data in categories:
 END
 
 # Run Django commands
+echo "Collecting static files..."
 python manage.py collectstatic --no-input --clear
