@@ -17,6 +17,17 @@
                 <form method="post" enctype="multipart/form-data" class="post-form needs-validation" novalidate>
                     {% csrf_token %}
                     
+                    <!-- После {% csrf_token %} добавьте: -->
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <!-- Заголовок -->
                     <div class="mb-4">
                         <label class="form-label">

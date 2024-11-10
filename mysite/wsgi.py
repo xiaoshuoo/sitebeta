@@ -8,6 +8,8 @@ if path not in sys.path:
 
 from django.core.wsgi import get_wsgi_application
 
+# Устанавливаем настройки Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
-application = get_wsgi_application() 
+# Получаем WSGI приложение
+application = get_wsgi_application()

@@ -1,12 +1,16 @@
 import os
+from pathlib import Path
 
-# Создаем директории
+# Получаем абсолютный путь к корню проекта
+BASE_DIR = Path(__file__).resolve().parent
+
+# Обновляем пути к директориям
 directories = [
-    'static/css',
-    'static/js',
-    'static/img',
-    'staticfiles',
-    'media'
+    BASE_DIR / 'static' / 'css',
+    BASE_DIR / 'static' / 'js',
+    BASE_DIR / 'static' / 'img',
+    BASE_DIR / 'staticfiles',
+    BASE_DIR / 'media'
 ]
 
 # Создаем директории, если они не существуют
@@ -16,11 +20,11 @@ for directory in directories:
 
 # Создаем .gitkeep файлы
 gitkeep_files = [
-    'static/css/.gitkeep',
-    'static/js/.gitkeep',
-    'static/img/.gitkeep',
-    'staticfiles/.gitkeep',
-    'media/.gitkeep'
+    BASE_DIR / 'static' / 'css' / '.gitkeep',
+    BASE_DIR / 'static' / 'js' / '.gitkeep',
+    BASE_DIR / 'static' / 'img' / '.gitkeep',
+    BASE_DIR / 'staticfiles' / '.gitkeep',
+    BASE_DIR / 'media' / '.gitkeep'
 ]
 
 # Создаем .gitkeep файлы

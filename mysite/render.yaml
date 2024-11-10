@@ -4,7 +4,7 @@ services:
     name: your-app-name
     runtime: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn wsgi:application --bind=0.0.0.0:$PORT"
+    startCommand: "gunicorn config.wsgi:application --bind=0.0.0.0:$PORT"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -16,6 +16,8 @@ services:
         value: 4
       - key: PYTHONPATH
         value: .
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
 
 databases:
   - name: django-blog-db

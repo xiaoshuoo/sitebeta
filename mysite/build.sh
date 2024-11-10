@@ -2,15 +2,18 @@
 # Exit on error
 set -o errexit
 
-# Create virtual environment and install dependencies
-python -m pip install --upgrade pip
+# Установка виртуального окружения и зависимостей
+python -m pip install --upgrade pip wheel setuptools
 pip install -r requirements.txt
 
-# Create necessary directories
+# Создание необходимых директорий
 python create_static_dirs.py
 
-# Collect static files
+# Экспорт переменной DJANGO_SETTINGS_MODULE
+export DJANGO_SETTINGS_MODULE=config.settings
+
+# Сбор статических файлов
 python manage.py collectstatic --no-input
 
-# Apply migrations
+# Применение миграций
 python manage.py migrate
