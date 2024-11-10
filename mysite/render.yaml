@@ -8,8 +8,6 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.10
-      - key: POETRY_VERSION
-        value: 1.7.1
       - key: DJANGO_SETTINGS_MODULE
         value: config.settings
 

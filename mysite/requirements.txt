@@ -1,11 +1,11 @@
 Django>=4.2.0
 gunicorn>=21.2.0
-whitenoise>=6.0.0  # для обработки статических файлов
-django-environ>=0.11.2  # для управления переменными окружения
-psycopg2-binary>=2.9.9  # для работы с PostgreSQL
-pillow>=10.0.0  # для работы с изображениями
-django-ckeditor>=6.7.0  # если используете CKEditor
-django-allauth>=0.58.2  # для аутентификации
-python-dotenv  # Добавляем для работы с .env файлом
-dj-database-url  # Добавляем для работы с DATABASE_URL
+whitenoise>=6.0.0
+django-environ>=0.11.2
+psycopg2-binary>=2.9.9
+pillow>=10.0.0
+django-ckeditor>=6.7.0
+django-allauth>=0.58.2
+python-dotenv
+dj-database-url
 # Add other dependencies your project needs
