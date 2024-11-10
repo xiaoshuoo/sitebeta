@@ -125,57 +125,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 FILE_UPLOAD_PERMISSIONS = 0o644
 
 # Создаем директории для загрузок
-CKEDITOR_UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads/')
-os.makedirs(CKEDITOR_UPLOAD_PATH, exist_ok=True)
+os.makedirs(MEDIA_ROOT, exist_ok=True)
 
-# CKEditor settings
-CKEDITOR_CONFIGS = {
-    'default': {
-        'skin': 'moono-dark',
-        'toolbar': 'Custom',
-        'height': 500,
-        'width': 'auto',
-        'toolbar_Custom': [
-            ['Styles', 'Format', 'Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'],
-            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
-            ['Link', 'Unlink'],
-            ['Image', 'Table'],
-            ['Source'],
-            ['Maximize']
-        ],
-        'extraPlugins': ','.join([
-            'uploadimage',
-            'div',
-            'autolink',
-            'autoembed',
-            'embedsemantic',
-            'autogrow',
-            'widget',
-            'lineutils',
-            'clipboard',
-            'dialog',
-            'dialogui',
-            'elementspath'
-        ]),
-        'removePlugins': ','.join(['image']),
-        'allowedContent': True,
-        'removeFormatAttributes': '',
-        'enterMode': 2,
-        'height': '500px',
-        'contentsCss': [
-            '/static/ckeditor/ckeditor/contents.css',
-            '/static/css/custom-ckeditor.css'
-        ],
-    }
-}
 
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_IMAGE_BACKEND = "pillow"
-CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js'
-CKEDITOR_BROWSE_SHOW_DIRS = True
-CKEDITOR_ALLOW_NONIMAGE_FILES = False
 
-# Создаем директории для загрузок
-import os
-CKEDITOR_UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads/')
-os.makedirs(CKEDITOR_UPLOAD_PATH, exist_ok=True)
