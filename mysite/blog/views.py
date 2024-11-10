@@ -108,6 +108,17 @@ def post_detail(request, pk):
     return render(request, 'blog/post_detail.html', context)
 
 def home(request):
+    # Создаем категорию по умолчанию, если её нет
+    default_category, created = Category.objects.get_or_create(
+        id=1,
+        defaults={
+            'name': 'Общее',
+            'slug': 'general',
+            'icon': 'fa-folder',
+            'description': 'Общая категория'
+        }
+    )
+    
     posts = Post.objects.filter(is_published=True).order_by('-created_at')
     categories = Category.objects.exclude(slug='').all()
     tags = Tag.objects.all()
