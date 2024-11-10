@@ -27,11 +27,30 @@ echo "Creating necessary directories..."
 mkdir -p static staticfiles media
 mkdir -p static/css static/js static/img
 
-# Ensure static files are in place
-echo "Setting up static files..."
-if [ -d "static_source" ]; then
-    cp -r static_source/* static/
-fi
+# Copy all static files from your local directory
+echo "Copying static files..."
+cat > static/css/style.css << 'END'
+/* Скопируйте сюда содержимое вашего style.css */
+:root {
+    --primary-color: #8B5CF6;
+    --secondary-color: #4F46E5;
+    --background-color: #1A1625;
+    --surface-color: #2D2A3D;
+    --text-color: #E2E8F0;
+    --text-muted: #94A3B8;
+    --border-color: #4B5563;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Добавьте остальные стили из вашего файла */
+END
 
 # Create necessary directories if script exists
 if [ -f "create_static_dirs.py" ]; then
