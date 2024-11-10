@@ -18,6 +18,10 @@ if [ ! -f "manage.py" ] && [ -d "mysite" ]; then
     ls -la
 fi
 
+# Set up Python path
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+echo "PYTHONPATH: $PYTHONPATH"
+
 # Install dependencies
 echo "Installing dependencies from requirements.txt"
 pip install --upgrade pip
@@ -32,9 +36,6 @@ fi
 echo "Resetting migrations..."
 find blog/migrations -type f -name "*.py" ! -name "__init__.py" -delete
 python manage.py makemigrations blog
-
-# Set up Python path
-export PYTHONPATH=$PYTHONPATH:$(pwd)
 
 # Run Django commands
 python manage.py collectstatic --no-input

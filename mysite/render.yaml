@@ -3,7 +3,10 @@ services:
     name: sitebeta
     env: python
     buildCommand: ./build.sh
-    startCommand: cd mysite && gunicorn --bind 0.0.0.0:10000 config.wsgi:application
+    startCommand: >
+      cd mysite && 
+      PYTHONPATH=$PYTHONPATH:/opt/render/project/src/mysite 
+      gunicorn --bind 0.0.0.0:10000 config.wsgi:application
     python_version: 3.11.10
     envVars:
       - key: PYTHON_VERSION
@@ -12,6 +15,8 @@ services:
         value: config.settings
       - key: PORT
         value: 10000
+      - key: PYTHONPATH
+        value: /opt/render/project/src/mysite
 
 databases:
   - name: django-blog-db
