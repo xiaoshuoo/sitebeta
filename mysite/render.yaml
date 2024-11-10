@@ -31,6 +31,12 @@ services:
         value: /opt/render/project/src/mysite/media
       - key: MEDIA_URL
         value: /media/
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@example.com
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: your-password-here  # Измените на безопасный пароль
 
 databases:
   - name: django-blog-db
