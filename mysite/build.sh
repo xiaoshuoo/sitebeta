@@ -33,7 +33,9 @@ echo "Resetting migrations..."
 find blog/migrations -type f -name "*.py" ! -name "__init__.py" -delete
 python manage.py makemigrations blog
 
+# Set up Python path
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+
 # Run Django commands
 python manage.py collectstatic --no-input
-# Используем --run-syncdb вместо --fake-initial
 python manage.py migrate --run-syncdb
