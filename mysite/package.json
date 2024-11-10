@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Modern blog platform",
   "scripts": {
-    "start": "python manage.py runserver",
+    "start": "node index.js",
     "build": "python manage.py collectstatic --noinput"
   },
   "dependencies": {

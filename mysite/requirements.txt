@@ -11,6 +11,5 @@ dj-database-url
 django-static-fontawesome
 django-crispy-forms
 crispy-bootstrap5
-django-colorfield
-django-ckeditor-uploader
+django-tinymce
 # Add other dependencies your project needs
