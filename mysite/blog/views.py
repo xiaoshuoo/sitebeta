@@ -109,38 +109,8 @@ def post_detail(request, pk):
 
 def home(request):
     posts = Post.objects.filter(is_published=True).order_by('-created_at')
-    categories = Category.objects.all()
+    categories = Category.objects.exclude(slug='').all()
     tags = Tag.objects.all()
-    
-    # Если категорий нет, создаем базовые
-    if not categories.exists():
-        default_categories = [
-            {
-                'name': 'Технологии',
-                'icon': 'fa-laptop-code',
-                'description': 'Технологические новости и обзоры'
-            },
-            {
-                'name': 'Путешествия',
-                'icon': 'fa-plane',
-                'description': 'Путешествия и приключения'
-            },
-            {
-                'name': 'Lifestyle',
-                'icon': 'fa-heart',
-                'description': 'Образ жизни и саморазвитие'
-            }
-        ]
-        
-        for cat_data in default_categories:
-            Category.objects.get_or_create(
-                name=cat_data['name'],
-                defaults={
-                    'icon': cat_data['icon'],
-                    'description': cat_data['description']
-                }
-            )
-        categories = Category.objects.all()
     
     context = {
         'posts': posts,
