@@ -32,11 +32,27 @@ if [ -f "create_static_dirs.py" ]; then
     python create_static_dirs.py
 fi
 
-# Reset migrations
-echo "Resetting migrations..."
-find blog/migrations -type f -name "*.py" ! -name "__init__.py" -delete
+# Safely handle migrations
+echo "Handling migrations..."
+mkdir -p blog/migrations
+touch blog/migrations/__init__.py
+
+# Remove old migrations using Python
+python << END
+import os
+import glob
+
+migrations_dir = 'blog/migrations'
+for file in glob.glob(os.path.join(migrations_dir, '*.py')):
+    if os.path.basename(file) != '__init__.py':
+        os.remove(file)
+END
+
+# Create fresh migrations
 python manage.py makemigrations blog
+
+# Apply migrations with fake initial
+python manage.py migrate --fake-initial
 
 # Run Django commands
 python manage.py collectstatic --no-input
-python manage.py migrate --run-syncdb
