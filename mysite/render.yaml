@@ -5,12 +5,10 @@ services:
     buildCommand: ./build.sh
     startCommand: >
       cd mysite && 
-      PYTHONPATH=/opt/render/project/src/mysite 
-      gunicorn --chdir /opt/render/project/src/mysite 
-      --bind 0.0.0.0:$PORT 
-      --workers 4 
-      --log-file=- 
-      config.wsgi:application
+      gunicorn config.wsgi:application 
+      --bind=0.0.0.0:$PORT 
+      --workers=4 
+      --log-file=-
     python_version: 3.11.10
     envVars:
       - key: PYTHON_VERSION
@@ -21,6 +19,10 @@ services:
         value: 10000
       - key: PYTHONPATH
         value: /opt/render/project/src/mysite
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
 
 databases:
   - name: django-blog-db

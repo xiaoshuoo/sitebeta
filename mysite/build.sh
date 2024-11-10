@@ -54,5 +54,27 @@ python manage.py makemigrations blog
 # Apply migrations with fake initial
 python manage.py migrate --fake-initial
 
+# Create superuser
+echo "Creating superuser..."
+python manage.py shell << END
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'your-password-here')
+END
+
+# Create default categories
+echo "Creating default categories..."
+python manage.py shell << END
+from blog.models import Category
+categories = [
+    {'name': 'Технологии', 'icon': 'fa-laptop-code'},
+    {'name': 'Путешествия', 'icon': 'fa-plane'},
+    {'name': 'Lifestyle', 'icon': 'fa-heart'}
+]
+for cat in categories:
+    Category.objects.get_or_create(name=cat['name'], defaults={'icon': cat['icon']})
+END
+
 # Run Django commands
-python manage.py collectstatic --no-input
+python manage.py collectstatic --no-input --clear

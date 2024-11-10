@@ -8,4 +8,5 @@ django-ckeditor>=6.7.0
 django-allauth>=0.58.2
 python-dotenv
 dj-database-url
+django-static-fontawesome
 # Add other dependencies your project needs
