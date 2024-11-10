@@ -30,39 +30,46 @@ mkdir -p media
 # Handle migrations
 echo "Handling migrations..."
 python manage.py makemigrations blog
-python manage.py migrate --fake-initial
+python manage.py migrate
 
 # Create superuser
 echo "Creating superuser..."
 python manage.py shell << END
 from django.contrib.auth import get_user_model
 User = get_user_model()
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@example.com', 'your-password-here')
+try:
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@example.com',
+            password='admin123'
+        )
+        print('Superuser created successfully')
+    else:
+        print('Superuser already exists')
+except Exception as e:
+    print(f'Failed to create superuser: {str(e)}')
 END
 
-# Create categories
-echo "Creating default categories..."
+# Create initial invite code
+echo "Creating initial invite code..."
 python manage.py shell << END
-from blog.models import Category
-from django.utils.text import slugify
-
-categories = [
-    {'name': 'Технологии', 'icon': 'fa-laptop-code', 'description': 'Технологические новости и обзоры'},
-    {'name': 'Путешествия', 'icon': 'fa-plane', 'description': 'Путешествия и приключения'},
-    {'name': 'Lifestyle', 'icon': 'fa-heart', 'description': 'Образ жизни и саморазвитие'}
-]
-
-for cat_data in categories:
-    name = cat_data['name']
-    slug = slugify(name)
-    if not Category.objects.filter(slug=slug).exists():
-        Category.objects.create(
-            name=name,
-            slug=slug,
-            icon=cat_data['icon'],
-            description=cat_data.get('description', '')
+from blog.models import InviteCode
+from django.contrib.auth import get_user_model
+User = get_user_model()
+admin = User.objects.get(username='admin')
+try:
+    if not InviteCode.objects.filter(code='ADMIN123').exists():
+        InviteCode.objects.create(
+            code='ADMIN123',
+            created_by=admin,
+            is_active=True
         )
+        print('Initial invite code created successfully')
+    else:
+        print('Initial invite code already exists')
+except Exception as e:
+    print(f'Failed to create invite code: {str(e)}')
 END
 
 # Collect static files
