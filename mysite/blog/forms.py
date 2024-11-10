@@ -28,23 +28,11 @@ class PostForm(forms.ModelForm):
         }
 
 class CustomUserCreationForm(UserCreationForm):
-    invite_code = forms.CharField(
-        max_length=20, 
-        required=True,
-        help_text="Введите код приглашения для регистрации",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
-    email = forms.EmailField(
-        required=True,
-        widget=forms.EmailInput(attrs={'class': 'form-control'})
-    )
-    
+    invite_code = forms.CharField(max_length=20, required=True, label='Код приглашения')
+
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2', 'invite_code')
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-        }
+        fields = ('username', 'password1', 'password2', 'invite_code')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

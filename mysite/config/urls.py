@@ -4,17 +4,19 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
+from blog import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     
-    # Добавляем URL'ы для аутентификации
+    # Аутентификация
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='blog:home'), name='logout'),
+    path('register/', views.register, name='register'),
 ]
 
-# Добавляем обработку статических файлов
+# Обработка статических файлов
 urlpatterns += [
     path('static/<path:path>', serve, {
         'document_root': settings.STATIC_ROOT,

@@ -13,6 +13,7 @@ from .forms import PostForm, CustomUserCreationForm, UserProfileForm
 import random
 import string
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth.forms import UserCreationForm
 
 @csrf_protect
 @login_required
@@ -184,17 +185,24 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            invite = form.cleaned_data['invite_code']
-            invite.used_by = user
-            invite.is_active = False
-            invite.save()
-            
-            # Профиль создастся автоматически через сигнал
-            
-            login(request, user)
-            messages.success(request, "Регистрация успешно завершена!")
-            return redirect('blog:profile')
+            invite_code = form.cleaned_data.get('invite_code')
+            try:
+                invite = InviteCode.objects.get(code=invite_code, is_active=True, used_by__isnull=True)
+                user = form.save()
+                # Помечаем код как использованный
+                invite.used_by = user
+                invite.is_active = False
+                invite.save()
+                
+                # Создаем профиль пользователя
+                UserProfile.objects.create(user=user)
+                
+                # Входим в систему
+                login(request, user)
+                messages.success(request, 'Регистрация успешно завершена!')
+                return redirect('blog:home')
+            except InviteCode.DoesNotExist:
+                messages.error(request, 'Неверный или уже использованный код приглашения')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
