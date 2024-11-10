@@ -12,15 +12,10 @@ ls -la
 if [ ! -f "manage.py" ] && [ -d "mysite" ]; then
     echo "Changing to mysite directory"
     cd mysite
-    echo "New directory:"
-    pwd
-    echo "New directory contents:"
-    ls -la
 fi
 
 # Set up Python path
 export PYTHONPATH=$PYTHONPATH:$(pwd)
-echo "PYTHONPATH: $PYTHONPATH"
 
 # Install dependencies
 echo "Installing dependencies from requirements.txt"
@@ -32,35 +27,20 @@ echo "Creating necessary directories..."
 mkdir -p static staticfiles media
 mkdir -p static/css static/js static/img
 
-# Copy static files
-echo "Copying static files..."
-cp -r static/* staticfiles/ 2>/dev/null || true
+# Ensure static files are in place
+echo "Setting up static files..."
+if [ -d "static_source" ]; then
+    cp -r static_source/* static/
+fi
 
 # Create necessary directories if script exists
 if [ -f "create_static_dirs.py" ]; then
     python create_static_dirs.py
 fi
 
-# Safely handle migrations
+# Handle migrations
 echo "Handling migrations..."
-mkdir -p blog/migrations
-touch blog/migrations/__init__.py
-
-# Remove old migrations using Python
-python << END
-import os
-import glob
-
-migrations_dir = 'blog/migrations'
-for file in glob.glob(os.path.join(migrations_dir, '*.py')):
-    if os.path.basename(file) != '__init__.py':
-        os.remove(file)
-END
-
-# Create fresh migrations
 python manage.py makemigrations blog
-
-# Apply migrations with fake initial
 python manage.py migrate --fake-initial
 
 # Create superuser
@@ -72,7 +52,7 @@ if not User.objects.filter(username='admin').exists():
     User.objects.create_superuser('admin', 'admin@example.com', 'your-password-here')
 END
 
-# Create default categories
+# Create categories
 echo "Creating default categories..."
 python manage.py shell << END
 from blog.models import Category
@@ -94,11 +74,12 @@ for cat_data in categories:
             icon=cat_data['icon'],
             description=cat_data.get('description', '')
         )
-        print(f"Created category: {name}")
-    else:
-        print(f"Category already exists: {name}")
 END
 
-# Run Django commands
+# Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --no-input --clear
+
+# Set permissions
+echo "Setting permissions..."
+chmod -R 755 static staticfiles media
