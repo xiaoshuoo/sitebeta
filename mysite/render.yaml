@@ -5,8 +5,12 @@ services:
     buildCommand: ./build.sh
     startCommand: >
       cd mysite && 
-      PYTHONPATH=$PYTHONPATH:/opt/render/project/src/mysite 
-      gunicorn --bind 0.0.0.0:10000 config.wsgi:application
+      PYTHONPATH=/opt/render/project/src/mysite 
+      gunicorn --chdir /opt/render/project/src/mysite 
+      --bind 0.0.0.0:$PORT 
+      --workers 4 
+      --log-file=- 
+      config.wsgi:application
     python_version: 3.11.10
     envVars:
       - key: PYTHON_VERSION
