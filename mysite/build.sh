@@ -54,10 +54,12 @@ END
 # Create initial invite code
 echo "Creating initial invite code..."
 python manage.py shell << END
-from blog.models import InviteCode
+from blog.models import InviteCode, Category, Post
 from django.contrib.auth import get_user_model
 User = get_user_model()
 admin = User.objects.get(username='admin')
+
+# Create invite code
 try:
     if not InviteCode.objects.filter(code='ADMIN123').exists():
         InviteCode.objects.create(
@@ -70,6 +72,35 @@ try:
         print('Initial invite code already exists')
 except Exception as e:
     print(f'Failed to create invite code: {str(e)}')
+
+# Create test category
+try:
+    category, created = Category.objects.get_or_create(
+        name='Тестовая категория',
+        defaults={
+            'description': 'Тестовая категория для демонстрации',
+            'icon': 'fa-flask'
+        }
+    )
+    print('Category created successfully' if created else 'Category already exists')
+except Exception as e:
+    print(f'Failed to create category: {str(e)}')
+
+# Create test post
+try:
+    if not Post.objects.filter(title='Добро пожаловать!').exists():
+        Post.objects.create(
+            title='Добро пожаловать!',
+            content='Это тестовый пост для демонстрации функционала блога.',
+            author=admin,
+            category=category,
+            is_published=True
+        )
+        print('Test post created successfully')
+    else:
+        print('Test post already exists')
+except Exception as e:
+    print(f'Failed to create test post: {str(e)}')
 END
 
 # Collect static files
