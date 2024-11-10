@@ -10,7 +10,7 @@
                 <h1 class="text-3xl font-bold text-white mb-4">{{ post.title }}</h1>
                 <div class="flex flex-wrap items-center text-sm text-gray-400 gap-4">
                     <a href="{% url 'blog:user_profile' username=post.author.username %}" 
-                       class="flex items-center hover:text-primary-500 transition-colors">
+                       class="flex items-center text-gray-300 hover:text-white">
                         {% if post.author.profile.avatar %}
                             <img src="{{ post.author.profile.avatar.url }}" 
                                  alt="{{ post.author.username }}" 
@@ -26,11 +26,18 @@
                         <i class="fas fa-calendar text-primary-500/70 mr-2"></i>
                         {{ post.created_at|date:"d.m.Y" }}
                     </span>
+                    {% if post.category and post.category.slug %}
                     <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
                        class="flex items-center hover:text-primary-500 transition-colors">
                         <i class="fas {{ post.category.icon }} text-primary-500/70 mr-2"></i>
                         {{ post.category.name }}
                     </a>
+                    {% else %}
+                    <span class="flex items-center text-gray-400">
+                        <i class="fas fa-folder text-primary-500/70 mr-2"></i>
+                        Без категории
+                    </span>
+                    {% endif %}
                     <div class="flex items-center space-x-4">
                         <span class="flex items-center" title="Просмотры">
                             <i class="fas fa-eye text-primary-500/70 mr-2"></i>
