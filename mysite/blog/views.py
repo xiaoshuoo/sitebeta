@@ -119,8 +119,17 @@ def home(request):
         }
     )
     
-    posts = Post.objects.filter(is_published=True).order_by('-created_at')
-    categories = Category.objects.exclude(slug='').all()
+    # Фильтруем посты, чтобы показывать только те, у которых есть категория с валидным slug
+    posts = Post.objects.filter(
+        is_published=True,
+        category__isnull=False,
+        category__slug__isnull=False
+    ).exclude(category__slug='').order_by('-created_at')
+    
+    # Фильтруем категории, исключая те, у которых нет slug
+    categories = Category.objects.exclude(slug__isnull=True).exclude(slug='')
+    
+    # Получаем теги
     tags = Tag.objects.all()
     
     context = {
@@ -131,7 +140,8 @@ def home(request):
     return render(request, 'blog/home.html', context)
 
 def categories_list(request):
-    categories = Category.objects.all()
+    # Фильтруем категории, исключая те, у которых нет slug
+    categories = Category.objects.exclude(slug__isnull=True).exclude(slug='')
     context = {
         'categories': categories,
     }
