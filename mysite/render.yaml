@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: sitebeta
+    env: python
+    buildCommand: ./build.sh
+    startCommand: gunicorn wsgi:application
+    python_version: 3.11.10
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
+      - key: POETRY_VERSION
+        value: 1.7.1
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+
+databases:
+  - name: django-blog-db
+    databaseName: django_blog
+    user: django_blog
+    plan: free 

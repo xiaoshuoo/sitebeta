@@ -1,17 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# exit on error
 set -o errexit
 
-cd mysite
-
-# Установка зависимостей
-python -m pip install --upgrade pip wheel setuptools
+# Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# Создание необходимых директорий
+# Create necessary directories
 python create_static_dirs.py
 
-# Сбор статических файлов
+# Run Django commands
 python manage.py collectstatic --no-input
-
-# Применение миграций
 python manage.py migrate
