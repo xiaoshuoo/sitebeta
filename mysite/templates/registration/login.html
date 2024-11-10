@@ -1,83 +1,20 @@
 {% extends 'base.html' %}
 
-{% block title %}Вход | {{ block.super }}{% endblock %}
-
 {% block content %}
-<div class="hero-section">
-    <div class="container">
-        <h1 class="display-4">Вход в систему</h1>
-        <p class="lead">Войдите в свою учетную запись</p>
-    </div>
-</div>
-
-<div class="container mt-4">
+<div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <form method="post" class="login-form">
+                    <h2 class="card-title text-center mb-4">Вход</h2>
+                    <form method="post">
                         {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Имя пользователя</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                <input type="text" name="username" id="id_username" class="form-control" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="id_password" class="form-label">Пароль</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" name="password" id="id_password" class="form-control" required>
-                            </div>
-                        </div>
-
-                        {% if form.errors %}
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            Неверное имя пользователя или пароль.
-                        </div>
-                        {% endif %}
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt me-2"></i>Войти
-                            </button>
-                            <a href="{% url 'blog:register' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
-                            </a>
-                        </div>
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary w-100">Войти</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.login-form .input-group-text {
-    background-color: #f8f9fa;
-    border-right: none;
-}
-
-.login-form .form-control {
-    border-left: none;
-}
-
-.login-form .form-control:focus {
-    border-color: #ced4da;
-    box-shadow: none;
-}
-
-.login-form .input-group:focus-within {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-.login-form .input-group:focus-within .input-group-text,
-.login-form .input-group:focus-within .form-control {
-    border-color: #86b7fe;
-}
-</style>
 {% endblock %} 

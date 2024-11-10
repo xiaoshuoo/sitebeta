@@ -8,7 +8,9 @@ services:
       gunicorn config.wsgi:application 
       --bind=0.0.0.0:$PORT 
       --workers=4 
-      --log-file=-
+      --log-file=- 
+      --access-logfile=- 
+      --error-logfile=-
     python_version: 3.11.10
     envVars:
       - key: PYTHON_VERSION
@@ -20,23 +22,17 @@ services:
       - key: PYTHONPATH
         value: /opt/render/project/src/mysite
       - key: DEBUG
-        value: "False"
+        value: "True"
+      - key: DJANGO_SECRET_KEY
+        value: "your-secret-key-here"
       - key: DJANGO_ALLOWED_HOSTS
-        value: ".onrender.com,localhost,127.0.0.1"
-      - key: STATIC_ROOT
-        value: /opt/render/project/src/mysite/staticfiles
-      - key: STATIC_URL
-        value: /static/
-      - key: MEDIA_ROOT
-        value: /opt/render/project/src/mysite/media
-      - key: MEDIA_URL
-        value: /media/
+        value: "*"
       - key: DJANGO_SUPERUSER_USERNAME
         value: admin
       - key: DJANGO_SUPERUSER_EMAIL
         value: admin@example.com
       - key: DJANGO_SUPERUSER_PASSWORD
-        value: your-password-here  # Измените на безопасный пароль
+        value: "admin123"
 
 databases:
   - name: django-blog-db
