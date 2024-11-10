@@ -67,13 +67,28 @@ END
 echo "Creating default categories..."
 python manage.py shell << END
 from blog.models import Category
+from django.utils.text import slugify
+
 categories = [
-    {'name': 'Технологии', 'icon': 'fa-laptop-code'},
-    {'name': 'Путешествия', 'icon': 'fa-plane'},
-    {'name': 'Lifestyle', 'icon': 'fa-heart'}
+    {'name': 'Технологии', 'icon': 'fa-laptop-code', 'description': 'Технологические новости и обзоры'},
+    {'name': 'Путешествия', 'icon': 'fa-plane', 'description': 'Путешествия и приключения'},
+    {'name': 'Lifestyle', 'icon': 'fa-heart', 'description': 'Образ жизни и саморазвитие'}
 ]
-for cat in categories:
-    Category.objects.get_or_create(name=cat['name'], defaults={'icon': cat['icon']})
+
+for cat_data in categories:
+    name = cat_data['name']
+    slug = slugify(name)
+    # Проверяем существование категории по slug
+    if not Category.objects.filter(slug=slug).exists():
+        Category.objects.create(
+            name=name,
+            slug=slug,
+            icon=cat_data['icon'],
+            description=cat_data.get('description', '')
+        )
+        print(f"Created category: {name}")
+    else:
+        print(f"Category already exists: {name}")
 END
 
 # Run Django commands
