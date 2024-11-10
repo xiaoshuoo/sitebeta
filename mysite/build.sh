@@ -24,19 +24,8 @@ pip install -r requirements.txt
 
 # Create necessary directories
 echo "Creating necessary directories..."
-mkdir -p static staticfiles media
-mkdir -p static/css static/js static/img
-
-# Копируем существующие статические файлы из репозитория
-echo "Copying static files from repository..."
-if [ -d "static" ]; then
-    cp -r static/* staticfiles/
-fi
-
-# Create necessary directories if script exists
-if [ -f "create_static_dirs.py" ]; then
-    python create_static_dirs.py
-fi
+mkdir -p staticfiles
+mkdir -p media
 
 # Handle migrations
 echo "Handling migrations..."
@@ -78,8 +67,16 @@ END
 
 # Collect static files
 echo "Collecting static files..."
-python manage.py collectstatic --no-input --clear
+python manage.py collectstatic --no-input
+
+# Копируем существующие статические файлы поверх собранных
+echo "Copying custom static files..."
+cp -rv static/* staticfiles/ || echo "No static files to copy"
 
 # Set permissions
 echo "Setting permissions..."
-chmod -R 755 static staticfiles media
+chmod -R 755 staticfiles media
+
+# Debug - показать финальное содержимое staticfiles
+echo "Final staticfiles contents:"
+ls -la staticfiles/
