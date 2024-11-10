@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-background animated-bg p-6">
+    <div class="max-w-4xl mx-auto">
+        <!-- Заголовок -->
+        <div class="glass-effect rounded-2xl p-6 mb-6 hover-lift">
+            <h2 class="text-2xl font-bold text-white flex items-center">
+                <i class="fas fa-key text-primary-500 mr-3"></i>
+                Коды приглашений
+            </h2>
+            <p class="text-gray-400 mt-2">Управление кодами приглашений для новых пользователей</p>
+        </div>
+
+        <!-- Информация -->
+        <div class="glass-effect rounded-2xl p-6 mb-6">
+            <div class="flex items-start space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-primary-500/10 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-info-circle text-primary-500 text-xl"></i>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-white font-semibold">Информация</h3>
+                    <ul class="text-gray-400 space-y-1 list-inside">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-primary-500 mr-2"></i>
+                            Каждый код можно использовать только один раз
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-primary-500 mr-2"></i>
+                            После использования код становится неактивным
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-primary-500 mr-2"></i>
+                            Вы можете отслеживать, кто использовал ваши коды
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Создать новый код -->
+        <div class="glass-effect rounded-2xl p-6 mb-6 hover-lift">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas fa-plus-circle text-primary-500 mr-2"></i>
+                    Создать новый код
+                </h3>
+                <a href="{% url 'blog:create_invite' %}" 
+                   class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-all flex items-center group">
+                    <i class="fas fa-magic mr-2 group-hover:rotate-12 transition-transform"></i>
+                    Сгенерировать код
+                </a>
+            </div>
+        </div>
+
+        <!-- Список кодов -->
+        <div class="glass-effect rounded-2xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                <i class="fas fa-list text-primary-500 mr-2"></i>
+                Ваши коды
+            </h3>
+
+            <div class="space-y-4">
+                {% for code in codes %}
+                <div class="bg-surface/50 rounded-xl p-4 hover:bg-surface/70 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 rounded-lg {% if code.is_active %}bg-green-500/20{% else %}bg-red-500/20{% endif %} flex items-center justify-center">
+                                <i class="fas {% if code.is_active %}fa-check text-green-500{% else %}fa-times text-red-500{% endif %}"></i>
+                            </div>
+                            <div>
+                                <div class="font-mono text-lg text-white">{{ code.code }}</div>
+                                <div class="text-sm text-gray-400">
+                                    Создан: {{ code.created_at|date:"d.m.Y H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            {% if code.used_by %}
+                            <div class="text-sm text-gray-400">
+                                Использован:
+                                <a href="{% url 'blog:user_profile' username=code.used_by.username %}" 
+                                   class="text-primary-500 hover:text-primary-400">
+                                    {{ code.used_by.username }}
+                                </a>
+                            </div>
+                            {% else %}
+                            <span class="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-sm">
+                                Активен
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 rounded-full bg-surface/50 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-ticket-alt text-2xl text-primary-500/70"></i>
+                    </div>
+                    <p class="text-gray-400">У вас пока нет созданных кодов приглашений</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.glass-effect {
+    background: rgba(45, 42, 61, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+}
+
+.animated-bg {
+    background: linear-gradient(45deg, 
+        rgba(139, 92, 246, 0.1), 
+        rgba(79, 70, 229, 0.1)
+    );
+    background-size: 200% 200%;
+    animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+</style>
+{% endblock %} 

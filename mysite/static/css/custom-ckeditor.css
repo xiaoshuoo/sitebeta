@@ -1,0 +1,43 @@
+.cke_chrome {
+    border: none !important;
+    border-radius: 1rem !important;
+    overflow: hidden !important;
+}
+
+.cke_top {
+    background: rgba(45, 42, 61, 0.7) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_bottom {
+    background: rgba(45, 42, 61, 0.7) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_reset_all, .cke_reset_all * {
+    color: #e2e8f0 !important;
+}
+
+.cke_reset_all select {
+    background-color: rgba(45, 42, 61, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_editable {
+    background-color: transparent !important;
+    color: #e2e8f0 !important;
+    padding: 1rem !important;
+}
+
+.cke_button {
+    padding: 4px 6px !important;
+}
+
+.cke_button:hover {
+    background-color: rgba(139, 92, 246, 0.1) !important;
+    border-radius: 4px !important;
+}
+
+.cke_button__source_label {
+    display: inline !important;
+} 

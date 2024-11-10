@@ -22,8 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'tinymce',
     'blog.apps.BlogConfig',
-    'ckeditor',
 ]
 
 MIDDLEWARE = [
@@ -60,8 +60,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 DATABASES = {
     'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600
+        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3'),
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=False
     )
 }
 
@@ -71,12 +73,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-
-# Whitenoise settings
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_MANIFEST_STRICT = False
-WHITENOISE_ALLOW_ALL_ORIGINS = True
 
 # Media files
 MEDIA_URL = '/media/'
@@ -97,3 +93,89 @@ ADMIN_URL = 'admin/'
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+# TinyMCE settings
+TINYMCE_DEFAULT_CONFIG = {
+    'height': 500,
+    'menubar': False,
+    'plugins': '''
+        advlist autolink lists link image charmap print preview anchor
+        searchreplace visualblocks code fullscreen
+        insertdatetime media table paste code help wordcount
+    ''',
+    'toolbar': '''
+        undo redo | formatselect | bold italic backcolor |
+        alignleft aligncenter alignright alignjustify |
+        bullist numlist outdent indent | removeformat | help |
+        link image media | code
+    ''',
+    'content_css': 'dark',
+}
+
+TINYMCE_JS_URL = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js'
+TINYMCE_COMPRESSOR = False
+
+# Message settings
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+# Proxy settings
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# File upload permissions
+FILE_UPLOAD_PERMISSIONS = 0o644
+
+# Создаем директории для загрузок
+CKEDITOR_UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads/')
+os.makedirs(CKEDITOR_UPLOAD_PATH, exist_ok=True)
+
+# CKEditor settings
+CKEDITOR_CONFIGS = {
+    'default': {
+        'skin': 'moono-dark',
+        'toolbar': 'Custom',
+        'height': 500,
+        'width': 'auto',
+        'toolbar_Custom': [
+            ['Styles', 'Format', 'Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
+            ['Link', 'Unlink'],
+            ['Image', 'Table'],
+            ['Source'],
+            ['Maximize']
+        ],
+        'extraPlugins': ','.join([
+            'uploadimage',
+            'div',
+            'autolink',
+            'autoembed',
+            'embedsemantic',
+            'autogrow',
+            'widget',
+            'lineutils',
+            'clipboard',
+            'dialog',
+            'dialogui',
+            'elementspath'
+        ]),
+        'removePlugins': ','.join(['image']),
+        'allowedContent': True,
+        'removeFormatAttributes': '',
+        'enterMode': 2,
+        'height': '500px',
+        'contentsCss': [
+            '/static/ckeditor/ckeditor/contents.css',
+            '/static/css/custom-ckeditor.css'
+        ],
+    }
+}
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js'
+CKEDITOR_BROWSE_SHOW_DIRS = True
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
+
+# Создаем директории для загрузок
+import os
+CKEDITOR_UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads/')
+os.makedirs(CKEDITOR_UPLOAD_PATH, exist_ok=True)

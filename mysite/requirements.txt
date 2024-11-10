@@ -9,4 +9,8 @@ django-allauth>=0.58.2
 python-dotenv
 dj-database-url
 django-static-fontawesome
+django-crispy-forms
+crispy-bootstrap5
+django-colorfield
+django-ckeditor-uploader
 # Add other dependencies your project needs

@@ -1,53 +1,58 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
-from django.contrib import messages
-from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import UpdateView
 from django.urls import reverse_lazy
-from django.core.mail import send_mail
-from django.conf import settings
-from .models import Post, Category, InviteCode, UserProfile, Tag, PostAttachment
-from .forms import PostForm, CustomUserCreationForm, UserProfileForm
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.models import User
 import random
 import string
-from django.views.decorators.csrf import csrf_protect
-from django.contrib.auth.forms import UserCreationForm
+from .models import Post, Category, Tag, InviteCode, UserProfile
+from .forms import PostForm, CustomUserCreationForm
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import JsonResponse
+from django.core.cache import cache
+from django.views.decorators.http import require_POST
 
-@csrf_protect
 @login_required
 def create_post(request):
-    # Проверяем доступ к разделу
-    if not request.user.is_staff:  # Только для администраторов
-        messages.error(request, 'У вас нет доступа к этому разделу')
-        return redirect('blog:home')
-        
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
             
-            # Автоматическая публикация, если выбрана опция
-            if request.POST.get('publish_now') == 'on':
-                post.is_published = True
+            # Получаем данные из формы
+            title = form.cleaned_data['title']
+            content = form.cleaned_data['content']
+            category = form.cleaned_data['category']
+            is_published = form.cleaned_data.get('is_published', False)
+            thumbnail = request.FILES.get('thumbnail')
             
+            # Заполняем поля поста
+            post.title = title
+            post.content = content
+            post.category = category
+            post.is_published = is_published
+            if thumbnail:
+                post.thumbnail = thumbnail
+            
+            # Сохраняем пост
             post.save()
-            
-            files = request.FILES.getlist('attachments[]')
-            for file in files:
-                attachment = PostAttachment.objects.create(file=file)
-                post.attachments.add(attachment)
             
             messages.success(request, 'Пост успешно создан!')
             return redirect('blog:post_detail', pk=post.pk)
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
+            print(form.errors)  # Для отладки
     else:
         form = PostForm()
     
     return render(request, 'blog/post_form.html', {
         'form': form,
-        'can_publish': request.user.is_staff  # Передаем флаг возможности публикации
+        'title': 'Создать пост',
+        'button_text': 'Опубликовать'
     })
 
 @login_required
@@ -55,112 +60,152 @@ def edit_post(request, pk):
     post = get_object_or_404(Post, pk=pk, author=request.user)
     
     if request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
+        form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
-            post = form.save()
+            post = form.save(commit=False)
+            
+            # Обработка Markdown контента
+            content = form.cleaned_data['content']
+            post.content = content
+            
+            # Сохраняем пост
+            post.save()
+            
+            # Если есть теги, обновляем их
+            if form.cleaned_data.get('tags'):
+                post.tags.set(form.cleaned_data['tags'])
+            
             messages.success(request, 'Пост успешно обновлен!')
             return redirect('blog:post_detail', pk=post.pk)
+        else:
+            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
         form = PostForm(instance=post)
     
-    return render(request, 'blog/post_form.html', {'form': form, 'post': post})
+    return render(request, 'blog/post_form.html', {
+        'form': form,
+        'post': post,
+        'title': 'Редактировать пост',
+        'button_text': 'Сохранить изменения'
+    })
 
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    return render(request, 'blog/post_detail.html', {'post': post})
+    
+    # Увеличиваем счетчик просмотров
+    post.increment_views(request.user)
+    
+    # Получаем похожие посты
+    similar_posts = Post.objects.filter(
+        category=post.category,
+        is_published=True
+    ).exclude(id=post.id).order_by('-views_count')[:3]
+    
+    context = {
+        'post': post,
+        'similar_posts': similar_posts,
+    }
+    return render(request, 'blog/post_detail.html', context)
 
 def home(request):
     posts = Post.objects.filter(is_published=True).order_by('-created_at')
     categories = Category.objects.all()
+    tags = Tag.objects.all()
+    
+    # Если категорий нет, создаем базовые
+    if not categories.exists():
+        default_categories = [
+            {
+                'name': 'Технологии',
+                'icon': 'fa-laptop-code',
+                'description': 'Технологические новости и обзоры'
+            },
+            {
+                'name': 'Путешествия',
+                'icon': 'fa-plane',
+                'description': 'Путешествия и приключения'
+            },
+            {
+                'name': 'Lifestyle',
+                'icon': 'fa-heart',
+                'description': 'Образ жизни и саморазвитие'
+            }
+        ]
+        
+        for cat_data in default_categories:
+            Category.objects.get_or_create(
+                name=cat_data['name'],
+                defaults={
+                    'icon': cat_data['icon'],
+                    'description': cat_data['description']
+                }
+            )
+        categories = Category.objects.all()
     
     context = {
         'posts': posts,
         'categories': categories,
+        'tags': tags,
     }
     return render(request, 'blog/home.html', context)
 
-def categories(request):
+def categories_list(request):
     categories = Category.objects.all()
-    return render(request, 'blog/categories.html', {'categories': categories})
+    context = {
+        'categories': categories,
+    }
+    return render(request, 'blog/categories.html', context)
 
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     posts = Post.objects.filter(category=category, is_published=True).order_by('-created_at')
-    return render(request, 'blog/category_detail.html', {
+    
+    context = {
         'category': category,
-        'posts': posts
-    })
+        'posts': posts,
+    }
+    return render(request, 'blog/category_detail.html', context)
+
+def tag_detail(request, slug):
+    tag = get_object_or_404(Tag, slug=slug)
+    posts = Post.objects.filter(tags=tag, is_published=True).order_by('-created_at')
+    
+    context = {
+        'tag': tag,
+        'posts': posts,
+    }
+    return render(request, 'blog/tag_detail.html', context)
 
 @login_required
 def about(request):
-    if not request.user.is_staff:  # Только для администраторов
-        messages.error(request, 'У вас нет доступа к этому разделу')
+    if not request.user.is_staff:
+        messages.error(request, "У вас нет прав для просмотра этой страницы")
         return redirect('blog:home')
-        
-    context = {
-        'users_count': User.objects.count(),
-        'posts_count': Post.objects.filter(is_published=True).count(),
-        'categories_count': Category.objects.count(),
-    }
-    return render(request, 'blog/about.html', context)
-
-def contact(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        subject = request.POST.get('subject')
-        message = request.POST.get('message')
-        
-        # Отправка email
-        full_message = f"От: {name}\nEmail: {email}\n\n{message}"
-        try:
-            send_mail(
-                subject,
-                full_message,
-                settings.DEFAULT_FROM_EMAIL,
-                [settings.CONTACT_EMAIL],
-                fail_silently=False,
-            )
-            messages.success(request, 'Ваше сообщение успешно отправлено!')
-        except Exception as e:
-            messages.error(request, 'Произошла ошибка при отправке сообщения.')
-        
-        return redirect('blog:contact')
-    
-    return render(request, 'blog/contact.html')
+    return render(request, 'blog/about.html')
 
 @login_required
 def profile(request):
-    # Получаем или создаем профиль пользователя
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-    
-    user_posts = Post.objects.filter(author=request.user)
-    published_posts = user_posts.filter(is_published=True)
-    draft_posts = user_posts.filter(is_published=False)
-    
-    # Получаем категории с количеством постов пользователя
-    categories_with_counts = []
-    for category in Category.objects.filter(posts__author=request.user).distinct():
-        post_count = category.posts.filter(author=request.user).count()
-        categories_with_counts.append({
-            'category': category,
-            'post_count': post_count
-        })
+    user_profile = request.user.profile  # Получаем профиль текущего пользователя
+    user_posts = Post.objects.filter(author=request.user, is_published=True).order_by('-created_at')
     
     context = {
+        'user': request.user,
         'user_profile': user_profile,
-        'total_posts': user_posts.count(),
-        'published_posts': published_posts,
-        'draft_posts': draft_posts,
-        'recent_posts': published_posts.order_by('-created_at')[:5],
-        'categories_with_counts': categories_with_counts
+        'posts_count': user_posts.count(),
+        'user_posts': user_posts,
     }
+    
     return render(request, 'blog/profile.html', context)
 
 @login_required
 def my_posts(request):
-    posts = Post.objects.filter(author=request.user)
-    return render(request, 'blog/my_posts.html', {'posts': posts})
+    user_posts = Post.objects.filter(author=request.user).order_by('-created_at')
+    
+    context = {
+        'posts': user_posts,
+        'title': 'Мои посты'
+    }
+    return render(request, 'blog/my_posts.html', context)
 
 def generate_invite_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
@@ -185,26 +230,31 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            # Создаем пользователя, но не сохраняем в базу
+            user = form.save(commit=False)
+            user.save()  # Теперь сохраняем пользователя
+            
+            # Получаем код приглашения из формы
             invite_code = form.cleaned_data.get('invite_code')
-            try:
-                invite = InviteCode.objects.get(code=invite_code, is_active=True, used_by__isnull=True)
-                user = form.save()
-                # Помечаем код как использованный
-                invite.used_by = user
-                invite.is_active = False
-                invite.save()
-                
-                # Создаем профиль пользователя
-                UserProfile.objects.create(user=user)
-                
-                # Входим в систему
-                login(request, user)
-                messages.success(request, 'Регистрация успешно завершена!')
-                return redirect('blog:home')
-            except InviteCode.DoesNotExist:
-                messages.error(request, 'Неверный или уже использованный код приглашения')
+            
+            # Помечаем код как использованный
+            invite_code.used_by = user
+            invite_code.is_active = False
+            invite_code.save()
+            
+            # Профиль пользователя создастся автоматически через сигнал
+            
+            # Входим в систему
+            login(request, user)
+            messages.success(request, 'Регистрация успешно завершена!')
+            return redirect('blog:home')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
     else:
         form = CustomUserCreationForm()
+    
     return render(request, 'registration/register.html', {'form': form})
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -215,4 +265,58 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user.profile
+
+def user_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    user_posts = Post.objects.filter(author=user, is_published=True).order_by('-created_at')
+    
+    context = {
+        'profile_user': user,
+        'user_posts': user_posts,
+        'posts_count': user_posts.count(),
+    }
+    return render(request, 'blog/user_profile.html', context)
+
+@login_required
+def post_delete(request, pk):
+    post = get_object_or_404(Post, pk=pk, author=request.user)
+    
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Пост успешно удален!')
+        return redirect('blog:home')
+    
+    return render(request, 'blog/post_confirm_delete.html', {'post': post})
+
+@staff_member_required
+def admin_panel(request):
+    context = {
+        'users_count': User.objects.count(),
+        'posts_count': Post.objects.count(),
+        'categories_count': Category.objects.count(),
+        'active_invites': InviteCode.objects.filter(is_active=True).count(),
+        'users': User.objects.all().order_by('-date_joined'),
+        'recent_logs': [], # Здесь можно добавить логирование действий
+    }
+    return render(request, 'blog/admin_panel.html', context)
+
+@staff_member_required
+@require_POST
+def clear_cache(request):
+    try:
+        cache.clear()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@staff_member_required
+@require_POST
+def toggle_user_status(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user.is_active = not user.is_active
+        user.save()
+        return JsonResponse({'success': True})
+    except User.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'User not found'})
   

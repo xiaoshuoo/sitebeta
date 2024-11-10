@@ -1,13 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
-from ckeditor.fields import RichTextField
+from tinymce.models import HTMLField
+from ckeditor_uploader.fields import RichTextUploadingField
 import uuid
+from django.utils import timezone
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название")
     slug = models.SlugField(unique=True, blank=True)
-    description = models.TextField(verbose_name="Описание")
+    description = models.TextField(verbose_name="Описание", blank=True)
     icon = models.CharField(max_length=50, default="fa-folder")
     
     class Meta:
@@ -19,25 +21,47 @@ class Category(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name)
+            unique_slug = base_slug
+            num = 1
+            while Category.objects.filter(slug=unique_slug).exists():
+                unique_slug = f"{base_slug}-{num}"
+                num += 1
+            self.slug = unique_slug
         super().save(*args, **kwargs)
 
     @property
     def posts_count(self):
         return self.posts.filter(is_published=True).count()
 
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(unique=True, blank=True)
+    
+    class Meta:
+        verbose_name = "Тег"
+        verbose_name_plural = "Теги"
+        
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
 class Post(models.Model):
     title = models.CharField(max_length=200, verbose_name="Заголовок")
-    content = RichTextField()
+    content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='posts')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='posts')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=False)
-    thumbnail = models.ImageField(upload_to='post_thumbnails/', null=True, blank=True, verbose_name="Обложка поста")
-    attachments = models.ManyToManyField('PostAttachment', blank=True, related_name='posts')
+    thumbnail = models.ImageField(upload_to='post_thumbnails/', null=True, blank=True)
     views_count = models.PositiveIntegerField(default=0)
-    is_locked = models.BooleanField(default=False, verbose_name="Заблокирован")
+    views = models.ManyToManyField(User, through='PostView', related_name='viewed_posts')
 
     class Meta:
         ordering = ['-created_at']
@@ -46,6 +70,24 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def increment_views(self, user=None):
+        """Увеличивает счетчик просмотров и записывает просмотр"""
+        if user and user.is_authenticated:
+            # Проверяем, не просматривал ли уже этот пользователь пост сегодня
+            today = timezone.now().date()
+            if not PostView.objects.filter(
+                post=self,
+                user=user,
+                viewed_at__date=today
+            ).exists():
+                PostView.objects.create(post=self, user=user)
+                self.views_count += 1
+                self.save()
+        else:
+            # Для анонимных пользователей просто увеличиваем счетчик
+            self.views_count += 1
+            self.save()
 
 class InviteCode(models.Model):
     code = models.CharField(max_length=20, unique=True)
@@ -74,32 +116,16 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"Профиль {self.user.username}"
 
-class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
-
-    class Meta:
-        verbose_name = "Тег"
-        verbose_name_plural = "Теги"
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.name)
-            slug = base_slug
-            counter = 1
-            
-            while Tag.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-            
-            self.slug = slug
-        super().save(*args, **kwargs)
-
 class PostAttachment(models.Model):
     file = models.FileField(upload_to='post_attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=200, blank=True)
+
+class PostView(models.Model):
+    """Модель для отслеживания просмотров постов"""
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user', 'viewed_at')

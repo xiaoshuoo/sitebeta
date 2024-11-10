@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-background animated-bg p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Заголовок категории -->
+        <div class="glass-effect rounded-2xl p-6 mb-8 hover-lift">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas {{ category.icon }} text-primary-500 text-3xl mr-4"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">{{ category.name }}</h1>
+                        {% if category.description %}
+                        <p class="text-gray-400 mt-2">{{ category.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="text-center">
+                    <span class="text-2xl font-bold text-primary-500">{{ posts.count }}</span>
+                    <p class="text-sm text-gray-400">постов</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Список постов -->
+        <div class="space-y-6">
+            {% for post in posts %}
+            <article class="glass-effect rounded-2xl p-6 hover-lift">
+                <div class="flex items-start space-x-6">
+                    {% if post.thumbnail %}
+                    <img src="{{ post.thumbnail.url }}" 
+                         alt="{{ post.title }}" 
+                         class="w-48 h-48 rounded-xl object-cover flex-shrink-0">
+                    {% endif %}
+                    <div class="flex-grow">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center text-sm text-gray-400">
+                                <span class="mr-4">
+                                    <i class="fas fa-calendar mr-1"></i>
+                                    {{ post.created_at|date:"d.m.Y" }}
+                                </span>
+                                <span>
+                                    <i class="fas fa-eye mr-1"></i>
+                                    {{ post.views_count }}
+                                </span>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-3">
+                            <a href="{% url 'blog:post_detail' pk=post.pk %}" 
+                               class="text-white hover:text-primary-500 transition-colors">
+                                {{ post.title }}
+                            </a>
+                        </h2>
+                        <p class="text-gray-400 mb-4">
+                            {{ post.content|striptags|truncatewords:30 }}
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <a href="{% url 'blog:user_profile' username=post.author.username %}" 
+                               class="flex items-center text-gray-300 hover:text-white">
+                                {% if post.author.profile.avatar %}
+                                <img src="{{ post.author.profile.avatar.url }}" 
+                                     alt="{{ post.author.username }}" 
+                                     class="w-8 h-8 rounded-full mr-2">
+                                {% else %}
+                                <div class="w-8 h-8 rounded-full bg-surface flex items-center justify-center mr-2">
+                                    <i class="fas fa-user text-primary-500"></i>
+                                </div>
+                                {% endif %}
+                                {{ post.author.username }}
+                            </a>
+                            <a href="{% url 'blog:post_detail' pk=post.pk %}" 
+                               class="px-6 py-2 bg-surface/50 text-white rounded-xl hover:bg-surface transition-all flex items-center">
+                                Читать далее
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <div class="text-center py-12">
+                <i class="fas fa-file-alt text-6xl text-gray-600 mb-4"></i>
+                <p class="text-gray-400">В этой категории пока нет постов.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .glass-effect {
+        background: rgba(45, 42, 61, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+    }
+</style>
+{% endblock %} 

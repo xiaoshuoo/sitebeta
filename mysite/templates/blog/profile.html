@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-background animated-bg p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Профиль пользователя -->
+            <div class="md:col-span-1">
+                <div class="glass-effect rounded-2xl p-6 hover-lift sticky top-24">
+                    <div class="text-center">
+                        {% if user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" 
+                                 alt="Avatar" 
+                                 class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-primary-500/30">
+                        {% else %}
+                            <div class="w-32 h-32 rounded-full mx-auto mb-4 bg-surface flex items-center justify-center border-4 border-primary-500/30">
+                                <i class="fas fa-user text-4xl text-primary-500"></i>
+                            </div>
+                        {% endif %}
+                        <h1 class="text-2xl font-bold text-white mb-3">{{ user.username }}</h1>
+                        
+                        <!-- Дата регистрации -->
+                        <div class="text-sm text-gray-400 mb-4">
+                            <i class="fas fa-calendar-alt text-primary-500/70 mr-2"></i>
+                            На сайте с {{ user.date_joined|date:"d.m.Y" }}
+                        </div>
+
+                        {% if user_profile.bio %}
+                            <p class="text-gray-400 mb-4">{{ user_profile.bio }}</p>
+                        {% endif %}
+
+                        <!-- Статистика -->
+                        <div class="grid grid-cols-2 gap-4 mt-6">
+                            <div class="glass-effect rounded-xl p-4 hover:bg-surface/50 transition-all">
+                                <div class="text-2xl font-bold text-primary-500">{{ posts_count }}</div>
+                                <div class="text-sm text-gray-400">Постов</div>
+                            </div>
+                            <div class="glass-effect rounded-xl p-4 hover:bg-surface/50 transition-all">
+                                <div class="text-2xl font-bold text-primary-500">0</div>
+                                <div class="text-sm text-gray-400">Подписчиков</div>
+                            </div>
+                        </div>
+
+                        <!-- Информация -->
+                        <div class="space-y-3 mt-6">
+                            {% if user_profile.location %}
+                            <div class="flex items-center justify-center text-gray-400 group">
+                                <div class="w-10 h-10 rounded-lg bg-surface/50 flex items-center justify-center mr-3 group-hover:bg-primary-500/20 transition-all">
+                                    <i class="fas fa-map-marker-alt text-primary-500"></i>
+                                </div>
+                                <span>{{ user_profile.location }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if user_profile.website %}
+                            <a href="{{ user_profile.website }}" 
+                               target="_blank" 
+                               class="flex items-center justify-center text-gray-400 group hover:text-white transition-colors">
+                                <div class="w-10 h-10 rounded-lg bg-surface/50 flex items-center justify-center mr-3 group-hover:bg-primary-500/20 transition-all">
+                                    <i class="fas fa-globe text-primary-500"></i>
+                                </div>
+                                <span>Веб-сайт</span>
+                            </a>
+                            {% endif %}
+                        </div>
+
+                        <!-- Кнопки управления -->
+                        {% if user == request.user %}
+                        <div class="mt-6 space-y-3">
+                            <a href="{% url 'blog:edit_profile' %}" 
+                               class="w-full px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-all flex items-center justify-center group">
+                                <div class="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center mr-2 group-hover:bg-primary-700 transition-all">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                Редактировать профиль
+                            </a>
+                            {% if user.is_staff %}
+                            <a href="{% url 'blog:invite_codes' %}" 
+                               class="w-full px-4 py-2 bg-surface text-white rounded-xl hover:bg-surface/70 transition-all flex items-center justify-center group">
+                                <div class="w-8 h-8 rounded-lg bg-surface/50 flex items-center justify-center mr-2 group-hover:bg-surface/70 transition-all">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                Коды приглашений
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Посты пользователя -->
+            <div class="md:col-span-3 space-y-6">
+                <div class="glass-effect rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-white flex items-center">
+                            <i class="fas fa-file-alt text-primary-500 mr-2"></i>
+                            Последние посты
+                        </h2>
+                        {% if user == request.user %}
+                        <a href="{% url 'blog:create_post' %}" 
+                           class="px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-all flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Создать пост
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {% for post in user_posts %}
+                        <div class="glass-effect rounded-xl p-4 hover:bg-surface/50 transition-all group">
+                            <div class="flex items-start space-x-4">
+                                {% if post.thumbnail %}
+                                <img src="{{ post.thumbnail.url }}" 
+                                     alt="Thumbnail" 
+                                     class="w-24 h-24 rounded-lg object-cover">
+                                {% endif %}
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold mb-2">
+                                        <a href="{% url 'blog:post_detail' pk=post.pk %}" 
+                                           class="text-white hover:text-primary-500 transition-colors">
+                                            {{ post.title }}
+                                        </a>
+                                    </h3>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-400">
+                                        <span class="flex items-center">
+                                            <i class="fas fa-calendar mr-2 text-primary-500/70"></i>
+                                            {{ post.created_at|date:"d.m.Y" }}
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i class="fas fa-folder mr-2 text-primary-500/70"></i>
+                                            {{ post.category.name }}
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i class="fas fa-eye mr-2 text-primary-500/70"></i>
+                                            {{ post.views_count }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 rounded-full bg-surface/50 flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-file-alt text-2xl text-primary-500/70"></i>
+                            </div>
+                            <p class="text-gray-400">Пока нет опубликованных постов</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .glass-effect {
+        background: rgba(45, 42, 61, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .hover-lift {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .animated-bg {
+        background: linear-gradient(45deg, 
+            rgba(139, 92, 246, 0.1), 
+            rgba(79, 70, 229, 0.1)
+        );
+        background-size: 200% 200%;
+        animation: gradientBG 15s ease infinite;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+</style>
+{% endblock %}

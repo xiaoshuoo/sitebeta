@@ -4,114 +4,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token }}">
-    <title>{% block title %}Сайтик хыхы{% endblock %}</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}Мой блог{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Flowbite -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    {% block extra_css %}{% endblock %}
+    {% block extra_head %}{% endblock %}
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        surface: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        :root {
+            --primary: 139, 92, 246;
+            --surface: 45, 42, 61;
+            --background: 26, 22, 37;
+        }
+
+        .glass-effect {
+            background: rgba(45, 42, 61, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+        }
+
+        .animated-bg {
+            background: linear-gradient(45deg, 
+                rgba(139, 92, 246, 0.1), 
+                rgba(79, 70, 229, 0.1)
+            );
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-background min-h-screen flex flex-col dark">
     <!-- Навигация -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'blog:home' %}">
-                <i class="fas fa-pen-fancy me-2"></i>Мой блог
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'blog:home' %}">
-                            <i class="fas fa-home me-1"></i>Главная
+    <nav class="glass-effect sticky top-0 z-50 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <a href="{% url 'blog:home' %}" class="flex items-center">
+                        <i class="fas fa-pen-fancy text-primary-500 text-2xl mr-2"></i>
+                        <span class="text-white font-bold text-xl">Мой блог</span>
+                    </a>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="{% url 'blog:home' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-home mr-1"></i>Главная
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'blog:categories' %}">
-                            <i class="fas fa-folder me-1"></i>Категории
+                        <a href="{% url 'blog:categories' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-folder mr-1"></i>Категории
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'blog:about' %}">
-                            <i class="fas fa-info-circle me-1"></i>О блоге
+                        <a href="{% url 'blog:about' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-info-circle mr-1"></i>О блоге
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'blog:contact' %}">
-                            <i class="fas fa-envelope me-1"></i>Контакты
-                        </a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
+                    </div>
+                </div>
+                <div class="flex items-center">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'blog:create_post' %}">
-                            <i class="fas fa-plus me-1"></i>Создать пост
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>{{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'blog:profile' %}">
-                                    <i class="fas fa-id-card me-2"></i>Профиль
+                    <a href="{% url 'blog:create_post' %}" class="text-white bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded-lg text-sm font-medium mr-4">
+                        <i class="fas fa-plus mr-1"></i>Создать пост
+                    </a>
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center text-gray-300 hover:text-white">
+                            <span class="mr-2">{{ user.username }}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg glass-effect">
+                            <div class="py-1">
+                                <a href="{% url 'blog:profile' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
+                                    <i class="fas fa-user mr-2"></i>Профиль
                                 </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'blog:my_posts' %}">
-                                    <i class="fas fa-file-alt me-2"></i>Мои посты
+                                <a href="{% url 'blog:my_posts' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
+                                    <i class="fas fa-file-alt mr-2"></i>Мои посты
                                 </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form action="{% url 'logout' %}" method="post" class="m-0">
+                                {% if user.is_staff %}
+                                <a href="{% url 'blog:admin_panel' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
+                                    <i class="fas fa-shield-alt mr-2"></i>Админ панель
+                                </a>
+                                {% endif %}
+                                <form action="{% url 'logout' %}" method="post" class="block">
                                     {% csrf_token %}
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Выйти
                                     </button>
                                 </form>
-                            </li>
-                        </ul>
-                    </li>
+                            </div>
+                        </div>
+                    </div>
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">
-                            <i class="fas fa-sign-in-alt me-1"></i>Войти
-                        </a>
-                    </li>
+                    <a href="{% url 'login' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Войти
+                    </a>
                     {% endif %}
-                </ul>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Основной контент -->
-    <main class="flex-grow-1">
+    <main class="flex-grow animated-bg">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Футер -->
-    <footer class="footer mt-auto">
-        <div class="container">
-            <p class="text-center">&copy; 2024 Мой блог. Все права защищены.</p>
+    <footer class="glass-effect py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-400">&copy; 2024 Мой блог. Все права защищены.</p>
         </div>
     </footer>
 
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery (если нужен) -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html> 

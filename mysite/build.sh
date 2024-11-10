@@ -24,8 +24,14 @@ pip install -r requirements.txt
 
 # Create necessary directories
 echo "Creating necessary directories..."
-mkdir -p staticfiles
-mkdir -p media
+mkdir -p static staticfiles media/uploads
+chmod -R 755 static staticfiles media
+
+# Copy static files
+echo "Copying static files..."
+if [ -d "static_source" ]; then
+    cp -r static_source/* static/
+fi
 
 # Handle migrations
 echo "Handling migrations..."
@@ -51,70 +57,58 @@ except Exception as e:
     print(f'Failed to create superuser: {str(e)}')
 END
 
-# Create initial invite code
-echo "Creating initial invite code..."
+# Create initial data
+echo "Creating initial data..."
 python manage.py shell << END
-from blog.models import InviteCode, Category, Post
+from blog.models import Category, Post, InviteCode
 from django.contrib.auth import get_user_model
 User = get_user_model()
 admin = User.objects.get(username='admin')
 
-# Create invite code
-try:
-    if not InviteCode.objects.filter(code='ADMIN123').exists():
-        InviteCode.objects.create(
-            code='ADMIN123',
-            created_by=admin,
-            is_active=True
-        )
-        print('Initial invite code created successfully')
-    else:
-        print('Initial invite code already exists')
-except Exception as e:
-    print(f'Failed to create invite code: {str(e)}')
+# Create categories
+categories_data = [
+    {'name': 'Технологии', 'icon': 'fa-laptop-code', 'description': 'Технологические новости и обзоры'},
+    {'name': 'Путешествия', 'icon': 'fa-plane', 'description': 'Путешествия и приключения'},
+    {'name': 'Lifestyle', 'icon': 'fa-heart', 'description': 'Образ жизни и саморазвитие'}
+]
 
-# Create test category
-try:
-    category, created = Category.objects.get_or_create(
-        name='Тестовая категория',
+for cat_data in categories_data:
+    Category.objects.get_or_create(
+        name=cat_data['name'],
         defaults={
-            'description': 'Тестовая категория для демонстрации',
-            'icon': 'fa-flask'
+            'icon': cat_data['icon'],
+            'description': cat_data['description']
         }
     )
-    print('Category created successfully' if created else 'Category already exists')
-except Exception as e:
-    print(f'Failed to create category: {str(e)}')
 
-# Create test post
-try:
-    if not Post.objects.filter(title='Добро пожаловать!').exists():
-        Post.objects.create(
-            title='Добро пожаловать!',
-            content='Это тестовый пост для демонстрации функционала блога.',
-            author=admin,
-            category=category,
-            is_published=True
-        )
-        print('Test post created successfully')
-    else:
-        print('Test post already exists')
-except Exception as e:
-    print(f'Failed to create test post: {str(e)}')
+# Create invite code
+if not InviteCode.objects.filter(code='ADMIN123').exists():
+    InviteCode.objects.create(
+        code='ADMIN123',
+        created_by=admin,
+        is_active=True
+    )
+
+# Create welcome post
+tech_category = Category.objects.get(name='Технологии')
+if not Post.objects.filter(title='Добро пожаловать!').exists():
+    Post.objects.create(
+        title='Добро пожаловать!',
+        content='<h2>Добро пожаловать в наш блог!</h2><p>Здесь вы найдете интересные статьи на различные темы.</p>',
+        author=admin,
+        category=tech_category,
+        is_published=True
+    )
 END
 
 # Collect static files
 echo "Collecting static files..."
-python manage.py collectstatic --no-input
-
-# Копируем существующие статические файлы поверх собранных
-echo "Copying custom static files..."
-cp -rv static/* staticfiles/ || echo "No static files to copy"
+python manage.py collectstatic --no-input --clear
 
 # Set permissions
 echo "Setting permissions..."
 chmod -R 755 staticfiles media
 
-# Debug - показать финальное содержимое staticfiles
-echo "Final staticfiles contents:"
-ls -la staticfiles/
+# Debug - показать финальное содержимое
+echo "Final directory contents:"
+ls -la
