@@ -28,7 +28,7 @@ class Category(models.Model):
 
 class Post(models.Model):
     title = models.CharField(max_length=200, verbose_name="Заголовок")
-    content = RichTextField(verbose_name="Содержание")
+    content = RichTextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='posts')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -56,7 +56,7 @@ class InviteCode(models.Model):
 
     class Meta:
         verbose_name = "Код приглашения"
-        verbose_name_plural = "Коды п��иглашения"
+        verbose_name_plural = "Коды пиглашения"
 
     def __str__(self):
         return f"Код: {self.code} ({self.created_by.username})"
