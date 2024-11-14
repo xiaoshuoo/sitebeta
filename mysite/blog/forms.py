@@ -8,6 +8,7 @@ class PostForm(forms.ModelForm):
         widget=forms.Textarea(attrs={
             'id': 'content-editor',
             'class': 'tinymce',
+            'style': 'min-height: 400px;'
         }),
         required=True,
     )
@@ -73,16 +74,9 @@ class PostForm(forms.ModelForm):
         return title
 
     def clean_content(self):
-        content = self.cleaned_data.get('content')
+        content = self.cleaned_data.get('content', '').strip()
         if not content:
             raise forms.ValidationError('Содержание поста не может быть пустым')
-        
-        # Удаляем HTML-теги для проверки длины реального текста
-        from django.utils.html import strip_tags
-        text_content = strip_tags(content).strip()
-        
-        if len(text_content) < 10:
-            raise forms.ValidationError('Содержание должно быть не менее 10 символов')
         return content
 
     def clean_category(self):

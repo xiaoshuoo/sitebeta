@@ -101,6 +101,18 @@ def create_post(request):
             post = form.save(commit=False)
             post.author = request.user
             
+            # Проверяем, что контент не пустой
+            content = request.POST.get('content', '').strip()
+            if not content:
+                form.add_error('content', 'Содержание поста не может быть пустым')
+                return render(request, 'blog/post_form.html', {
+                    'form': form,
+                    'title': 'Создать пост',
+                    'button_text': 'Опубликовать'
+                })
+            
+            post.content = content
+            
             # Генерируем уникальный slug
             base_slug = slugify(post.title)
             if not base_slug:
@@ -118,14 +130,26 @@ def create_post(request):
                 messages.success(request, 'Пост успешно создан!')
                 return redirect('blog:post_detail', slug=post.slug)
             except Exception as e:
+                print(f"Error saving post: {str(e)}")  # Для отладки
                 messages.error(request, f'Ошибка при создании поста: {str(e)}')
         else:
+            print(f"Form errors: {form.errors}")  # Для отладки
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'Ошибка в поле {field}: {error}')
     else:
         form = PostForm()
     
+    # Проверяем, включена ли страница создания постов
+    try:
+        page_settings = PageSettings.objects.get(page_name=PageSettings.CREATE_POST_PAGE)
+        if not page_settings.is_active:
+            return render(request, 'blog/page_disabled.html', {
+                'message': page_settings.disabled_message
+            })
+    except PageSettings.DoesNotExist:
+        pass
+
     return render(request, 'blog/post_form.html', {
         'form': form,
         'title': 'Создать пост',
@@ -727,7 +751,7 @@ def delete_post(request, slug):
     # Проверям права на удаление
     if post.author == request.user or can_moderate(request.user):
         post.delete()
-        messages.success(request, 'Пост успешно удален')
+        messages.success(request, 'Пост успе��но удален')
         return redirect('blog:home')
     messages.error(request, 'У ва нет прав для удаления этого поста')
     return redirect('blog:post_detail', slug=post.slug)
