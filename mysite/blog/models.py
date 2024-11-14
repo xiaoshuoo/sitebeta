@@ -89,8 +89,13 @@ class Category(models.Model):
                 counter += 1
             self.slug = unique_slug
         
-        self._posts_count = self.posts.count()
+        # Сначала сохраняем объект
         super().save(*args, **kwargs)
+        
+        # Теперь можно обновить количество постов
+        if self.pk:  # Проверяем, что объект уже сохранен
+            self._posts_count = self.posts.count()
+            super().save(update_fields=['_posts_count'])
 
     class Meta:
         verbose_name = 'Категория'

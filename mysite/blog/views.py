@@ -412,48 +412,43 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('blog:profile')
 
     def get_object(self, queryset=None):
-        # Получаем или создаем профиль для текущего пользователя
         profile, created = Profile.objects.get_or_create(user=self.request.user)
         return profile
 
     def form_valid(self, form):
-        # Обработка загрузки файлов
         profile = form.save(commit=False)
         
         # Обработка аватара
         if 'avatar' in self.request.FILES:
             if profile.avatar:
-                profile.avatar.delete(save=False)
+                try:
+                    profile.avatar.delete(save=False)
+                except:
+                    pass
             profile.avatar = self.request.FILES['avatar']
         
         # Обработка обложки
         if 'cover' in self.request.FILES:
             if profile.cover:
-                profile.cover.delete(save=False)
+                try:
+                    profile.cover.delete(save=False)
+                except:
+                    pass
             profile.cover = self.request.FILES['cover']
         
         # Сохраняем изменения
-        profile.save()
-        
-        messages.success(self.request, 'Профиль успешно обновлен!')
+        try:
+            profile.save()
+            messages.success(self.request, 'Профиль успешно обновлен!')
+        except Exception as e:
+            messages.error(self.request, f'Ошибка при обновлении профиля: {str(e)}')
+            return self.form_invalid(form)
+            
         return super().form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
         return super().form_invalid(form)
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        # Добавляем атрибуты для файловых полей
-        form.fields['avatar'].widget.attrs.update({
-            'class': 'hidden',
-            'accept': 'image/*'
-        })
-        form.fields['cover'].widget.attrs.update({
-            'class': 'hidden',
-            'accept': 'image/*'
-        })
-        return form
 
 def user_profile(request, username):
     """Публичный профиль пользателя"""
