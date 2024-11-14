@@ -1,207 +1,553 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="min-h-screen bg-background animated-bg p-6">
-    <div class="max-w-7xl mx-auto">
-        <!-- Заголовок -->
-        <div class="glass-effect rounded-2xl p-6 mb-6 hover-lift">
-            <h2 class="text-2xl font-bold text-white flex items-center">
-                <i class="fas fa-shield-alt text-primary-500 mr-3"></i>
-                Панель администратора
-            </h2>
-            <p class="text-gray-400 mt-2">Управление сайтом и пользователями</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Заголовок -->
+    <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x">
+            Панель администратора
+        </h1>
+    </div>
+
+    <!-- Основная статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Пользователи -->
+        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-400">Пользователи</h3>
+                <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                    <i class="fas fa-users text-purple-400 text-xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-2xl font-bold text-white">{{ users_count }}</p>
+                    <p class="text-sm text-green-400">+{{ new_users_month }} за месяц</p>
+                </div>
+                <div class="text-sm text-gray-400">
+                    {{ active_users_month }} активных
+                </div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Статистика -->
-            <div class="glass-effect rounded-2xl p-6 hover-lift">
-                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
-                    <i class="fas fa-chart-bar text-primary-500 mr-2"></i>
-                    Статистика
-                </h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-surface/50 rounded-xl p-4 text-center">
-                        <div class="text-2xl font-bold text-primary-500">{{ users_count }}</div>
-                        <div class="text-sm text-gray-400">Пользователей</div>
-                    </div>
-                    <div class="bg-surface/50 rounded-xl p-4 text-center">
-                        <div class="text-2xl font-bold text-primary-500">{{ posts_count }}</div>
-                        <div class="text-sm text-gray-400">Постов</div>
-                    </div>
-                    <div class="bg-surface/50 rounded-xl p-4 text-center">
-                        <div class="text-2xl font-bold text-primary-500">{{ categories_count }}</div>
-                        <div class="text-sm text-gray-400">Категорий</div>
-                    </div>
-                    <div class="bg-surface/50 rounded-xl p-4 text-center">
-                        <div class="text-2xl font-bold text-primary-500">{{ active_invites }}</div>
-                        <div class="text-sm text-gray-400">Активных инвайтов</div>
+        <!-- Посты -->
+        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-400">Посты</h3>
+                <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                    <i class="fas fa-file-alt text-blue-400 text-xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-2xl font-bold text-white">{{ posts_count }}</p>
+                    <p class="text-sm text-green-400">+{{ new_posts_month }} за месяц</p>
+                </div>
+                <div class="text-sm text-gray-400">
+                    {{ total_views }} просмотров
+                </div>
+            </div>
+        </div>
+
+        <!-- Категории -->
+        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-400">Категории</h3>
+                <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                    <i class="fas fa-folder text-green-400 text-xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-2xl font-bold text-white">{{ categories_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Комментарии -->
+        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-400">Комментарии</h3>
+                <div class="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center">
+                    <i class="fas fa-comments text-pink-400 text-xl"></i>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-2xl font-bold text-white">{{ comments_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Левая колонка -->
+        <div class="space-y-8">
+            <!-- Последние пользователи -->
+            <div class="glass-effect rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-white/5 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-white">Новые пользователи</h3>
+                    <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
+                        {{ users|length }}
+                    </span>
+                </div>
+                <div class="p-4">
+                    <div class="space-y-4">
+                        {% for user in users %}
+                        <div class="flex items-center justify-between p-3 bg-surface-700/30 rounded-lg hover:bg-purple-500/10 transition-all group">
+                            <div class="flex items-center space-x-3">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" 
+                                         alt="{{ user.username }}" 
+                                         class="w-10 h-10 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                        <i class="fas fa-user text-purple-400"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <p class="text-white font-medium">{{ user.username }}</p>
+                                    <p class="text-sm text-gray-400">{{ user.date_joined|date:"d.m.Y" }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button data-user-id="{{ user.id }}" 
+                                        class="p-2 rounded-lg {% if user.is_active %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %} hover:scale-110 transition-all toggle-user-status">
+                                    <i class="fas {% if user.is_active %}fa-check{% else %}fa-ban{% endif %}"></i>
+                                </button>
+                                <button data-user-id="{{ user.id }}" 
+                                        class="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:scale-110 transition-all reset-user-password">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
 
-            <!-- Быстрые действия -->
-            <div class="glass-effect rounded-2xl p-6 hover-lift">
-                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
-                    <i class="fas fa-bolt text-primary-500 mr-2"></i>
-                    Быстрые действия
-                </h3>
-                <div class="space-y-3">
-                    <a href="{% url 'blog:create_invite' %}" 
-                       class="flex items-center justify-between p-3 bg-surface/50 rounded-xl hover:bg-surface/70 transition-all">
-                        <span class="text-white">
-                            <i class="fas fa-key text-primary-500 mr-2"></i>
-                            Создать инвайт
-                        </span>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
-                    </a>
-                    <a href="{% url 'admin:index' %}" target="_blank"
-                       class="flex items-center justify-between p-3 bg-surface/50 rounded-xl hover:bg-surface/70 transition-all">
-                        <span class="text-white">
-                            <i class="fas fa-cog text-primary-500 mr-2"></i>
-                            Django Admin
-                        </span>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
-                    </a>
+            <!-- Системная информация -->
+            <div class="glass-effect rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-white/5">
+                    <h3 class="text-lg font-semibold text-white">Системная информация</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                <i class="fas fa-hdd text-purple-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white">Хранилище</p>
+                                <p class="text-sm text-gray-400">{{ system_info.total_storage|filesizeformat }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                <i class="fas fa-database text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white">База данных</p>
+                                <p class="text-sm text-gray-400">{{ system_info.database_size|filesizeformat }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Центральная колонка -->
+        <div class="space-y-8">
+            <!-- Последние посты -->
+            <div class="glass-effect rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-white/5 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-white">Последние посты</h3>
+                    <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
+                        {{ recent_posts|length }}
+                    </span>
+                </div>
+                <div class="p-4">
+                    <div class="space-y-4">
+                        {% for post in recent_posts %}
+                        <div class="p-3 bg-surface-700/30 rounded-lg hover:bg-purple-500/10 transition-all group">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="text-white font-medium">{{ post.title }}</h4>
+                                <div class="flex items-center space-x-2">
+                                    <button data-post-id="{{ post.id }}" 
+                                            class="p-2 rounded-lg {% if post.is_published %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %} hover:scale-110 transition-all toggle-post-status">
+                                        <i class="fas {% if post.is_published %}fa-eye{% else %}fa-eye-slash{% endif %}"></i>
+                                    </button>
+                                    <button data-post-id="{{ post.id }}" 
+                                            class="p-2 rounded-lg bg-red-500/20 text-red-400 hover:scale-110 transition-all delete-post">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <div class="flex items-center space-x-2 text-gray-400">
+                                    <span>{{ post.author.username }}</span>
+                                    <span>•</span>
+                                    <span>{{ post.created_at|date:"d.m.Y" }}</span>
+                                </div>
+                                <div class="flex items-center space-x-4 text-gray-400">
+                                    <span><i class="fas fa-eye mr-1"></i>{{ post.views_count }}</span>
+                                    <span><i class="fas fa-comment mr-1"></i>{{ post.comments.count }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Активность -->
+            <div class="glass-effect rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-white/5">
+                    <h3 class="text-lg font-semibold text-white">Активность за период</h3>
+                </div>
+                <div class="p-4">
+                    <div class="grid grid-cols-3 gap-4">
+                        {% for period, stats in user_activity.items %}
+                        <div class="p-4 bg-surface-700/30 rounded-lg">
+                            <h4 class="text-white font-medium mb-2">
+                                {% if period == 'today' %}Сегодня
+                                {% elif period == 'week' %}Неделя
+                                {% else %}Месяц{% endif %}
+                            </h4>
+                            <div class="space-y-2 text-sm">
+                                <p class="text-gray-400">Посты: <span class="text-white">{{ stats.posts }}</span></p>
+                                <p class="text-gray-400">Комментарии: <span class="text-white">{{ stats.comments }}</span></p>
+                                <p class="text-gray-400">Просмотры: <span class="text-white">{{ stats.views }}</span></p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="space-y-8">
+            <!-- Популярные категории -->
+            <div class="glass-effect rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-white/5">
+                    <h3 class="text-lg font-semibold text-white">Популярные категории</h3>
+                </div>
+                <div class="p-4">
+                    <div class="space-y-4">
+                        {% for category in popular_categories %}
+                        <div class="p-3 bg-surface-700/30 rounded-lg hover:bg-purple-500/10 transition-all">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                        <i class="{{ category.icon }} text-purple-400"></i>
+                                    </div>
+                                    <span class="text-white font-medium">{{ category.name }}</span>
+                                </div>
+                                <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
+                                    {{ category.posts_count }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm text-gray-400">
+                                <span><i class="fas fa-eye mr-1"></i>{{ category.total_views|default:"0" }}</span>
+                                <span><i class="fas fa-comment mr-1"></i>{{ category.comments_count }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="glass-effect rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-white/5">
+                    <h3 class="text-lg font-semibold text-white">Действия</h3>
+                </div>
+                <div class="p-4 space-y-4">
+                    <button onclick="generateBackup()" 
+                            class="w-full p-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all flex items-center justify-center space-x-2">
+                        <i class="fas fa-download"></i>
+                        <span>Создать бп</span>
+                    </button>
                     <button onclick="clearCache()" 
-                            class="w-full flex items-center justify-between p-3 bg-surface/50 rounded-xl hover:bg-surface/70 transition-all">
-                        <span class="text-white">
-                            <i class="fas fa-broom text-primary-500 mr-2"></i>
-                            Очистить кэш
-                        </span>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
+                            class="w-full p-3 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all flex items-center justify-center space-x-2">
+                        <i class="fas fa-broom"></i>
+                        <span>Очистить кэш</span>
+                    </button>
+                    <button onclick="cleanDatabase()" 
+                            class="w-full p-3 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-all flex items-center justify-center space-x-2">
+                        <i class="fas fa-database"></i>
+                        <span>Очистить БД</span>
                     </button>
                 </div>
-            </div>
-
-            <!-- Последние действия -->
-            <div class="glass-effect rounded-2xl p-6 hover-lift">
-                <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
-                    <i class="fas fa-history text-primary-500 mr-2"></i>
-                    Последние действия
-                </h3>
-                <div class="space-y-3">
-                    {% for log in recent_logs %}
-                    <div class="p-3 bg-surface/50 rounded-xl">
-                        <div class="flex items-center justify-between">
-                            <span class="text-white">{{ log.action }}</span>
-                            <span class="text-sm text-gray-400">{{ log.timestamp|timesince }} назад</span>
-                        </div>
-                        <div class="text-sm text-gray-400">{{ log.user.username }}</div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center text-gray-400">
-                        Нет последних действий
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Управление пользователями -->
-        <div class="glass-effect rounded-2xl p-6 mt-6">
-            <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
-                <i class="fas fa-users text-primary-500 mr-2"></i>
-                Пользователи
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="text-left text-gray-400 border-b border-gray-700">
-                            <th class="pb-3">Пользователь</th>
-                            <th class="pb-3">Дата регистрации</th>
-                            <th class="pb-3">Постов</th>
-                            <th class="pb-3">Статус</th>
-                            <th class="pb-3">Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-700">
-                        {% for user in users %}
-                        <tr class="text-white">
-                            <td class="py-3">
-                                <div class="flex items-center">
-                                    {% if user.profile.avatar %}
-                                        <img src="{{ user.profile.avatar.url }}" 
-                                             alt="{{ user.username }}" 
-                                             class="w-8 h-8 rounded-full mr-2">
-                                    {% else %}
-                                        <div class="w-8 h-8 rounded-full bg-surface flex items-center justify-center mr-2">
-                                            <i class="fas fa-user text-primary-500"></i>
-                                        </div>
-                                    {% endif %}
-                                    {{ user.username }}
-                                </div>
-                            </td>
-                            <td class="py-3 text-gray-400">{{ user.date_joined|date:"d.m.Y" }}</td>
-                            <td class="py-3 text-gray-400">{{ user.posts.count }}</td>
-                            <td class="py-3">
-                                {% if user.is_active %}
-                                    <span class="px-2 py-1 bg-green-500/20 text-green-500 rounded-full text-sm">
-                                        Активен
-                                    </span>
-                                {% else %}
-                                    <span class="px-2 py-1 bg-red-500/20 text-red-500 rounded-full text-sm">
-                                        Заблокирован
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td class="py-3">
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="toggleUserStatus('{{ user.id }}')"
-                                            class="p-2 text-gray-400 hover:text-white rounded transition-colors">
-                                        {% if user.is_active %}
-                                            <i class="fas fa-ban" title="Заблокировать"></i>
-                                        {% else %}
-                                            <i class="fas fa-check" title="Разблокировать"></i>
-                                        {% endif %}
-                                    </button>
-                                    <a href="{% url 'admin:auth_user_change' user.id %}" target="_blank"
-                                       class="p-2 text-gray-400 hover:text-white rounded transition-colors">
-                                        <i class="fas fa-edit" title="Редактировать"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Добавьте новую секцию в админ-панель -->
+<div class="glass-effect rounded-2xl p-6 mb-6">
+    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+        <i class="fas fa-globe text-purple-400 mr-2"></i>
+        Управление страницами
+    </h2>
+    
+    <div class="space-y-4">
+        <!-- Контакты -->
+        <div class="flex items-center justify-between p-4 bg-surface/30 rounded-xl">
+            <div>
+                <h3 class="text-white font-medium">Страница "Связь со мной"</h3>
+                <p class="text-sm text-gray-400">Управление доступностью страницы контактов</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                {% with page_settings=page_settings.contacts %}
+                <span class="px-3 py-1 rounded-full {% if page_settings.is_active %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %}">
+                    {{ page_settings.is_active|yesno:"Активна,Отключена" }}
+                </span>
+                <form method="post" action="{% url 'blog:toggle_page_status' page_name='contacts' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="px-4 py-2 bg-purple-500/20 text-white rounded-lg hover:bg-purple-500/30 transition-all">
+                        <i class="fas {% if page_settings.is_active %}fa-lock{% else %}fa-lock-open{% endif %} mr-2"></i>
+                        {{ page_settings.is_active|yesno:"Отключить,Включить" }}
+                    </button>
+                </form>
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Создание постов -->
+        <div class="flex items-center justify-between p-4 bg-surface/30 rounded-xl">
+            <div>
+                <h3 class="text-white font-medium">Создание постов</h3>
+                <p class="text-sm text-gray-400">Управление возможностью создания новых постов</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                {% with page_settings=page_settings.create_post %}
+                <span class="px-3 py-1 rounded-full {% if page_settings.is_active %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %}">
+                    {{ page_settings.is_active|yesno:"Разрешено,Запрещено" }}
+                </span>
+                <form method="post" action="{% url 'blog:toggle_page_status' page_name='create_post' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="px-4 py-2 bg-purple-500/20 text-white rounded-lg hover:bg-purple-500/30 transition-all">
+                        <i class="fas {% if page_settings.is_active %}fa-lock{% else %}fa-lock-open{% endif %} mr-2"></i>
+                        {{ page_settings.is_active|yesno:"Отключить,Включить" }}
+                    </button>
+                </form>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Добавьте новую секцию для управления инвайт-кодами -->
+<div class="glass-effect rounded-2xl p-6 mb-6">
+    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+        <i class="fas fa-ticket-alt text-purple-400 mr-2"></i>
+        Управление инвайт-кодами
+    </h2>
+    
+    <!-- Форма создания инвайт-кода -->
+    <div class="mb-6 p-4 bg-surface/30 rounded-xl">
+        <form method="post" action="{% url 'blog:create_custom_invite' %}" class="flex items-end space-x-4">
+            {% csrf_token %}
+            <div class="flex-1">
+                <label class="block text-gray-400 text-sm mb-2">Код приглашения</label>
+                <input type="text" name="custom_code" 
+                       class="w-full px-4 py-2 bg-surface-700/30 border border-purple-500/20 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all"
+                       placeholder="Введите код (например: WELCOME2024)"
+                       pattern="[A-Za-z0-9]{3,16}"
+                       title="От 3 до 16 символов, только буквы и цифры"
+                       required>
+            </div>
+            <button type="submit" 
+                    class="px-6 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all flex items-center space-x-2">
+                <i class="fas fa-plus"></i>
+                <span>Создать</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Список активных инвайт-кодов -->
+    <div class="space-y-4">
+        <h3 class="text-lg text-white mb-2">Активные инвайт-коды</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for invite in active_invites %}
+                {% if invite.code %}  <!-- Добавляем проверку на существование кода -->
+                <div class="p-4 bg-surface/30 rounded-xl flex items-center justify-between group hover:bg-purple-500/10 transition-all">
+                    <div>
+                        <div class="text-white font-medium">{{ invite.code }}</div>
+                        <div class="text-sm text-gray-400">Создан: {{ invite.created_at|date:"d.m.Y H:i" }}</div>
+                    </div>
+                    <form method="post" action="{% url 'blog:deactivate_invite' code=invite.code %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" 
+                                class="p-2 text-red-400 rounded-lg hover:bg-red-500/10 transition-all">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            {% empty %}
+                <div class="col-span-2 text-center py-8 text-gray-400">
+                    <i class="fas fa-ticket-alt text-3xl mb-2"></i>
+                    <p>Нет активных инвайт-кодов</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
 <script>
-function clearCache() {
-    fetch('{% url "blog:clear_cache" %}', {
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчики для кнопок управления пользователями
+    document.querySelectorAll('.toggle-user-status').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            toggleUserStatus(userId);
+        });
+    });
+
+    document.querySelectorAll('.reset-user-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            resetUserPassword(userId);
+        });
+    });
+
+    // Обработчики для кнопок управления постами
+    document.querySelectorAll('.toggle-post-status').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            togglePostStatus(postId);
+        });
+    });
+
+    document.querySelectorAll('.delete-post').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            deletePost(postId);
+        });
+    });
+});
+
+// Функции для работы с пользователями
+function toggleUserStatus(userId) {
+    fetch(`/admin/toggle-user-status/${userId}/`, {
         method: 'POST',
         headers: {
-            'X-CSRFToken': '{{ csrf_token }}'
+            'X-CSRFToken': getCookie('csrftoken')
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Кэш успешно очищен');
-        } else {
-            alert('Ошибка при очистке кэша');
-        }
-    });
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              location.reload();
+          }
+      });
 }
 
-function toggleUserStatus(userId) {
-    fetch(`/admin/toggle-user/${userId}/`, {
+function resetUserPassword(userId) {
+    if (confirm('Сбросить пароль пользователя?')) {
+        fetch(`/admin/reset-user-password/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Пароль успешно сброшен и отправлен пользователю');
+              }
+          });
+    }
+}
+
+// Функции для работы с постами
+function togglePostStatus(postId) {
+    fetch(`/admin/toggle-post-status/${postId}/`, {
         method: 'POST',
         headers: {
-            'X-CSRFToken': '{{ csrf_token }}'
+            'X-CSRFToken': getCookie('csrftoken')
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Ошибка при изменении статуса пользователя');
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              location.reload();
+          }
+      });
+}
+
+function deletePost(postId) {
+    if (confirm('Удалить пост?')) {
+        fetch(`/admin/delete-post/${postId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  location.reload();
+              }
+          });
+    }
+}
+
+// Системные функции
+function generateBackup() {
+    window.location.href = '/admin/generate-backup/';
+}
+
+function clearCache() {
+    fetch('/admin/clear-cache/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
         }
-    });
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              alert('Кэш успешно очищен');
+          }
+      });
+}
+
+function cleanDatabase() {
+    if (confirm('Очистить базу данных от неиспользуемых данных?')) {
+        fetch('/admin/clean-database/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('База данных успешно очищена');
+                  location.reload();
+              }
+          });
+    }
+}
+
+// Вспомогательная функция для получения CSRF-токена
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 </script>
 {% endblock %} 

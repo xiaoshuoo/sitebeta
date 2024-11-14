@@ -1,44 +1,25 @@
 services:
   - type: web
-    name: sitebeta
+    name: django-blog
     env: python
-    buildCommand: ./build.sh
-    startCommand: >
-      cd mysite && 
-      gunicorn config.wsgi:application 
-      --bind=0.0.0.0:$PORT 
-      --workers=4 
-      --log-file=- 
-    python_version: 3.11.10
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.10
-      - key: DJANGO_SETTINGS_MODULE
-        value: config.settings
-      - key: PORT
-        value: 10000
-      - key: PYTHONPATH
-        value: /opt/render/project/src/mysite
-      - key: DEBUG
-        value: "True"
-      - key: DJANGO_SECRET_KEY
-        value: "your-secret-key-here"
-      - key: DJANGO_ALLOWED_HOSTS
-        value: "*"
-      - key: DJANGO_SUPERUSER_USERNAME
-        value: admin
-      - key: DJANGO_SUPERUSER_EMAIL
-        value: admin@example.com
-      - key: DJANGO_SUPERUSER_PASSWORD
-        value: "admin123"
+        value: 3.10.0
       - key: DATABASE_URL
         fromDatabase:
           name: django-blog-db
           property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: false
+      - key: WEB_CONCURRENCY
+        value: 4
 
 databases:
   - name: django-blog-db
     databaseName: django_blog
-    user: django_blog
     plan: free
-    ipAllowList: []
+    ipAllowList: [] # Разрешить доступ только с сервисов Render

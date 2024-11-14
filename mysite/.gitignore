@@ -22,18 +22,23 @@ wheels/
 
 # Django
 *.log
+*.pot
+*.pyc
+__pycache__/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
 
-# Игнорируем только собранные статические файлы, но не исходные
-/staticfiles/*
-!staticfiles/.gitkeep
+# Backups
+backups/
 
-# Environment variables
+# Environment
 .env
-.env.*
+.venv
+env/
+venv/
+ENV/
 
 # IDE
 .idea/

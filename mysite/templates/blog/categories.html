@@ -1,44 +1,101 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load blog_filters %}
 
 {% block content %}
-<div class="min-h-screen bg-background animated-bg p-6">
-    <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl font-bold text-white mb-8 flex items-center">
-            <i class="fas fa-folder text-primary-500 mr-3"></i>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Заголовок -->
+    <div class="text-center mb-12 relative">
+        <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-96 h-96 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
+        </div>
+        <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x relative z-10">
             Категории
         </h1>
+        <p class="text-gray-400 mt-2 max-w-2xl mx-auto relative z-10">
+            Исследуйте различные темы и найдите интересующий вас контент
+        </p>
+    </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for category in categories %}
-            <div class="glass-effect rounded-2xl p-6 hover-lift">
-                <div class="flex items-center mb-4">
-                    <i class="fas {{ category.icon }} text-primary-500 text-2xl mr-3"></i>
-                    <h2 class="text-xl font-bold text-white">{{ category.name }}</h2>
+    <!-- Сетка категорий -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for category in categories %}
+        <div class="glass-effect rounded-xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 group">
+            <!-- Иконка категории -->
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-all">
+                    <i class="{{ category.icon }} text-purple-400 text-2xl group-hover:scale-110 group-hover:rotate-12 transition-all"></i>
                 </div>
-                {% if category.description %}
-                <p class="text-gray-400 mb-4">{{ category.description }}</p>
-                {% endif %}
-                <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-400">
-                        <i class="fas fa-file-alt mr-1"></i>
-                        {{ category.posts_count }} постов
-                    </span>
-                    {% if category.slug %}
-                    <a href="{% url 'blog:category_detail' slug=category.slug %}" 
-                       class="text-primary-500 hover:text-primary-400 transition-colors">
-                        Перейти
-                        <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
-                    {% endif %}
+                <div>
+                    <h3 class="text-xl font-semibold text-white group-hover:text-purple-400 transition-colors">
+                        {{ category.name }}
+                    </h3>
+                    <p class="text-gray-400 text-sm">
+                        {{ category.posts.count }} постов
+                    </p>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-span-3 text-center py-12">
-                <i class="fas fa-folder-open text-6xl text-gray-600 mb-4"></i>
-                <p class="text-gray-400">Категории пока не созданы.</p>
+
+            <!-- Описание -->
+            <p class="text-gray-300 mb-4 line-clamp-2">
+                {{ category.description|default:"Описание отсутствует" }}
+            </p>
+
+            <!-- Последние посты в категории -->
+            <div class="space-y-2 mb-4">
+                {% for post in category.posts.all|slice:":3" %}
+                <a href="{% url 'blog:post_detail' post.slug %}" 
+                   class="block p-3 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 transition-all">
+                    <h4 class="text-white font-medium line-clamp-1">{{ post.title }}</h4>
+                    <div class="flex items-center space-x-2 text-sm text-gray-400">
+                        <span>{{ post.created_at|date:"d.m.Y" }}</span>
+                        <span>•</span>
+                        <span><i class="fas fa-eye mr-1"></i>{{ post.views_count }}</span>
+                    </div>
+                </a>
+                {% endfor %}
             </div>
-            {% endfor %}
+
+            <!-- Кнопка перехода -->
+            <a href="{% url 'blog:category_detail' category.slug %}" 
+               class="inline-flex items-center space-x-2 text-purple-400 hover:text-purple-300 transition-colors group/link">
+                <span>Перейти в категорию</span>
+                <i class="fas fa-arrow-right group-hover/link:translate-x-1 transition-transform"></i>
+            </a>
         </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <i class="fas fa-folder-open text-3xl text-purple-400 animate-bounce"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Категории отсутствуют</h3>
+            <p class="text-gray-400">Скоро здесь появятся категории</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
+
+<style>
+@keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+    animation: gradient-x 15s ease infinite;
+    background-size: 200% auto;
+}
+
+.glass-effect {
+    background: rgba(26, 22, 37, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.glass-effect:hover {
+    border-color: rgba(147, 51, 234, 0.2);
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.1);
+}
+</style>
 {% endblock %} 

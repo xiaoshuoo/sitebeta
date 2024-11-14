@@ -1,165 +1,198 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import UserProfile, InviteCode, Post, Category
+from .models import Post, Category, Tag, InviteCode, Profile
 
 class PostForm(forms.ModelForm):
     content = forms.CharField(
         widget=forms.Textarea(attrs={
-            'class': 'editor-dark w-full min-h-[500px] bg-[#1E1E1E] text-white font-mono p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50',
-            'style': 'resize: none; line-height: 1.6; font-family: "JetBrains Mono", monospace;',
-            'placeholder': 'Введите содержание поста...',
-            'id': 'content-editor'
+            'id': 'content-editor',
+            'class': 'tinymce',
         }),
-        required=True
+        required=True,
+    )
+    
+    title = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '✨ Введите название поста',
+        })
+    )
+    
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.Select(attrs={
+            'class': 'w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+        })
+    )
+    
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': 'w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+        })
+    )
+    
+    thumbnail = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'hidden',
+            'id': 'thumbnail-upload',
+            'accept': 'image/*',
+        })
+    )
+    
+    is_published = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-checkbox h-5 w-5 text-purple-500 rounded border-purple-500/20 focus:ring-purple-500/20 focus:ring-2 transition-all duration-300',
+        })
     )
     
     class Meta:
         model = Post
-        fields = ['title', 'content', 'category', 'thumbnail', 'is_published']
-        widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'w-full bg-transparent border-none text-xl text-white placeholder-gray-500 focus:outline-none focus:ring-0',
-                'placeholder': 'Введите заголовок...',
-                'style': 'font-family: "JetBrains Mono", monospace;',
-                'required': True
-            }),
-            'category': forms.Select(attrs={
-                'class': '''
-                    w-full bg-[#2d2a3d] text-white rounded-lg 
-                    border border-gray-700 focus:border-primary-500 
-                    focus:ring-2 focus:ring-primary-500/50 
-                    py-2.5 px-4 appearance-none cursor-pointer
-                    hover:bg-[#363248] transition-all duration-200
-                    text-sm font-medium
-                ''',
-                'style': '''
-                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238b5cf6' width='24' height='24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-                    background-repeat: no-repeat;
-                    background-position: right 0.75rem center;
-                    background-size: 1.25rem;
-                    padding-right: 2.5rem;
-                    -webkit-appearance: none;
-                    -moz-appearance: none;
-                ''',
-                'required': True
-            }),
-            'thumbnail': forms.FileInput(attrs={
-                'class': 'hidden',
-                'accept': 'image/*'
-            }),
-            'is_published': forms.CheckboxInput(attrs={
-                'class': 'sr-only peer'
-            })
-        }
+        fields = ['title', 'content', 'category', 'tags', 'thumbnail', 'is_published']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Добавляем пустой выбор для категории с кастомным текстом
-        self.fields['category'].empty_label = "Выберите категорию..."
+        self.fields['is_published'].initial = True
         
-        # Добавляем классы для опций в выпадающем списке
-        self.fields['category'].widget.attrs['class'] += '''
-            [&>option]:bg-[#2d2a3d]
-            [&>option]:text-white
-            [&>option:hover]:bg-primary-500
-            [&>option:checked]:bg-primary-500
-        '''
+        # Добавляем подсказки для полей
+        self.fields['title'].help_text = 'Придумайте привлекательный заголовок для вашего поста'
+        self.fields['category'].help_text = 'Выберите наиболее подходящую категорию'
+        self.fields['tags'].help_text = 'Выберите несколько тегов для лучшей навигации (Ctrl+Click для множественного выбора)'
+        self.fields['thumbnail'].help_text = 'Рекомендуемый размер: 1200x630px'
+        self.fields['is_published'].help_text = 'Отметьте для немедленной публикации'
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if not title:
+            raise forms.ValidationError('Это поле обязательно.')
+        return title
+
+    def clean_content(self):
+        content = self.cleaned_data.get('content')
+        if not content:
+            raise forms.ValidationError('Содержание поста не может быть пустым')
+        
+        # Удаляем HTML-теги для проверки длины реального текста
+        from django.utils.html import strip_tags
+        text_content = strip_tags(content).strip()
+        
+        if len(text_content) < 10:
+            raise forms.ValidationError('Содержание должно быть не менее 10 символов')
+        return content
+
+    def clean_category(self):
+        category = self.cleaned_data.get('category')
+        if not category:
+            raise forms.ValidationError('Выберите категорию.')
+        return category
 
     def clean(self):
         cleaned_data = super().clean()
-        title = cleaned_data.get('title')
-        content = cleaned_data.get('content')
-        category = cleaned_data.get('category')
-
-        if not title:
-            raise forms.ValidationError('Пожалуйста, введите заголовок поста.')
-        if not content:
-            raise forms.ValidationError('Пожалуйста, введите содержание поста.')
-        if not category:
-            raise forms.ValidationError('Пожалуйста, выберите категорию.')
-
+        if not cleaned_data.get('content'):
+            raise forms.ValidationError('Содержание поста не может быть пустым')
         return cleaned_data
 
 class CustomUserCreationForm(UserCreationForm):
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '👤 Выберите имя пользователя'
+        })
+    )
+    
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '🔒 Придумайте пароль'
+        })
+    )
+    
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '🔒 Повторите пароль'
+        })
+    )
+    
     invite_code = forms.CharField(
-        max_length=20, 
+        max_length=8,
         required=True,
         widget=forms.TextInput(attrs={
-            'class': 'w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2.5 px-4',
-            'placeholder': 'Введите код приглашения'
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40 uppercase',
+            'placeholder': '🎟️ Введите инвайт-код'
         })
     )
 
     class Meta:
         model = User
         fields = ('username', 'password1', 'password2', 'invite_code')
-        widgets = {
-            'username': forms.TextInput(attrs={
-                'class': 'w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2.5 px-4',
-                'placeholder': 'Введите имя пользователя'
-            }),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['password1'].widget.attrs.update({
-            'class': 'w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2.5 px-4',
-            'placeholder': 'Введите пароль'
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': 'w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2.5 px-4',
-            'placeholder': 'Подтвердите пароль'
-        })
 
     def clean_invite_code(self):
         code = self.cleaned_data.get('invite_code')
         try:
-            invite = InviteCode.objects.get(code=code, is_active=True, used_by__isnull=True)
-            return invite
+            invite = InviteCode.objects.get(code=code, is_active=True)
+            if invite.used_by:
+                raise forms.ValidationError('Этот инвайт-код уже использован')
+            return code
         except InviteCode.DoesNotExist:
-            raise forms.ValidationError("Недействительный код приглашения")
+            raise forms.ValidationError('Недействительный инвайт-код')
 
-class UserProfileForm(forms.ModelForm):
-    bio = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'class': 'w-full bg-[#2d2a3d] border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500',
-            'rows': '4',
-            'placeholder': 'Расскажите о себе...'
-        }),
-        required=False
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if commit:
+            user.save()
+            invite = InviteCode.objects.get(code=self.cleaned_data['invite_code'])
+            invite.use(user)
+        return user
+
+class ProfileUpdateForm(forms.ModelForm):
+    avatar = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'hidden',
+            'id': 'avatar-upload',
+            'accept': 'image/*'
+        })
     )
     
-    website = forms.URLField(
-        widget=forms.URLInput(attrs={
-            'class': 'w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2 px-3',
-            'placeholder': 'https://'
-        }),
-        required=False
+    bio = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '✍️ Расскажите о себе...',
+            'rows': 4
+        })
     )
     
     location = forms.CharField(
+        required=False,
         widget=forms.TextInput(attrs={
-            'class': 'w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2 px-3',
-            'placeholder': 'Город, Страна'
-        }),
-        required=False
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '📍 Ваше местоположение'
+        })
     )
     
-    avatar = forms.ImageField(
-        widget=forms.FileInput(attrs={
-            'class': 'hidden',
-            'accept': 'image/*'
-        }),
-        required=False
+    occupation = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '💼 Ваша профессия или род занятий'
+        })
     )
-
+    
     class Meta:
-        model = UserProfile
-        fields = ['avatar', 'bio', 'website', 'location']
+        model = Profile
+        fields = ['avatar', 'bio', 'location', 'occupation']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields:
-            if field != 'avatar':
-                self.fields[field].label_class = 'block text-sm font-medium text-gray-400 mb-2'
+        # Добавляем подсказки для полей
+        self.fields['avatar'].help_text = 'Рекомендуемый размер: 400x400px'
+        self.fields['bio'].help_text = 'Максимум 500 символов'
+        self.fields['location'].help_text = 'Например: Москва, Россия'
+        self.fields['occupation'].help_text = 'Например: Web Developer'

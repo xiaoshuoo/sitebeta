@@ -1,0 +1,217 @@
+/* Основные цвета и переменные */
+:root {
+    --editor-bg: #1A1625;
+    --editor-surface: #2D2A3D;
+    --editor-text: #E2E8F0;
+    --editor-border: rgba(255, 255, 255, 0.1);
+    --editor-accent: #8B5CF6;
+    --editor-accent-hover: #7C3AED;
+}
+
+/* Основной контейнер редактора */
+.cke {
+    background: var(--editor-bg) !important;
+}
+
+.cke_chrome {
+    border: 1px solid var(--editor-border) !important;
+    border-radius: 0.75rem !important;
+    background: var(--editor-bg) !important;
+    box-shadow: none !important;
+}
+
+/* Верхняя панель инструментов */
+.cke_top {
+    background: var(--editor-bg) !important;
+    border-bottom: 1px solid var(--editor-border) !important;
+    padding: 0.75rem !important;
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+/* Нижняя панель */
+.cke_bottom {
+    background: var(--editor-bg) !important;
+    border-top: 1px solid var(--editor-border) !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 0 0 0.75rem 0.75rem !important;
+}
+
+/* Группы кнопок */
+.cke_toolgroup {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 0.25rem !important;
+}
+
+/* Кнопки */
+.cke_button {
+    padding: 0.5rem !important;
+    border-radius: 0.5rem !important;
+    background: transparent !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.cke_button:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+.cke_button_on {
+    background: rgba(139, 92, 246, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Иконки */
+.cke_button_icon {
+    filter: brightness(2) !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.cke_button:hover .cke_button_icon {
+    filter: brightness(2.5) !important;
+    transform: scale(1.1) !important;
+}
+
+/* Разделители */
+.cke_toolbar_separator {
+    background: var(--editor-border) !important;
+    margin: 0 0.75rem !important;
+    width: 1px !important;
+}
+
+/* Выпадающие списки */
+.cke_combo_button {
+    background: var(--editor-bg) !important;
+    border: 1px solid var(--editor-border) !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.cke_combo_button:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Текст в выпадающих списках */
+.cke_combo_text {
+    color: var(--editor-text) !important;
+    line-height: 26px !important;
+    padding-left: 8px !important;
+}
+
+/* Стрелка выпадающего списка */
+.cke_combo_arrow {
+    border-top-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Область редактирования */
+.cke_editable {
+    background: var(--editor-bg) !important;
+    color: var(--editor-text) !important;
+    padding: 1.5rem !important;
+    border-radius: 0.75rem !important;
+    font-family: 'Inter', sans-serif !important;
+    line-height: 1.6 !important;
+}
+
+/* Панель элементов пути */
+.cke_path {
+    color: var(--editor-text) !important;
+    opacity: 0.7;
+}
+
+.cke_path_item {
+    color: var(--editor-text) !important;
+}
+
+/* Стили для режима исходного кода */
+.cke_source {
+    background: var(--editor-bg) !important;
+    color: var(--editor-text) !important;
+    font-family: 'Fira Code', monospace !important;
+    padding: 1rem !important;
+}
+
+/* Диалоговые окна */
+.cke_dialog_background_cover {
+    background: rgba(26, 22, 37, 0.8) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.cke_dialog {
+    border-radius: 1rem !important;
+    background: var(--editor-surface) !important;
+    border: 1px solid var(--editor-border) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cke_dialog_title {
+    background: var(--editor-bg) !important;
+    color: var(--editor-text) !important;
+    border-bottom: 1px solid var(--editor-border) !important;
+    padding: 1rem 1.5rem !important;
+    font-size: 1.125rem !important;
+    border-radius: 1rem 1rem 0 0 !important;
+}
+
+.cke_dialog_footer {
+    background: var(--editor-bg) !important;
+    border-top: 1px solid var(--editor-border) !important;
+    border-radius: 0 0 1rem 1rem !important;
+    padding: 1rem !important;
+}
+
+/* Кнопки в диалогах */
+.cke_dialog_ui_button {
+    background: linear-gradient(to right, var(--editor-accent), var(--editor-accent-hover)) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.cke_dialog_ui_button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Поля ввода в диалогах */
+.cke_dialog_ui_input_text,
+.cke_dialog_ui_input_textarea {
+    background: var(--editor-bg) !important;
+    border: 1px solid var(--editor-border) !important;
+    color: var(--editor-text) !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* Выпадающие панели */
+.cke_panel {
+    background: var(--editor-bg) !important;
+    border: 1px solid var(--editor-border) !important;
+    border-radius: 0.5rem !important;
+}
+
+.cke_panel_listItem a {
+    color: var(--editor-text) !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.cke_panel_listItem a:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cke_dialog {
+    animation: fadeIn 0.3s ease-out;
+}

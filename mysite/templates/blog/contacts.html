@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Контакты | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+    <!-- Hero секция -->
+    <div class="glass-effect rounded-2xl p-12 mb-12 relative overflow-hidden">
+        <div class="relative z-[1]">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x">
+                Свяжитесь с нами
+            </h1>
+            <p class="text-xl text-gray-300 mb-8">
+                Мы всегда рады помочь вам и ответить на любые вопросы
+            </p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-[1]">
+        <!-- Форма обратной связи -->
+        <div class="glass-effect rounded-xl p-6">
+            <h2 class="text-2xl font-bold text-white mb-6">Напишите нам</h2>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-gray-300 mb-2">Ваше имя</label>
+                    <input type="text" 
+                           name="name" 
+                           class="w-full px-4 py-3 bg-surface/50 border border-white/5 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                           required>
+                </div>
+                <div>
+                    <label class="block text-gray-300 mb-2">Email</label>
+                    <input type="email" 
+                           name="email" 
+                           class="w-full px-4 py-3 bg-surface/50 border border-white/5 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                           required>
+                </div>
+                <div>
+                    <label class="block text-gray-300 mb-2">Сообщение</label>
+                    <textarea name="message" 
+                              rows="5" 
+                              class="w-full px-4 py-3 bg-surface/50 border border-white/5 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                              required></textarea>
+                </div>
+                <button type="submit" 
+                        class="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all">
+                    Отправить сообщение
+                </button>
+            </form>
+        </div>
+
+        <!-- Контактная информация -->
+        <div class="space-y-6">
+            <div class="glass-effect rounded-xl p-6">
+                <h2 class="text-2xl font-bold text-white mb-6">Контактная информация</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-envelope text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium">Email</h3>
+                            <p class="text-gray-400">contact@example.com</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-map-marker-alt text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium">Адрес</h3>
+                            <p class="text-gray-400">ул. Примерная, 123, г. Москва</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Социальные сети -->
+            <div class="glass-effect rounded-xl p-6">
+                <h2 class="text-2xl font-bold text-white mb-6">Мы в социальных сетях</h2>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center hover:bg-purple-500/30 transition-colors">
+                        <i class="fab fa-telegram text-purple-400"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center hover:bg-purple-500/30 transition-colors">
+                        <i class="fab fa-github text-purple-400"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

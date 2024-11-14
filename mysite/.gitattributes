@@ -1,17 +1,18 @@
-# Автоматическое определение текстовых файлов и нормализация окончаний строк
-* text=auto eol=lf
+# Автоматически нормализовать окончания строк
+* text=auto
 
-# Явное указание окончаний строк для различных типов файлов
+# Принудительно использовать LF для всех текстовых файлов
 *.py text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
 *.html text eol=lf
 *.css text eol=lf
 *.js text eol=lf
-*.json text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
 *.sh text eol=lf
+*.cmd text eol=lf
 
 # Бинарные файлы
 *.png binary

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-background cosmic-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x">
+                Все публикации
+            </h1>
+            <p class="text-gray-400 mt-4">Исследуйте все посты нашего сообщества</p>
+        </div>
+
+        <!-- Сетка постов -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for post in posts %}
+            <article class="glass-card rounded-xl overflow-hidden hover:scale-[1.02] transition-all duration-300">
+                {% if post.thumbnail %}
+                <div class="aspect-video relative overflow-hidden">
+                    <img src="{{ post.thumbnail.url }}" 
+                         alt="{{ post.title }}" 
+                         class="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-all duration-500">
+                </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <!-- Автор -->
+                    <div class="flex items-center space-x-4 mb-4">
+                        <a href="{% url 'blog:user_profile' username=post.author.username %}" 
+                           class="block relative group">
+                            {% if post.author.profile.avatar %}
+                                <img src="{{ post.author.profile.avatar.url }}" 
+                                     alt="{{ post.author.username }}" 
+                                     class="w-10 h-10 rounded-full object-cover ring-2 ring-purple-500/20 group-hover:ring-purple-500/40 transition-all">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                    <i class="fas fa-user text-purple-400"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div>
+                            <a href="{% url 'blog:user_profile' username=post.author.username %}" 
+                               class="text-white hover:text-purple-400 font-medium transition-colors">
+                                {{ post.author.username }}
+                            </a>
+                            <div class="text-sm text-gray-400">{{ post.created_at|date:"d M Y" }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Заголовок и описание -->
+                    <h3 class="text-xl font-bold text-white mb-2 hover:text-purple-400 transition-colors">
+                        <a href="{% url 'blog:post_detail' slug=post.slug %}">{{ post.title }}</a>
+                    </h3>
+                    <p class="text-gray-400 mb-4 line-clamp-2">
+                        {{ post.content|striptags|truncatewords:20 }}
+                    </p>
+
+                    <!-- Футер поста -->
+                    <div class="flex items-center justify-between">
+                        {% if post.category %}
+                        <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
+                           class="text-sm px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors">
+                            <i class="{{ post.category.icon }} mr-1"></i>
+                            {{ post.category.name }}
+                        </a>
+                        {% endif %}
+                        <div class="flex items-center space-x-4 text-gray-400">
+                            <span class="flex items-center">
+                                <i class="fas fa-eye mr-1"></i>
+                                {{ post.views_count }}
+                            </span>
+                            <span class="flex items-center">
+                                <i class="fas fa-comment mr-1"></i>
+                                {{ post.comments.count }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <div class="col-span-3 text-center py-12">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <i class="fas fa-file-alt text-3xl text-purple-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Нет постов</h3>
+                <p class="text-gray-400">Станьте первым автором!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if posts.has_other_pages %}
+        <div class="flex justify-center mt-8">
+            <div class="inline-flex rounded-xl overflow-hidden">
+                {% if posts.has_previous %}
+                <a href="?page={{ posts.previous_page_number }}" 
+                   class="px-4 py-2 bg-surface/50 text-gray-400 hover:bg-surface/70 hover:text-white transition-all">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+                
+                <span class="px-4 py-2 bg-purple-500/20 text-white">
+                    {{ posts.number }} из {{ posts.paginator.num_pages }}
+                </span>
+                
+                {% if posts.has_next %}
+                <a href="?page={{ posts.next_page_number }}" 
+                   class="px-4 py-2 bg-surface/50 text-gray-400 hover:bg-surface/70 hover:text-white transition-all">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,63 +1,143 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Главная | {{ block.super }}{% endblock %}
+{% block title %}Главная{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <!-- Основной контент -->
-        <div class="col-lg-8">
-            {% if posts %}
-                {% for post in posts %}
-                <div class="card mb-4">
-                    {% if post.thumbnail %}
-                    <img src="{{ post.thumbnail.url }}" class="card-img-top" alt="{{ post.title }}">
-                    {% endif %}
-                    <div class="card-body">
-                        <h2 class="card-title">{{ post.title }}</h2>
-                        <p class="card-text">{{ post.content|safe|truncatewords:50 }}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{% url 'blog:post_detail' post.pk %}" class="btn btn-primary">Читать далее</a>
-                            <small class="text-muted">
-                                {{ post.created_at|date:"d.m.Y" }} | 
-                                Автор: {{ post.author.username }}
-                            </small>
-                        </div>
-                    </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Статистика -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 mb-1">Всего постов</p>
+                    <h3 class="text-2xl font-bold text-white">{{ total_posts }}</h3>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-info">
-                    Пока нет опубликованных постов.
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- Боковая панель -->
-        <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Категории</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        {% for category in categories %}
-                        <li>
-                            {% if category.slug %}
-                            <a href="{% url 'blog:category_detail' category.slug %}" class="text-decoration-none">
-                                <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
-                            </a>
-                            {% else %}
-                            <span class="text-muted">
-                                <i class="fas {{ category.icon }} me-2"></i>{{ category.name }}
-                            </span>
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
+                <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                    <i class="fas fa-file-alt text-purple-400 text-xl group-hover:scale-110 transition-transform"></i>
                 </div>
             </div>
         </div>
+
+        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 mb-1">Пользователей</p>
+                    <h3 class="text-2xl font-bold text-white">{{ total_users }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                    <i class="fas fa-users text-purple-400 text-xl group-hover:scale-110 transition-transform"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 mb-1">Комментариев</p>
+                    <h3 class="text-2xl font-bold text-white">{{ total_comments }}</h3>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                    <i class="fas fa-comments text-purple-400 text-xl group-hover:scale-110 transition-transform"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список постов -->
+    <div class="space-y-6">
+        {% for post in posts %}
+        <article class="glass-effect rounded-xl overflow-hidden hover:scale-[1.02] transition-all duration-300">
+            <!-- Обложка поста -->
+            {% if post.thumbnail %}
+            <div class="relative h-48 overflow-hidden">
+                <img src="{{ post.thumbnail.url }}" 
+                     alt="{{ post.title }}" 
+                     class="w-full h-full object-cover">
+            </div>
+            {% endif %}
+            
+            <div class="p-6">
+                <!-- Шапка поста -->
+                <div class="flex items-center justify-between mb-4">
+                    <!-- Автор и дата -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Аватар автора -->
+                        <a href="{% url 'blog:user_profile' username=post.author.username %}" 
+                           class="block relative group">
+                            <div class="w-10 h-10 rounded-full overflow-hidden bg-purple-500/20">
+                                {% if post.author.profile.avatar %}
+                                    <img src="{{ post.author.profile.avatar.url }}" 
+                                         alt="{{ post.author.username }}" 
+                                         class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-user text-purple-400"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </a>
+                        <div>
+                            <a href="{% url 'blog:user_profile' username=post.author.username %}" 
+                               class="text-white hover:text-purple-400 font-medium transition-colors">
+                                {{ post.author.username }}
+                            </a>
+                            <div class="text-sm text-gray-400">{{ post.created_at|date:"d M Y" }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Категория -->
+                    {% if post.category %}
+                    <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
+                       class="text-purple-400 hover:text-purple-300 transition-colors">
+                        <i class="{{ post.category.icon }} mr-1"></i>
+                        {{ post.category.name }}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Заголовок и контент -->
+                <h2 class="text-2xl font-bold text-white mb-4 hover:text-purple-400 transition-colors">
+                    <a href="{% url 'blog:post_detail' slug=post.slug %}">{{ post.title }}</a>
+                </h2>
+                
+                <div class="text-gray-300 mb-4 line-clamp-3">
+                    {{ post.content|striptags|truncatewords:30 }}
+                </div>
+
+                <!-- Футер поста -->
+                <div class="flex items-center justify-between">
+                    <!-- Теги -->
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in post.tags.all %}
+                        <a href="{% url 'blog:tag_detail' slug=tag.slug %}" 
+                           class="text-sm px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors">
+                            #{{ tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Статистика и кнопка читать далее -->
+                    <div class="flex items-center space-x-6">
+                        <div class="flex items-center text-gray-400">
+                            <i class="fas fa-eye mr-2"></i>
+                            <span>{{ post.views_count }}</span>
+                        </div>
+                        <a href="{% url 'blog:post_detail' slug=post.slug %}" 
+                           class="text-purple-400 hover:text-purple-300 transition-colors flex items-center">
+                            Читать далее
+                            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <div class="text-center py-12">
+            <i class="fas fa-file-alt text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-400">Нет опубликованных постов</p>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %} 

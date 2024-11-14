@@ -1,136 +1,190 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
-from tinymce.models import HTMLField
-from ckeditor_uploader.fields import RichTextUploadingField
 import uuid
 from django.utils import timezone
+from django.contrib.humanize.templatetags.humanize import naturaltime
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Название")
-    slug = models.SlugField(unique=True, blank=True)
-    description = models.TextField(verbose_name="Описание", blank=True)
-    icon = models.CharField(max_length=50, default="fa-folder")
+class Profile(models.Model):
+    ROLE_CHOICES = [
+        ('user', 'Пользователь'),
+        ('moderator', 'Модератор'),
+        ('creator', 'Создатель'),
+    ]
     
-    class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
-        
-    def __str__(self):
-        return self.name
-    
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.name)
-            unique_slug = base_slug
-            num = 1
-            while Category.objects.filter(slug=unique_slug).exists():
-                unique_slug = f"{base_slug}-{num}"
-                num += 1
-            self.slug = unique_slug
-        super().save(*args, **kwargs)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    cover = models.ImageField(upload_to='covers/', null=True, blank=True)
+    bio = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=100, blank=True)
+    website = models.URLField(max_length=200, blank=True)
+    occupation = models.CharField(max_length=100, blank=True)
+    last_seen = models.DateTimeField(auto_now=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
 
     @property
-    def posts_count(self):
-        return self.posts.filter(is_published=True).count()
+    def is_online(self):
+        return timezone.now() - self.last_seen < timezone.timedelta(minutes=5)
 
-class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(unique=True, blank=True)
-    
-    class Meta:
-        verbose_name = "Тег"
-        verbose_name_plural = "Теги"
+    def get_role_display_with_icon(self):
+        icons = {
+            'user': 'fa-user',
+            'creator': 'fa-crown',
+            'moderator': 'fa-shield-alt'
+        }
+        return {
+            'name': self.get_role_display(),
+            'icon': icons.get(self.role, 'fa-user')
+        }
+
+    def get_last_seen(self):
+        if self.is_online:
+            return 'Онлайн'
         
+        now = timezone.now()
+        diff = now - self.last_seen
+        
+        if diff.days > 0:
+            return f'Был(а) {diff.days} дн. назад'
+        elif diff.seconds >= 3600:
+            hours = diff.seconds // 3600
+            return f'Был(а) {hours} ч. назад'
+        elif diff.seconds >= 60:
+            minutes = diff.seconds // 60
+            return f'Был(а) {minutes} мин. назад'
+        else:
+            return f'Был(а) только что'
+
+    def __str__(self):
+        return f'{self.user.username} Profile'
+
+    def save(self, *args, **kwargs):
+        # Устанавливаем значения по умолчанию для пустых полей
+        if not self.bio:
+            self.bio = ''
+        if not self.location:
+            self.location = ''
+        if not self.occupation:
+            self.occupation = ''
+        super().save(*args, **kwargs)
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    icon = models.CharField(max_length=50, default='fas fa-folder')
+    
     def __str__(self):
         return self.name
+
+    def posts_count(self):
+        """Возвращает количество постов в категории"""
+        return self.posts.count()
+    
+    posts_count.short_description = 'Количество постов'
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    
+    def __str__(self):
+        return self.name
+
+class Post(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='posts')
+    tags = models.ManyToManyField(Tag, related_name='posts')
+    thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)
+    is_published = models.BooleanField(default=False)
+    views_count = models.PositiveIntegerField(default=0)
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.title)
+            if not base_slug:
+                base_slug = 'post'
+            unique_id = str(uuid.uuid4())[:8]
+            self.slug = f"{base_slug}-{unique_id}"
         super().save(*args, **kwargs)
-
-class Post(models.Model):
-    title = models.CharField(max_length=200, verbose_name="Заголовок")
-    content = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    category = models.ForeignKey(
-        Category, 
-        on_delete=models.SET_DEFAULT,
-        default=1,
-        related_name='posts'
-    )
-    tags = models.ManyToManyField(Tag, blank=True, related_name='posts')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    is_published = models.BooleanField(default=False)
-    thumbnail = models.ImageField(upload_to='post_thumbnails/', null=True, blank=True)
-    views_count = models.PositiveIntegerField(default=0)
-    views = models.ManyToManyField(User, through='PostView', related_name='viewed_posts')
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Пост"
-        verbose_name_plural = "Посты"
-
+    
     def __str__(self):
         return self.title
 
-    def increment_views(self, user=None):
-        """Увеличивает счетчик просмотров и записывает просмотр"""
-        if user and user.is_authenticated:
-            # Проверяем, не просматривал ли уже этот пользователь пост сегодня
-            today = timezone.now().date()
-            if not PostView.objects.filter(
-                post=self,
-                user=user,
-                viewed_at__date=today
-            ).exists():
-                PostView.objects.create(post=self, user=user)
-                self.views_count += 1
-                self.save()
-        else:
-            # Для анонимных пользователей просто увеличиваем счетчик
-            self.views_count += 1
-            self.save()
-
-class InviteCode(models.Model):
-    code = models.CharField(max_length=20, unique=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_invites')
-    used_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='used_invite')
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
-
+class Comment(models.Model):
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
-        verbose_name = "Код приглашения"
-        verbose_name_plural = "Коды пиглашения"
-
+        ordering = ['-created_date']
+    
     def __str__(self):
-        return f"Код: {self.code} ({self.created_by.username})"
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    bio = models.TextField(max_length=500, blank=True)
-    website = models.URLField(max_length=200, blank=True)
-    location = models.CharField(max_length=100, blank=True)
-    social_links = models.JSONField(default=dict, blank=True)
-    interests = models.ManyToManyField('Tag', blank=True)
-    is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован")
-
-    def __str__(self):
-        return f"Профиль {self.user.username}"
-
-class PostAttachment(models.Model):
-    file = models.FileField(upload_to='post_attachments/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    description = models.CharField(max_length=200, blank=True)
+        return f'Комментарий от {self.author} к {self.post}'
 
 class PostView(models.Model):
-    """Модель для отслеживания просмотров постов"""
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    viewed_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = [
+            ['post', 'user'],  # Для авторизованных пользователей
+            ['post', 'session_key'],  # Для анонимных пользователей
+        ]
+
+    def __str__(self):
+        return f"{self.post.title} - {self.user.username if self.user else 'Anonymous'}"
+
+class InviteCode(models.Model):
+    code = models.CharField(max_length=8, unique=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_invites')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    used_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='used_invites')
+    used_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Invite {self.code}"
+
+    def use(self, user):
+        if self.is_active and not self.used_by:
+            self.used_by = user
+            self.is_active = False
+            self.used_at = timezone.now()
+            self.save()
+
+class PageSettings(models.Model):
+    page_name = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+    disabled_message = models.TextField(default='Страница временно недоступна')
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    
+    # Добавляем константы для имен страниц
+    CONTACTS_PAGE = 'contacts'
+    CREATE_POST_PAGE = 'create_post'
+    
+    PAGE_CHOICES = [
+        (CONTACTS_PAGE, 'Страница контактов'),
+        (CREATE_POST_PAGE, 'Создание постов'),
+    ]
+    
+    page_name = models.CharField(
+        max_length=100,
+        unique=True,
+        choices=PAGE_CHOICES
+    )
 
     class Meta:
-        unique_together = ('post', 'user', 'viewed_at')
+        verbose_name = 'Настройка страницы'
+        verbose_name_plural = 'Настройки страниц'
+
+    def __str__(self):
+        return f"{self.get_page_name_display()} ({'Активна' if self.is_active else 'Отключена'})"

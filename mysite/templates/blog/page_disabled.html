@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full p-8 glass-effect rounded-2xl text-center">
+        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+            <i class="fas fa-lock text-3xl text-purple-400"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white mb-4">Страница недоступна</h1>
+        <p class="text-gray-400">{{ message }}</p>
+    </div>
+</div>
+{% endblock %} 

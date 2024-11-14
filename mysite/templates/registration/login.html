@@ -1,59 +1,131 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load blog_filters %}
 
 {% block content %}
-<div class="min-h-screen bg-background animated-bg p-6">
-    <div class="max-w-md mx-auto">
-        <!-- Форма входа -->
-        <div class="glass-effect rounded-2xl p-8 hover-lift">
-            <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-                <i class="fas fa-sign-in-alt text-primary-500 mr-3"></i>
-                Вход в аккаунт
-            </h2>
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 relative">
+        <!-- Декоративные элементы -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s"></div>
+            <!-- Анимированные звезды -->
+            <div class="stars absolute inset-0">
+                {% for i in "123456789"|make_list %}
+                <div class="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
+                     style="top: {% random_position %}%; left: {% random_position %}%; animation-delay: {{ forloop.counter|multiply:0.3 }}s">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
-            <form method="post" class="space-y-6">
+        <!-- Основной контент -->
+        <div class="relative bg-[#1a1625]/60 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/5">
+            <!-- Анимированная иконка -->
+            <div class="text-center mb-8">
+                <div class="inline-block relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                    <div class="relative w-20 h-20 mx-auto bg-purple-500/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-circle text-3xl text-purple-400 animate-bounce"></i>
+                    </div>
+                </div>
+                <h2 class="mt-4 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x">
+                    Вход в аккаунт
+                </h2>
+                <p class="mt-2 text-gray-400">
+                    Войдите для доступа к вашему профилю
+                </p>
+            </div>
+
+            <!-- Форма -->
+            <form method="POST" class="mt-8 space-y-6 relative z-10">
                 {% csrf_token %}
                 
                 <!-- Имя пользователя -->
-                <div>
-                    <label for="id_username" class="block text-sm font-medium text-gray-400 mb-2">
-                        <i class="fas fa-user text-primary-500/70 mr-2"></i>
+                <div class="form-group">
+                    <label for="username" class="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                        <i class="fas fa-user text-purple-400 mr-2"></i>
                         Имя пользователя
                     </label>
-                    <input type="text" 
-                           name="username" 
-                           id="id_username" 
-                           class="w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2.5 px-4"
-                           required>
+                    <div class="relative">
+                        <input type="text" name="username" id="username" required
+                               class="w-full bg-[#1a1625] border border-purple-500/20 rounded-xl px-4 py-3 pl-10
+                                      text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 
+                                      focus:ring-purple-500/20 focus:outline-none transition-all relative z-10"
+                               placeholder="Введите имя пользователя">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400 pointer-events-none">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
                 </div>
 
                 <!-- Пароль -->
-                <div>
-                    <label for="id_password" class="block text-sm font-medium text-gray-400 mb-2">
-                        <i class="fas fa-lock text-primary-500/70 mr-2"></i>
+                <div class="form-group">
+                    <label for="password" class="block text-sm font-medium text-gray-400 mb-2 flex items-center">
+                        <i class="fas fa-lock text-purple-400 mr-2"></i>
                         Пароль
                     </label>
-                    <input type="password" 
-                           name="password" 
-                           id="id_password" 
-                           class="w-full bg-[#2d2a3d] border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 py-2.5 px-4"
-                           required>
+                    <div class="relative">
+                        <input type="password" name="password" id="password" required
+                               class="w-full bg-[#1a1625] border border-purple-500/20 rounded-xl px-4 py-3 pl-10
+                                      text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 
+                                      focus:ring-purple-500/20 focus:outline-none transition-all relative z-10"
+                               placeholder="Введите пароль">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400 pointer-events-none">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <button type="button" onclick="togglePassword()"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors z-20">
+                            <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Кнопки -->
-                <div class="pt-4">
-                    <button type="submit" 
-                            class="w-full bg-primary-500 text-white rounded-xl py-3 px-4 hover:bg-primary-600 transition-all flex items-center justify-center group">
-                        <i class="fas fa-sign-in-alt mr-2 group-hover:translate-x-1 transition-transform"></i>
-                        Войти
-                    </button>
-                    
-                    <div class="mt-4 text-center">
-                        <a href="{% url 'register' %}" 
-                           class="text-primary-500 hover:text-primary-400 transition-colors flex items-center justify-center">
-                            <i class="fas fa-user-plus mr-2"></i>
-                            Создать аккаунт
-                        </a>
+                <!-- Запомнить меня -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" name="remember_me" id="remember_me"
+                               class="w-4 h-4 bg-[#1a1625] border border-purple-500/20 rounded 
+                                      text-purple-500 focus:ring-purple-500/20">
+                        <label for="remember_me" class="ml-2 block text-sm text-gray-400">
+                            Запомнить меня
+                        </label>
                     </div>
+                    <a href="{% url 'password_reset' %}" 
+                       class="text-sm text-purple-400 hover:text-purple-300 transition-colors">
+                        Забыли пароль?
+                    </a>
+                </div>
+
+                <!-- Ошибки -->
+                {% if form.errors %}
+                    <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-exclamation-circle text-red-400"></i>
+                            <p class="text-red-400 text-sm">Неверное имя пользователя или пароль</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Кнопка входа -->
+                <button type="submit"
+                        class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl
+                               hover:from-purple-600 hover:to-pink-600 focus:outline-none focus:ring-2 
+                               focus:ring-purple-500/50 transition-all duration-300 flex items-center justify-center
+                               space-x-2 group relative z-10">
+                    <i class="fas fa-sign-in-alt group-hover:scale-110 transition-transform"></i>
+                    <span>Войти</span>
+                </button>
+
+                <!-- Ссылка на регистрацию -->
+                <div class="text-center mt-4">
+                    <p class="text-gray-400">
+                        Нет аккаунта?
+                        <a href="{% url 'blog:register' %}" 
+                           class="text-purple-400 hover:text-purple-300 transition-colors">
+                            Зарегистрироваться
+                        </a>
+                    </p>
                 </div>
             </form>
         </div>
@@ -61,20 +133,74 @@
 </div>
 
 <style>
-.glass-effect {
-    background: rgba(45, 42, 61, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.form-group {
+    position: relative;
+    z-index: 10;
 }
 
-.hover-lift {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+input {
+    position: relative;
+    z-index: 10;
 }
 
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+button {
+    position: relative;
+    z-index: 10;
+}
+
+@keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+    animation: gradient-x 15s ease infinite;
+    background-size: 200% auto;
+}
+
+/* Улучшенные эффекты для полей ввода */
+input:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(147, 51, 234, 0.1);
+}
+
+/* Анимация для иконок в полях ввода */
+.form-group:focus-within .fas {
+    transform: scale(1.1);
+    color: rgb(147, 51, 234);
+}
+
+/* Улучшенные эффекты для кнопок */
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(147, 51, 234, 0.2);
+}
+
+/* Анимированные звезды */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+.animate-twinkle {
+    animation: twinkle 2s ease-in-out infinite;
 }
 </style>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const icon = document.getElementById('passwordToggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
 {% endblock %} 

@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Стили для аватара */
+    .avatar-upload {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto;
+    }
+
+    .avatar-preview {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        background: rgba(45, 42, 61, 0.3);
+        border: 3px solid rgba(147, 51, 234, 0.3);
+        box-shadow: 
+            0 0 20px rgba(147, 51, 234, 0.2),
+            inset 0 0 20px rgba(147, 51, 234, 0.1);
+    }
+
+    #imagePreview {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(45, 42, 61, 0.4);
+    }
+
+    #imagePreview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .avatar-edit {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+        width: 36px;
+        height: 36px;
+        z-index: 10;
+    }
+
+    .avatar-edit input {
+        display: none;
+    }
+
+    .avatar-edit label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: rgba(147, 51, 234, 0.8);
+        border-radius: 50%;
+        cursor: pointer;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(147, 51, 234, 0.3);
+    }
+
+    .avatar-edit label:hover {
+        background: rgba(147, 51, 234, 1);
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(147, 51, 234, 0.4);
+    }
+
+    /* Стили для полей ввода */
+    .form-input {
+        background: rgba(45, 42, 61, 0.3);
+        border: 2px solid rgba(147, 51, 234, 0.2);
+        border-radius: 0.75rem;
+        color: #E2E8F0;
+        padding: 0.875rem 1.25rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-input:focus {
+        border-color: rgba(147, 51, 234, 0.6);
+        box-shadow: 
+            0 0 0 4px rgba(147, 51, 234, 0.1),
+            0 0 20px rgba(147, 51, 234, 0.2);
+        transform: translateY(-2px);
+    }
+
+    /* Стили для секций формы */
+    .form-section {
+        position: relative;
+        padding: 2rem;
+        background: rgba(45, 42, 61, 0.2);
+        border-radius: 1.5rem;
+        border: 1px solid rgba(147, 51, 234, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .form-section:hover {
+        background: rgba(45, 42, 61, 0.3);
+        border-color: rgba(147, 51, 234, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Улучшенные стили для кнопок */
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding: 1rem;
+        background: rgba(45, 42, 61, 0.2);
+        border-radius: 1rem;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        padding: 0.875rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, rgba(147, 51, 234, 0.8), rgba(168, 85, 247, 0.8));
+        color: white;
+    }
+
+    .btn-secondary {
+        background: rgba(45, 42, 61, 0.4);
+        color: #E2E8F0;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="glass-effect rounded-2xl p-8">
+        <!-- Заголовок с описанием -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x mb-2">
+                Редактирование профиля
+            </h1>
+            <p class="text-gray-400 max-w-2xl mx-auto">
+                Здесь вы можете настроить свой профиль. Добавьте аватар, расскажите о себе, укажите местоположение и род деятельности. 
+                Это поможет другим пользователям лучше узнать вас.
+            </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Аватар с описанием -->
+            <div class="form-section">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-white mb-2">Аватар профиля</h3>
+                    <p class="text-gray-400 text-sm">
+                        Загрузите изображение для вашего профиля. Рекомендуемый размер: 200x200 пикселей.
+                        Поддерживаются форматы: JPG, PNG, GIF.
+                    </p>
+                </div>
+                <div class="avatar-upload">
+                    <div class="avatar-preview">
+                        <div id="imagePreview">
+                            {% if form.instance.avatar %}
+                                <img src="{{ form.instance.avatar.url }}" alt="Avatar">
+                            {% else %}
+                                <i class="fas fa-user text-5xl text-purple-400"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="avatar-edit">
+                        <input type="file" id="imageUpload" name="avatar" accept="image/*">
+                        <label for="imageUpload">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Основная информация с описаниями -->
+            <div class="form-section">
+                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                    <i class="fas fa-user-circle text-purple-400 mr-2"></i>
+                    Основная информация
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- Описание профиля -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">О себе</label>
+                        <p class="text-gray-500 text-sm mb-2">
+                            Расскажите о себе, своих интересах и увлечениях. Это поможет другим пользователям лучше узнать вас.
+                            Вы можете написать о своих хобби, профессиональных навыках или любую другую информацию, которой хотите поделиться.
+                        </p>
+                        <textarea name="bio" rows="6" 
+                                  class="form-input resize-none"
+                                  placeholder="Например: Я увлекаюсь программированием и веб-разработкой. В свободное время люблю читать книги по технологиям и делиться знаниями с другими...">{{ form.bio.value|default:'' }}</textarea>
+                        <div class="mt-2 flex items-center justify-between text-sm">
+                            <span class="text-gray-400">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Максимум 500 символов
+                            </span>
+                            <span class="text-gray-400" id="bioCharCount">0/500</span>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Email</label>
+                        <p class="text-gray-500 text-sm mb-2">
+                            Ваш email адрес будет использоваться для уведомлений и восстановления пароля.
+                        </p>
+                        <input type="email" name="email" value="{{ form.email.value|default:'' }}"
+                               class="form-input" placeholder="your.email@example.com">
+                    </div>
+
+                    <!-- Местоположение -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Местоположение</label>
+                        <p class="text-gray-500 text-sm mb-2">
+                            Укажите ваш город или страну. Это поможет найти единомышленников поблизости.
+                        </p>
+                        <input type="text" name="location" value="{{ form.location.value|default:'' }}"
+                               class="form-input" placeholder="Например: Москва, Россия">
+                    </div>
+
+                    <!-- Род занятий -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Род занятий</label>
+                        <p class="text-gray-500 text-sm mb-2">
+                            Укажите вашу профессию или род деятельности. Это поможет другим пользователям понять вашу экспертизу.
+                        </p>
+                        <input type="text" name="occupation" value="{{ form.occupation.value|default:'' }}"
+                               class="form-input" placeholder="Например: Веб-разработчик, Дизайнер">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Подсказка по заполнению -->
+            <div class="bg-purple-500/10 rounded-xl p-4 border border-purple-500/20">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-info-circle text-purple-400 mt-1"></i>
+                    <div>
+                        <h4 class="text-white font-medium mb-1">Советы по заполнению профиля</h4>
+                        <ul class="text-gray-400 text-sm space-y-1 list-disc list-inside">
+                            <li>Используйте реальное фото для аватара - это повышает доверие</li>
+                            <li>В описании расскажите о своих профессиональных интересах</li>
+                            <li>Указывайте актуальную информацию о местоположении</li>
+                            <li>Регулярно обновляйте информацию в профиле</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="btn-group">
+                <a href="{% url 'blog:profile' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    <span>Отмена</span>
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    <span>Сохранить изменения</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = `<img src="${e.target.result}" alt="Avatar">`;
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    document.getElementById('imageUpload').addEventListener('change', function() {
+        readURL(this);
+    });
+</script>
+
+<!-- Добавим JavaScript для подсчета символов -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bioTextarea = document.querySelector('textarea[name="bio"]');
+    const charCount = document.getElementById('bioCharCount');
+    
+    function updateCharCount() {
+        const count = bioTextarea.value.length;
+        charCount.textContent = `${count}/500`;
+        
+        // Изменяем цвет счетчика, если приближаемся к лимиту
+        if (count > 450) {
+            charCount.classList.add('text-yellow-400');
+        } else if (count > 490) {
+            charCount.classList.remove('text-yellow-400');
+            charCount.classList.add('text-red-400');
+        } else {
+            charCount.classList.remove('text-yellow-400', 'text-red-400');
+        }
+    }
+    
+    bioTextarea.addEventListener('input', updateCharCount);
+    // Инициализация счетчика при загрузке страницы
+    updateCharCount();
+});
+</script>
+{% endblock %} 

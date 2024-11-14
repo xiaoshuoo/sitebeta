@@ -1,0 +1,155 @@
+/* Кнопки фильтров */
+.filter-btn {
+    padding: 1rem 1.5rem;
+    background-color: #1A1625;
+    color: #9CA3AF;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+.filter-btn.active {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+/* Обрезка текста */
+.line-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.line-clamp-1 {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.line-clamp-2 {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.line-clamp-3 {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+/* Анимации */
+.animate-shine {
+    animation: shine 8s linear infinite;
+}
+
+.perspective {
+    perspective: 1000px;
+}
+
+@keyframes shine {
+    from { left: -200%; }
+    to { left: 200%; }
+}
+
+/* Анимированные карточки */
+.card {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask: 
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.card:hover::after {
+    opacity: 1;
+}
+
+/* Улучшенные изображения */
+.image-hover {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.image-hover img {
+    transition: all 0.3s ease;
+}
+
+.image-hover:hover img {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* Кнопки действий */
+.action-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    gap: 0.5rem;
+}
+
+/* Кнопки в карточках */
+.card-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Кнопки с иконками */
+.icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* Улучшенное состояние при фокусе */
+.btn:focus-visible,
+.action-btn:focus-visible,
+.icon-btn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Улучшенная обратная связь при нажатии */
+.btn:active,
+.action-btn:active,
+.icon-btn:active {
+    transform: scale(0.95);
+} 

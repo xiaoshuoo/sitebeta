@@ -1,0 +1,180 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Блог</a>
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'home' %}">Главная</a>
+            </li>
+            <li class="nav-item">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой блог{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #8b5cf6;
+            --bg-dark: #1a1625;
+            --bg-darker: #15111e;
+            --bg-card: #2d2a3d;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: var(--bg-darker) !important;
+            padding: 1rem 0;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            margin: 0 0.2rem;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            color: var(--text-light) !important;
+            font-size: 1.1rem;
+        }
+
+        .navbar-brand i {
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+
+        .search-form {
+            position: relative;
+            margin-left: auto;
+            margin-right: 1rem;
+        }
+
+        .search-input {
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            width: 200px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-login {
+            background: var(--bg-card);
+            color: var(--text-light);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-register {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register:hover {
+            background: #7c3aed;
+        }
+
+        .main-content {
+            padding: 2rem 0;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animated {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'blog:home' %}">
+                <i class="fas fa-rocket"></i>
+                Мой блог
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:home' %}">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:categories' %}">Категории</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:about' %}">О блоге</a>
+                    </li>
+                </ul>
+                <form class="search-form">
+                    <input type="search" class="search-input" placeholder="Поиск...">
+                </form>
+                <div class="auth-buttons">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="btn-login">Выйти</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn-login">Войти</a>
+                        <a href="{% url 'signup' %}" class="btn-register">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container animated">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/your-code.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

@@ -1,145 +1,317 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="min-h-screen bg-background animated-bg p-6">
+<div class="min-h-screen bg-[#2D2A3D] p-6">
     <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- Профиль -->
-            <div class="md:col-span-1">
-                <div class="glass-effect rounded-2xl p-6 hover-lift">
-                    <div class="text-center">
-                        {% if profile_user.profile.avatar %}
-                            <img src="{{ profile_user.profile.avatar.url }}" 
+        <!-- Профиль пользователя -->
+        <div class="bg-[#2D2A3D]/70 backdrop-blur-lg rounded-2xl p-8 border border-white/10 mb-6 hover:bg-[#2D2A3D]/90 transition-all shadow-[0_0_25px_rgba(139,92,246,0.15)] relative overflow-hidden">
+            <!-- Декоративные элементы фона -->
+            <div class="absolute -top-32 -right-32 w-64 h-64 bg-gradient-to-br from-purple-500/20 to-transparent rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-tr from-purple-600/20 to-transparent rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-32 bg-gradient-to-r from-transparent via-purple-500/5 to-transparent rotate-45 transform animate-shine"></div>
+            
+            <!-- Основной контент -->
+            <div class="flex flex-col md:flex-row items-center gap-8 relative">
+                <!-- Аватар с эффектами -->
+                <div class="relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-all"></div>
+                    {% if user_profile.avatar %}
+                        <div class="relative w-40 h-40 rounded-2xl overflow-hidden group perspective transform hover:scale-105 transition-all duration-500">
+                            <img src="{{ user_profile.avatar.url }}" 
                                  alt="Avatar" 
-                                 class="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-primary-500/30">
-                        {% else %}
-                            <div class="w-32 h-32 rounded-full mx-auto mb-4 bg-surface flex items-center justify-center border-4 border-primary-500/30">
-                                <i class="fas fa-user text-4xl text-primary-500"></i>
-                            </div>
+                                 class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-purple-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <div class="absolute inset-0 ring-2 ring-purple-500/20 group-hover:ring-purple-500/40 transition-all rounded-2xl"></div>
+                        </div>
+                    {% else %}
+                        <div class="w-40 h-40 rounded-2xl bg-[#1A1625] flex items-center justify-center border-4 border-purple-500/30 group-hover:border-purple-500/50 transition-all relative">
+                            <i class="fas fa-user text-5xl text-purple-500 group-hover:scale-110 transition-transform"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Бейдж роли -->
+                    {% if user_profile.role != 'user' %}
+                    <div class="absolute -top-3 -right-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm flex items-center shadow-lg transform group-hover:scale-105 transition-all animate-pulse">
+                        <i class="fas {{ user_profile.get_role_icon }} mr-2"></i>
+                        {{ user_profile.get_role_display }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Индикатор онлайн статуса -->
+                    {% if user_profile.is_online %}
+                    <div class="absolute bottom-2 right-2">
+                        <div class="w-4 h-4 bg-green-500 rounded-full border-2 border-[#2D2A3D] shadow-lg relative">
+                            <div class="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
+                            <div class="absolute inset-0 bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Центральная колонка с информацией -->
+                <div class="flex-1 text-center md:text-left relative">
+                    <h1 class="text-4xl font-bold text-white mb-3 flex items-center justify-center md:justify-start">
+                        {{ profile_user.username }}
+                        {% if profile_user.is_staff %}
+                        <span class="ml-3 text-sm bg-gradient-to-r from-purple-500/20 to-purple-600/20 text-purple-500 px-4 py-1 rounded-full border border-purple-500/20 animate-pulse">
+                            <i class="fas fa-star mr-1"></i>
+                            Администратор
+                        </span>
                         {% endif %}
-                        <h3 class="text-xl font-bold text-white mb-2">{{ profile_user.username }}</h3>
-                        {% if profile_user.profile.bio %}
-                            <p class="text-gray-400 text-sm mb-4">{{ profile_user.profile.bio }}</p>
+                    </h1>
+
+                    <!-- Биография с декоративными элементами -->
+                    {% if user_profile.bio %}
+                        <p class="text-gray-300 mb-4 text-lg relative">
+                            <span class="absolute -left-4 top-0 text-purple-500/20 text-4xl">"</span>
+                            {{ user_profile.bio }}
+                            <span class="absolute -right-4 bottom-0 text-purple-500/20 text-4xl">"</span>
+                        </p>
+                    {% endif %}
+
+                    <!-- Информационные бейджи -->
+                    <div class="flex flex-wrap items-center gap-4 text-sm text-gray-400 justify-center md:justify-start mb-6">
+                        <span class="flex items-center bg-[#1A1625] px-4 py-2 rounded-xl border border-white/5 hover:border-purple-500/20 transition-all group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <i class="fas fa-calendar-alt text-purple-500 mr-2 group-hover:scale-110 transition-transform relative z-10"></i>
+                            <span class="relative z-10">На сайте с {{ profile_user.date_joined|date:"d.m.Y" }}</span>
+                        </span>
+
+                        {% if user_profile.location %}
+                        <span class="flex items-center bg-[#1A1625] px-4 py-2 rounded-xl border border-white/5 hover:border-purple-500/20 transition-all group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <i class="fas fa-map-marker-alt text-purple-500 mr-2 group-hover:scale-110 transition-transform relative z-10"></i>
+                            <span class="relative z-10">{{ user_profile.location }}</span>
+                        </span>
                         {% endif %}
-                        
-                        <!-- Статистика -->
-                        <div class="grid grid-cols-1 gap-4 mt-6">
-                            <div class="bg-surface/50 rounded-xl p-4">
-                                <div class="text-2xl font-bold text-primary-500">{{ posts_count }}</div>
-                                <div class="text-sm text-gray-400">Постов</div>
+
+                        {% if user_profile.website %}
+                        <a href="{{ user_profile.website }}" 
+                           target="_blank" 
+                           class="flex items-center bg-[#1A1625] px-4 py-2 rounded-xl border border-white/5 hover:bg-purple-500/10 hover:border-purple-500/20 transition-all group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <i class="fas fa-globe text-purple-500 mr-2 group-hover:scale-110 transition-transform relative z-10"></i>
+                            <span class="relative z-10">Веб-сайт</span>
+                        </a>
+                        {% endif %}
+
+                        <span class="flex items-center bg-[#1A1625] px-4 py-2 rounded-xl border border-white/5 hover:border-purple-500/20 transition-all group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <i class="fas {% if user_profile.is_online %}fa-circle text-green-500{% else %}fa-clock text-purple-500{% endif %} mr-2 group-hover:scale-110 transition-transform relative z-10"></i>
+                            <span class="relative z-10">{{ user_profile.get_last_seen }}</span>
+                        </span>
+                    </div>
+
+                    <!-- Статистика с 3D эффектами -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <!-- Посты -->
+                        <div class="bg-[#1A1625] rounded-xl p-6 hover:bg-[#1A1625]/70 transition-all border border-white/5 hover:border-purple-500/20 group relative overflow-hidden transform hover:-translate-y-1 hover:shadow-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <div class="text-3xl font-bold text-purple-500 group-hover:scale-110 transition-transform relative z-10 flex items-center justify-center">
+                                <span class="mr-2">{{ posts_count }}</span>
+                                <i class="fas fa-file-alt text-2xl opacity-50"></i>
                             </div>
-                            {% if profile_user.profile.location %}
-                            <div class="flex items-center justify-center text-gray-400">
-                                <i class="fas fa-map-marker-alt mr-2 text-primary-500"></i>
-                                {{ profile_user.profile.location }}
+                            <div class="text-gray-400 relative z-10 text-center">Постов</div>
+                        </div>
+
+                        <!-- Просмотры -->
+                        <div class="bg-[#1A1625] rounded-xl p-6 hover:bg-[#1A1625]/70 transition-all border border-white/5 hover:border-purple-500/20 group relative overflow-hidden transform hover:-translate-y-1 hover:shadow-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <div class="text-3xl font-bold text-purple-500 group-hover:scale-110 transition-transform relative z-10 flex items-center justify-center">
+                                <span class="mr-2">{{ total_views|default:0 }}</span>
+                                <i class="fas fa-eye text-2xl opacity-50"></i>
                             </div>
-                            {% endif %}
-                            {% if profile_user.profile.website %}
-                            <a href="{{ profile_user.profile.website }}" 
-                               class="flex items-center justify-center text-gray-400 hover:text-primary-500 transition-colors"
-                               target="_blank">
-                                <i class="fas fa-globe mr-2"></i>
-                                Веб-сайт
-                            </a>
-                            {% endif %}
+                            <div class="text-gray-400 relative z-10 text-center">Просмотров</div>
+                        </div>
+
+                        <!-- Подписчики -->
+                        <div class="bg-[#1A1625] rounded-xl p-6 hover:bg-[#1A1625]/70 transition-all border border-white/5 hover:border-purple-500/20 group relative overflow-hidden transform hover:-translate-y-1 hover:shadow-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <div class="text-3xl font-bold text-purple-500 group-hover:scale-110 transition-transform relative z-10 flex items-center justify-center">
+                                <span class="mr-2">0</span>
+                                <i class="fas fa-users text-2xl opacity-50"></i>
+                            </div>
+                            <div class="text-gray-400 relative z-10 text-center">Подписчиков</div>
+                        </div>
+
+                        <!-- Подписки -->
+                        <div class="bg-[#1A1625] rounded-xl p-6 hover:bg-[#1A1625]/70 transition-all border border-white/5 hover:border-purple-500/20 group relative overflow-hidden transform hover:-translate-y-1 hover:shadow-xl">
+                            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <div class="text-3xl font-bold text-purple-500 group-hover:scale-110 transition-transform relative z-10 flex items-center justify-center">
+                                <span class="mr-2">0</span>
+                                <i class="fas fa-user-friends text-2xl opacity-50"></i>
+                            </div>
+                            <div class="text-gray-400 relative z-10 text-center">Подписок</div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Кнопки управления - ��оказываем только владельцу профиля -->
+                {% if request.user == profile_user %}
+                <div class="flex flex-col space-y-3 min-w-[200px]">
+                    <a href="{% url 'blog:edit_profile' %}" 
+                       class="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all flex items-center justify-center group relative overflow-hidden transform hover:-translate-y-1 hover:shadow-xl">
+                        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-all"></div>
+                        <div class="w-8 h-8 rounded-lg bg-purple-600/50 flex items-center justify-center mr-2 group-hover:bg-purple-700/50 transition-all relative z-10">
+                            <i class="fas fa-edit group-hover:scale-110 transition-transform"></i>
+                        </div>
+                        <span class="relative z-10">Редактировать</span>
+                    </a>
+
+                    {% if profile_user.is_staff %}
+                    <a href="{% url 'blog:invite_codes' %}" 
+                       class="w-full px-6 py-3 bg-[#1A1625] text-white rounded-xl hover:bg-[#1A1625]/70 transition-all flex items-center justify-center group border border-white/5 hover:border-purple-500/20 relative overflow-hidden transform hover:-translate-y-1 hover:shadow-xl">
+                        <div class="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                        <div class="w-8 h-8 rounded-lg bg-[#2D2A3D] flex items-center justify-center mr-2 group-hover:bg-[#2D2A3D]/70 transition-all relative z-10">
+                            <i class="fas fa-key group-hover:scale-110 transition-transform"></i>
+                        </div>
+                        <span class="relative z-10">Коды приглашений</span>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
+        </div>
 
-            <!-- Посты -->
-            <div class="md:col-span-3 space-y-6">
-                <div class="glass-effect rounded-2xl p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h4 class="text-xl font-bold text-white flex items-center">
-                            <i class="fas fa-file-alt text-primary-500 mr-2"></i>
-                            Посты пользователя
-                        </h4>
-                        {% if user == profile_user %}
-                        <a href="{% url 'blog:create_post' %}" 
-                           class="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors flex items-center">
-                            <i class="fas fa-plus mr-2"></i>
-                            Создать пост
-                        </a>
+        <!-- Посты -->
+        <div class="bg-[#2D2A3D]/70 backdrop-blur-lg rounded-2xl p-6 border border-white/10 relative overflow-hidden">
+            <!-- Декоративные элементы -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-gradient-to-tr from-purple-600/10 to-transparent rounded-full blur-3xl"></div>
+            
+            <!-- Заголовок и кнопки -->
+            <div class="flex items-center justify-between mb-6 relative z-10">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <i class="fas fa-file-alt text-purple-500 mr-2"></i>
+                    Посты пользователя
+                </h2>
+                {% if request.user == profile_user %}
+                <a href="{% url 'blog:create_post' %}" 
+                   class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all flex items-center group">
+                    <i class="fas fa-plus mr-2 group-hover:scale-110 transition-transform"></i>
+                    <span>Создать пост</span>
+                </a>
+                {% endif %}
+            </div>
+            
+            <!-- Фильтры -->
+            <div class="flex items-center space-x-4 mb-6 relative z-10">
+                <button class="filter-btn active">
+                    <i class="fas fa-clock mr-2"></i>
+                    <span>Новые</span>
+                </button>
+                <button class="filter-btn">
+                    <i class="fas fa-fire mr-2"></i>
+                    <span>Популярные</span>
+                </button>
+            </div>
+            
+            <!-- Список постов -->
+            <div class="space-y-4 relative z-10">
+                {% for post in user_posts %}
+                <article class="bg-[#1A1625] rounded-xl p-6 hover:bg-[#1A1625]/70 transition-all group relative overflow-hidden transform hover:-translate-y-1 hover:shadow-xl">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
+                    <div class="flex items-start space-x-6 relative z-10">
+                        {% if post.thumbnail %}
+                        <div class="w-48 h-48 flex-shrink-0 rounded-xl overflow-hidden">
+                            <img src="{{ post.thumbnail.url }}" 
+                                 alt="Thumbnail" 
+                                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300">
+                        </div>
                         {% endif %}
-                    </div>
-
-                    <div class="space-y-4">
-                        {% for post in user_posts %}
-                            <div class="bg-surface/50 rounded-xl p-4 hover:bg-surface transition-all duration-300 group">
-                                <div class="flex items-start justify-between">
-                                    <div>
-                                        <h5 class="text-lg font-semibold mb-2">
-                                            <a href="{% url 'blog:post_detail' pk=post.pk %}" 
-                                               class="text-white hover:text-primary-500 transition-colors">
-                                                {{ post.title }}
-                                            </a>
-                                        </h5>
-                                        <div class="flex items-center text-sm text-gray-400 space-x-4">
-                                            <span class="flex items-center">
-                                                <i class="fas fa-calendar mr-2 text-primary-500/70"></i>
-                                                {{ post.created_at|date:"d.m.Y" }}
-                                            </span>
-                                            <span class="flex items-center">
-                                                <i class="fas fa-folder mr-2 text-primary-500/70"></i>
-                                                {{ post.category.name }}
-                                            </span>
-                                            <span class="flex items-center">
-                                                <i class="fas fa-eye mr-2 text-primary-500/70"></i>
-                                                {{ post.views_count }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {% if post.thumbnail %}
-                                        <img src="{{ post.thumbnail.url }}" 
-                                             alt="Post thumbnail" 
-                                             class="w-24 h-24 rounded-lg object-cover ml-4">
-                                    {% endif %}
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-3">
+                                <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
+                                   class="text-sm text-purple-500 hover:text-purple-400 transition-colors">
+                                    <i class="fas {{ post.category.icon }} mr-2"></i>
+                                    {{ post.category.name }}
+                                </a>
+                                <div class="flex items-center space-x-4 text-sm text-gray-400">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-calendar mr-2 text-purple-500/70"></i>
+                                        {{ post.created_at|date:"d.m.Y" }}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <i class="fas fa-eye mr-2 text-purple-500/70"></i>
+                                        {{ post.views_count }}
+                                    </span>
                                 </div>
                             </div>
-                        {% empty %}
-                            <div class="text-center py-8">
-                                <i class="fas fa-file-alt text-4xl text-gray-600 mb-4"></i>
-                                <p class="text-gray-400">У пользователя пока нет опубликованных постов.</p>
+                            <h3 class="text-xl font-bold mb-3">
+                                <a href="{% url 'blog:post_detail' slug=post.slug %}" 
+                                   class="text-white hover:text-purple-500 transition-colors">
+                                    {{ post.title }}
+                                </a>
+                            </h3>
+                            <p class="text-gray-400 mb-4 line-clamp-2">
+                                {{ post.content|striptags|truncatewords:30 }}
+                            </p>
+                            {% if post.tags.all %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for tag in post.tags.all %}
+                                <a href="{% url 'blog:tag_detail' slug=tag.slug %}" 
+                                   class="px-3 py-1 bg-[#2D2A3D] text-purple-500 rounded-full text-sm hover:bg-purple-500 hover:text-white transition-all group">
+                                    <i class="fas fa-tag mr-1 group-hover:scale-110 transition-transform"></i>
+                                    {{ tag.name }}
+                                </a>
+                                {% endfor %}
                             </div>
-                        {% endfor %}
+                            {% endif %}
+                        </div>
                     </div>
+                </article>
+                {% empty %}
+                <div class="text-center py-12">
+                    <div class="w-20 h-20 rounded-full bg-[#1A1625] flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-file-alt text-3xl text-purple-500/70"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Пока нет постов</h3>
+                    <p class="text-gray-400">
+                        {% if request.user == profile_user %}
+                        Создайте свой первый пост прямо сейчас!
+                        {% else %}
+                        У пользователя пока нет опубликованных постов.
+                        {% endif %}
+                    </p>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .glass-effect {
-        background: rgba(45, 42, 61, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+.filter-btn {
+    @apply px-4 py-2 bg-[#1A1625] text-gray-400 rounded-xl hover:bg-purple-500/10 hover:text-purple-500 transition-all flex items-center;
+}
 
-    .hover-lift {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+.filter-btn.active {
+    @apply bg-purple-500/10 text-purple-500;
+}
 
-    .hover-lift:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
-    }
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 
-    .animated-bg {
-        background: linear-gradient(45deg, 
-            rgba(139, 92, 246, 0.1), 
-            rgba(79, 70, 229, 0.1)
-        );
-        background-size: 200% 200%;
-        animation: gradientBG 15s ease infinite;
+@keyframes shine {
+    from {
+        left: -200%;
     }
+    to {
+        left: 200%;
+    }
+}
 
-    @keyframes gradientBG {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
+.animate-shine {
+    animation: shine 8s linear infinite;
+}
+
+.perspective {
+    perspective: 1000px;
+}
 </style>
-{% endblock %} 
+{% endblock %}

@@ -1,0 +1,398 @@
+/* Основные стили редактора */
+:root {
+    --ck-color-base-background: #2D2A3D;
+    --ck-color-base-border: #1A1625;
+    --ck-color-toolbar-background: #1A1625;
+    --ck-color-toolbar-border: #2D2A3D;
+    --ck-color-text: #E2E8F0;
+    --ck-color-base-text: #E2E8F0;
+    --ck-color-button-default-background: transparent;
+    --ck-color-button-default-hover-background: rgba(139, 92, 246, 0.2);
+    --ck-color-button-default-active-background: rgba(139, 92, 246, 0.3);
+    --ck-color-button-default-active-shadow: rgba(139, 92, 246, 0.2);
+    --ck-color-button-default-disabled-background: rgba(139, 92, 246, 0.1);
+}
+
+/* Стили для контента */
+.ck-content {
+    color: #E2E8F0 !important;
+    background: #1A1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.75rem !important;
+    min-height: 400px;
+}
+
+/* Стили для панели инструментов */
+.ck-toolbar {
+    background: #1A1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.75rem !important;
+}
+
+/* Стили для кнопок */
+.ck-button {
+    color: #E2E8F0 !important;
+    background: transparent !important;
+    border: none !important;
+    transition: all 0.2s !important;
+}
+
+.ck-button:hover {
+    background: rgba(139, 92, 246, 0.2) !important;
+    transform: scale(1.05);
+}
+
+.ck-button.ck-on {
+    background: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Стили для выпадающих меню */
+.ck-dropdown__panel {
+    background: #1A1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.5rem !important;
+}
+
+/* Стили для изображений */
+.ck-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+.ck-content img:hover {
+    transform: scale(1.02);
+}
+
+/* Стили для таблиц */
+.ck-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    background: #1A1625;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.ck-content th,
+.ck-content td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem;
+    color: #E2E8F0;
+}
+
+/* Стили для кода */
+.ck-content pre {
+    background: #1A1625;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.ck-content code {
+    font-family: 'Fira Code', monospace;
+    color: #E2E8F0;
+    background: #1A1625;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+}
+
+/* Основные стили редактора */
+.cke_chrome {
+    border: none !important;
+    border-radius: 0 !important;
+    background: #1A1625 !important;
+    box-shadow: none !important;
+}
+
+/* Верхняя панель инструментов */
+.cke_top {
+    background: #1A1625 !important;
+    border: none !important;
+    padding: 8px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Нижняя панель */
+.cke_bottom {
+    background: #1A1625 !important;
+    border: none !important;
+    padding: 4px 8px !important;
+}
+
+/* Группы кнопок */
+.cke_toolgroup {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Кнопки */
+.cke_button {
+    padding: 4px 6px !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    margin: 0 1px !important;
+}
+
+.cke_button:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+.cke_button_on {
+    background: rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Иконки кнопок */
+.cke_button_icon {
+    opacity: 0.7 !important;
+    filter: brightness(2) !important;
+}
+
+.cke_button:hover .cke_button_icon {
+    opacity: 1 !important;
+}
+
+/* Разделители */
+.cke_toolbar_separator {
+    background: rgba(255, 255, 255, 0.1) !important;
+    margin: 0 6px !important;
+    width: 1px !important;
+}
+
+/* Выпадающие списки */
+.cke_combo_button {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px !important;
+}
+
+.cke_combo_button:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+.cke_combo_text {
+    color: #E2E8F0 !important;
+    line-height: 26px !important;
+    padding-left: 8px !important;
+}
+
+/* Область редактирования */
+.cke_editable {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    padding: 16px !important;
+    font-family: 'Inter', sans-serif !important;
+    line-height: 1.6 !important;
+    font-size: 14px !important;
+}
+
+/* Стили для контента */
+.cke_editable h1 { font-size: 24px !important; margin: 16px 0 !important; }
+.cke_editable h2 { font-size: 20px !important; margin: 14px 0 !important; }
+.cke_editable h3 { font-size: 18px !important; margin: 12px 0 !important; }
+.cke_editable p { margin: 10px 0 !important; }
+
+/* Панель инструментов в одну строку */
+.cke_toolbar {
+    display: inline-block !important;
+    float: left !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Размер шрифта и шрифт */
+.cke_combo__font .cke_combo_button,
+.cke_combo__fontsize .cke_combo_button {
+    min-width: 80px !important;
+}
+
+/* Стрелка выпадающего списка */
+.cke_combo_arrow {
+    border-top-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Выпадающие меню */
+.cke_panel {
+    background: #1A1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px !important;
+}
+
+.cke_panel_listItem a {
+    color: #E2E8F0 !important;
+    padding: 4px 8px !important;
+}
+
+.cke_panel_listItem a:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Путь элементов */
+.cke_path {
+    display: none !important;
+}
+
+/* Изменение размера */
+.cke_resizer {
+    display: none !important;
+}
+
+/* Фокус на кнопках */
+.cke_button:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Отключение рамки при фокусе на редакторе */
+.cke_focus {
+    outline: none !important;
+}
+
+/* Стили для режима исходного кода */
+.cke_source {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    font-family: 'Fira Code', monospace !important;
+    padding: 16px !important;
+}
+
+/* Группировка кнопок */
+.cke_toolbar_break {
+    display: none !important;
+}
+
+/* Стили для плейсхолдера */
+.cke_editable[contenteditable=true]:empty:not(:focus):before {
+    content: attr(aria-label);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Стили для выделения текста */
+.cke_editable::selection {
+    background: rgba(139, 92, 246, 0.3) !important;
+    color: #E2E8F0 !important;
+}
+
+/* Диалоговые окна */
+.cke_dialog_background_cover {
+    background: rgba(26, 22, 37, 0.8) !important;
+    backdrop-filter: blur(8px) !important;
+}
+
+.cke_dialog {
+    border-radius: 1rem !important;
+    background: #2D2A3D !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cke_dialog_title {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 1rem 1.5rem !important;
+    font-size: 1.125rem !important;
+    border-radius: 1rem 1rem 0 0 !important;
+}
+
+.cke_dialog_footer {
+    background: #1A1625 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0 0 1rem 1rem !important;
+    padding: 1rem !important;
+}
+
+/* Кнопки в диалогах */
+.cke_dialog_ui_button {
+    background: linear-gradient(to right, #8B5CF6, #7C3AED) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.cke_dialog_ui_button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Поля ввода в диалогах */
+.cke_dialog_ui_input_text,
+.cke_dialog_ui_input_textarea {
+    background: #1A1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #E2E8F0 !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.cke_dialog_ui_input_text:focus,
+.cke_dialog_ui_input_textarea:focus {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Вкладки в диалогах */
+.cke_dialog_tab {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+    padding: 0.75rem 1.25rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.cke_dialog_tab:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+.cke_dialog_tab_selected {
+    background: #8B5CF6 !important;
+    border-color: #8B5CF6 !important;
+    color: white !important;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.95); }
+    to { transform: scale(1); }
+}
+
+.cke_dialog {
+    animation: fadeIn 0.3s ease-out, scaleIn 0.3s ease-out;
+}
+
+/* Дополнительные улучшения */
+.cke_resizer {
+    border-color: transparent transparent rgba(139, 92, 246, 0.5) transparent !important;
+}
+
+.cke_resizer:hover {
+    border-color: transparent transparent #8B5CF6 transparent !important;
+}
+
+.cke_button__source_label {
+    display: inline-block !important;
+    margin-left: 0.5rem !important;
+}
+
+/* Стили для режима исходного кода */
+.cke_source {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    font-family: 'Fira Code', monospace !important;
+    padding: 1rem !important;
+    line-height: 1.6 !important;
+} 

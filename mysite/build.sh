@@ -37,7 +37,6 @@ fi
 echo "Handling migrations..."
 python manage.py makemigrations blog
 python manage.py migrate
-
 # Create superuser
 echo "Creating superuser..."
 python manage.py shell << END

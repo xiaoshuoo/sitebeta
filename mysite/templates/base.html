@@ -1,178 +1,234 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Мой блог{% endblock %}</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Flowbite -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extra_head %}{% endblock %}
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f5f3ff',
-                            100: '#ede9fe',
-                            200: '#ddd6fe',
-                            300: '#c4b5fd',
-                            400: '#a78bfa',
-                            500: '#8b5cf6',
-                            600: '#7c3aed',
-                            700: '#6d28d9',
-                            800: '#5b21b6',
-                            900: '#4c1d95',
-                        },
-                        surface: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            200: '#e2e8f0',
-                            300: '#cbd5e1',
-                            400: '#94a3b8',
-                            500: '#64748b',
-                            600: '#475569',
-                            700: '#334155',
-                            800: '#1e293b',
-                            900: '#0f172a',
-                        },
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                },
-            },
-        }
-    </script>
-    <style>
-        :root {
-            --primary: 139, 92, 246;
-            --surface: 45, 42, 61;
-            --background: 26, 22, 37;
-        }
-
-        .glass-effect {
-            background: rgba(45, 42, 61, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
-        }
-
-        .animated-bg {
-            background: linear-gradient(45deg, 
-                rgba(139, 92, 246, 0.1), 
-                rgba(79, 70, 229, 0.1)
-            );
-            background-size: 200% 200%;
-            animation: gradientBG 15s ease infinite;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-    </style>
 </head>
-<body class="bg-background min-h-screen flex flex-col dark">
-    <!-- Навигация -->
-    <nav class="glass-effect sticky top-0 z-50 border-b border-gray-700">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <a href="{% url 'blog:home' %}" class="flex items-center">
-                        <i class="fas fa-pen-fancy text-primary-500 text-2xl mr-2"></i>
-                        <span class="text-white font-bold text-xl">Мой блог</span>
-                    </a>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'blog:home' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            <i class="fas fa-home mr-1"></i>Главная
-                        </a>
-                        <a href="{% url 'blog:categories' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            <i class="fas fa-folder mr-1"></i>Категории
-                        </a>
-                        <a href="{% url 'blog:about' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                            <i class="fas fa-info-circle mr-1"></i>О блоге
+<body class="bg-background min-h-screen flex flex-col">
+    <div class="relative min-h-screen flex flex-col" style="z-index: 0;">
+        <div class="particle-container" id="particleContainer" style="z-index: 1;"></div>
+        <div class="grid-bg" style="z-index: 1;"></div>
+
+        <script>
+        // Создаем звезды
+        function createStars() {
+            const starsContainer = document.createElement('div');
+            starsContainer.className = 'stars-container';
+            document.body.appendChild(starsContainer);
+
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Создаем частицы
+        function createParticles() {
+            const container = document.getElementById('particleContainer');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Случайное начальное положение
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Случайный размер
+                const size = Math.random() * 3 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Случайная задер анимации
+                particle.style.animationDelay = `${Math.random() * 15}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            createParticles();
+        });
+        </script>
+        <!-- Навигация -->
+        <nav class="bg-surface/30 backdrop-blur-sm border-b border-white/5 relative" style="z-index: 50;">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Логотип -->
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'blog:home' %}" class="text-2xl font-bold text-white">
+                            <i class="fas fa-blog text-purple-500 mr-2"></i>
+                            Мой блог
                         </a>
                     </div>
-                </div>
-                <div class="flex items-center">
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'blog:create_post' %}" class="text-white bg-primary-600 hover:bg-primary-700 px-4 py-2 rounded-lg text-sm font-medium mr-4">
-                        <i class="fas fa-plus mr-1"></i>Создать пост
-                    </a>
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="flex items-center text-gray-300 hover:text-white">
-                            <span class="mr-2">{{ user.username }}</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg glass-effect">
-                            <div class="py-1">
-                                <a href="{% url 'blog:profile' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
-                                    <i class="fas fa-user mr-2"></i>Профиль
-                                </a>
-                                <a href="{% url 'blog:my_posts' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
-                                    <i class="fas fa-file-alt mr-2"></i>Мои посты
-                                </a>
-                                {% if user.is_staff %}
-                                <a href="{% url 'blog:admin_panel' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
-                                    <i class="fas fa-shield-alt mr-2"></i>Админ панель
-                                </a>
-                                {% endif %}
-                                <form action="{% url 'logout' %}" method="post" class="block">
-                                    {% csrf_token %}
-                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-primary-600 hover:text-white">
-                                        <i class="fas fa-sign-out-alt mr-2"></i>Выйти
-                                    </button>
-                                </form>
-                            </div>
+
+                    <!-- Основная навигация -->
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-center space-x-4">
+                            <a href="{% url 'blog:home' %}" 
+                               class="nav-button {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                                <i class="fas fa-home mr-2"></i>
+                                Главная
+                            </a>
+                            <a href="{% url 'blog:categories' %}" 
+                               class="nav-button {% if request.resolver_match.url_name == 'categories' %}active{% endif %}">
+                                <i class="fas fa-folder mr-2"></i>
+                                Категории
+                            </a>
+                            <a href="{% url 'blog:contacts' %}" 
+                               class="nav-button {% if request.resolver_match.url_name == 'contacts' %}active{% endif %}">
+                                <i class="fas fa-envelope mr-2"></i>
+                                Связь со мной
+                            </a>
                         </div>
                     </div>
-                    {% else %}
-                    <a href="{% url 'login' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-sign-in-alt mr-1"></i>Войти
-                    </a>
-                    {% endif %}
+
+                    <!-- Пользовательское меню -->
+                    <div class="flex items-center space-x-4" style="z-index: 51;">
+                        {% if user.is_authenticated %}
+                            <div class="relative" x-data="{ isOpen: false }" @click.away="isOpen = false">
+                                <button @click="isOpen = !isOpen" 
+                                        class="flex items-center space-x-2 px-4 py-2 bg-purple-500/10 rounded-xl hover:bg-purple-500/20 text-white transition-all">
+                                    {% if user.profile.avatar %}
+                                        <img src="{{ user.profile.avatar.url }}" 
+                                             alt="{{ user.username }}" 
+                                             class="w-8 h-8 rounded-full object-cover ring-2 ring-purple-500/20">
+                                    {% else %}
+                                        <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                            <i class="fas fa-user text-purple-400"></i>
+                                        </div>
+                                    {% endif %}
+                                    <span class="font-medium">{{ user.username }}</span>
+                                    <i class="fas fa-chevron-down text-sm transition-transform duration-200"
+                                       :class="{ 'transform rotate-180': isOpen }"></i>
+                                </button>
+
+                                <!-- Выпадающее меню -->
+                                <div x-show="isOpen"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
+                                     x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
+                                     x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
+                                     class="absolute right-0 mt-2 w-72 rounded-xl shadow-lg"
+                                     style="background-color: #1a1625; border: 1px solid rgba(139, 92, 246, 0.2); z-index: 50;">
+                                    
+                                    <!-- Шапка профиля -->
+                                    <div class="p-4 border-b border-purple-500/20">
+                                        <div class="flex items-center space-x-3">
+                                            {% if user.profile.avatar %}
+                                                <img src="{{ user.profile.avatar.url }}" 
+                                                     alt="{{ user.username }}" 
+                                                     class="w-12 h-12 rounded-full object-cover ring-2 ring-purple-500/20">
+                                            {% else %}
+                                                <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                                    <i class="fas fa-user text-2xl text-purple-400"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-white font-medium truncate">{{ user.username }}</p>
+                                                {% if user.email %}
+                                                    <p class="text-sm text-gray-400 truncate">{{ user.email }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Основные пункты меню -->
+                                    <div class="p-2">
+                                        <a href="{% url 'blog:profile' %}" 
+                                           class="flex items-center px-4 py-3 rounded-lg text-gray-300 hover:bg-purple-500/10 hover:text-white transition-all group">
+                                            <span class="flex-shrink-0 w-5 text-center">
+                                                <i class="fas fa-user text-purple-400 group-hover:scale-110 transition-transform"></i>
+                                            </span>
+                                            <span class="ml-3">Профиль</span>
+                                        </a>
+                                        
+                                        <a href="{% url 'blog:my_posts' %}" 
+                                           class="flex items-center px-4 py-3 rounded-lg text-gray-300 hover:bg-purple-500/10 hover:text-white transition-all group">
+                                            <span class="flex-shrink-0 w-5 text-center">
+                                                <i class="fas fa-file-alt text-purple-400 group-hover:scale-110 transition-transform"></i>
+                                            </span>
+                                            <span class="ml-3">Мои посты</span>
+                                        </a>
+                                        
+                                        {% if user.is_staff %}
+                                        <a href="{% url 'blog:admin_panel' %}" 
+                                           class="flex items-center px-4 py-3 rounded-lg text-gray-300 hover:bg-purple-500/10 hover:text-white transition-all group">
+                                            <span class="flex-shrink-0 w-5 text-center">
+                                                <i class="fas fa-cog text-purple-400 group-hover:scale-110 transition-transform"></i>
+                                            </span>
+                                            <span class="ml-3">Админ панель</span>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Разделитель -->
+                                    <div class="border-t border-purple-500/20 my-2"></div>
+
+                                    <!-- Кнопка выхода -->
+                                    <div class="p-2">
+                                        <form method="post" action="{% url 'logout' %}" class="block w-full">
+                                            {% csrf_token %}
+                                            <button type="submit" 
+                                                    class="w-full flex items-center px-4 py-3 rounded-lg text-gray-300 hover:bg-red-500/10 hover:text-red-400 transition-all group">
+                                                <span class="flex-shrink-0 w-5 text-center">
+                                                    <i class="fas fa-sign-out-alt text-red-400 group-hover:scale-110 transition-transform"></i>
+                                                </span>
+                                                <span class="ml-3">Выйти</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="nav-link">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Войти
+                            </a>
+                            <a href="{% url 'blog:register' %}" class="btn btn-primary">
+                                Регистрация
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <!-- Основной контент -->
-    <main class="flex-grow animated-bg">
-        {% block content %}{% endblock %}
-    </main>
+        <!-- Основной контент -->
+        <main class="flex-grow relative" style="z-index: 2;">
+            {% block content %}{% endblock %}
+        </main>
 
-    <!-- Футер -->
-    <footer class="glass-effect py-8 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-gray-400">&copy; 2024 Мой блог. Все права защищены.</p>
-        </div>
-    </footer>
+        <!-- Футер -->
+        <footer class="bg-surface/30 backdrop-blur-sm border-t border-white/5 py-8 relative" style="z-index: 3;">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-gray-400">&copy; 2024 Мой блог. Все права защищены.</p>
+            </div>
+        </footer>
+    </div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html> 

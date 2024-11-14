@@ -1,0 +1,74 @@
+/* Кнопки фильтров */
+.filter-btn {
+    padding: 1rem 1.5rem;
+    background-color: #1A1625;
+    color: #9CA3AF;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+.filter-btn.active {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+/* Обрезка текста */
+.line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--lines, 2);
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-clamp: var(--lines, 2);
+}
+
+.line-clamp-2 { --lines: 2; }
+.line-clamp-3 { --lines: 3; }
+
+/* Анимации */
+.animate-shine {
+    animation: shine 8s linear infinite;
+}
+
+.perspective {
+    perspective: 1000px;
+}
+
+@keyframes shine {
+    from { left: -200%; }
+    to { left: 200%; }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.float {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Счетчики */
+.counter {
+    display: inline-block;
+    animation: countUp 2s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+} 

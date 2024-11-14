@@ -1,0 +1,57 @@
+/* Кнопки фильтров */
+.filter-btn {
+    padding: 1rem 1.5rem;
+    background-color: #1A1625;
+    color: #9CA3AF;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+.filter-btn.active {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #8B5CF6;
+}
+
+/* Обрезка текста */
+.line-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.line-clamp-1 {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+.line-clamp-2 {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.line-clamp-3 {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+/* Анимации */
+.animate-shine {
+    animation: shine 8s linear infinite;
+}
+
+.perspective {
+    perspective: 1000px;
+}
+
+@keyframes shine {
+    from { left: -200%; }
+    to { left: 200%; }
+} 

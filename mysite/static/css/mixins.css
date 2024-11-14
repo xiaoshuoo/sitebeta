@@ -1,0 +1,37 @@
+/* Миксины для кросс-браузерной поддержки */
+@layer utilities {
+  /* Обрезка текста */
+  .line-clamp-base {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .line-clamp-1 {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  /* Префиксы для background-clip */
+  .bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  /* Префиксы для градиентов */
+  .bg-gradient-to-r {
+    background-image: -webkit-linear-gradient(to right, var(--tw-gradient-stops));
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+  }
+} 
