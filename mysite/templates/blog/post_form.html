@@ -146,57 +146,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('postForm');
-    
-    form.addEventListener('submit', function(e) {
-        const content = tinymce.get('content-editor').getContent();
-        if (!content.trim()) {
-            e.preventDefault();
-            // Создаем уведомление об ошибке
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'text-red-400 text-sm mt-2 p-3 bg-red-500/10 rounded-lg border border-red-500/20';
-            errorDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Содержание поста не может быть пустым';
-            
-            // Находим контейнер редактора
-            const editorContainer = tinymce.get('content-editor').getContainer();
-            editorContainer.insertAdjacentElement('afterend', errorDiv);
-            
-            // Прокручиваем к ошибке
-            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Добавляем красную рамку вокруг редактора
-            editorContainer.style.border = '1px solid rgba(239, 68, 68, 0.5)';
-            
-            // Удаляем уведомление через 5 секунд
-            setTimeout(() => {
-                errorDiv.remove();
-                editorContainer.style.border = '';
-            }, 5000);
-        }
-    });
-});
-</script>
-
-<style>
-.glass-effect {
-    background: rgba(26, 22, 37, 0.6);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-@keyframes gradient-x {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-.animate-gradient-x {
-    animation: gradient-x 15s ease infinite;
-    background-size: 200% auto;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
     const dropzone = document.getElementById('thumbnail-dropzone');
     const input = document.getElementById('thumbnail-upload');
     const preview = document.getElementById('thumbnail-preview');
@@ -247,50 +196,78 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
-// Инициализация TinyMCE
-tinymce.init({
-    selector: '#content-editor',
-    height: 500,
-    plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'help', 'wordcount'
-    ],
-    toolbar: 'undo redo | formatselect | ' +
-        'bold italic backcolor | alignleft aligncenter ' +
-        'alignright alignjustify | bullist numlist outdent indent | ' +
-        'removeformat | help',
-    skin: 'oxide-dark',
-    content_css: 'dark',
-    content_style: `
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 16px;
-            color: #fff;
-            background-color: #1a1625;
-            padding: 20px;
-            max-width: 100%;
-            margin: 0;
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация TinyMCE
+    tinymce.init({
+        selector: '#content-editor',
+        height: 500,
+        plugins: [
+            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+            'insertdatetime', 'media', 'table', 'help', 'wordcount'
+        ],
+        toolbar: 'undo redo | formatselect | ' +
+            'bold italic backcolor | alignleft aligncenter ' +
+            'alignright alignjustify | bullist numlist outdent indent | ' +
+            'removeformat | help',
+        skin: 'oxide-dark',
+        content_css: 'dark',
+        setup: function(editor) {
+            editor.on('change', function() {
+                editor.save(); // Сохраняем содержимое в исходный textarea
+            });
+        },
+        init_instance_callback: function(editor) {
+            editor.on('Change', function(e) {
+                // Обновляем значение скрытого поля
+                document.querySelector('textarea[name="content"]').value = editor.getContent();
+            });
         }
-        p { line-height: 1.6; margin-bottom: 1em; color: #e2e8f0; }
-        h1, h2, h3, h4, h5, h6 { color: #fff; }
-    `,
-});
-
-// Инициализация Select2 для категорий и тегов
-$(document).ready(function() {
-    $('select[name="category"]').select2({
-        theme: 'default',
-        placeholder: 'Выберите категорию',
-        width: '100%'
     });
 
-    $('select[name="tags"]').select2({
-        theme: 'default',
-        placeholder: 'Выберите теги',
-        width: '100%',
-        multiple: true
+    // Инициализация Select2
+    $(document).ready(function() {
+        $('select[name="category"]').select2({
+            theme: 'default',
+            placeholder: 'Выберите категорию',
+            width: '100%'
+        });
+
+        $('select[name="tags"]').select2({
+            theme: 'default',
+            placeholder: 'Выберите теги',
+            width: '100%',
+            multiple: true
+        });
+    });
+
+    // Обработка отправки формы
+    const form = document.getElementById('postForm');
+    form.addEventListener('submit', function(e) {
+        const content = tinymce.get('content-editor').getContent();
+        if (!content.trim()) {
+            e.preventDefault();
+            alert('Содержание поста не может быть пустым');
+        }
     });
 });
 </script>
+
+<style>
+.glass-effect {
+    background: rgba(26, 22, 37, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-x {
+    animation: gradient-x 15s ease infinite;
+    background-size: 200% auto;
+}
+</style>
 {% endblock %}
