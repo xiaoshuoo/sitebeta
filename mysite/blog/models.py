@@ -70,18 +70,42 @@ class Profile(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank=True)
     description = models.TextField(blank=True)
-    icon = models.CharField(max_length=50, default='fas fa-folder')
-    
+    icon = models.CharField(max_length=50, default='fa-folder')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            # Генерируем базовый slug из названия
+            base_slug = slugify(self.name)
+            
+            # Если такой slug уже существует, добавляем числовой суффикс
+            unique_slug = base_slug
+            counter = 1
+            while Category.objects.filter(slug=unique_slug).exists():
+                unique_slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = unique_slug
+        
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('blog:category_detail', kwargs={'slug': self.slug})
+
+    @property
     def posts_count(self):
-        """Возвращает количество постов в категории"""
         return self.posts.count()
-    
-    posts_count.short_description = 'Количество постов'
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
