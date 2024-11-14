@@ -69,7 +69,7 @@ def calculate_streak_days(user):
     return streak
 
 def calculate_achievements(user):
-    """Подсчет достижений пользовател"""
+    """Пдсчет достижений пользовател"""
     achievements = 0
     
     # Достижение за првый пост
@@ -95,23 +95,11 @@ def calculate_achievements(user):
 
 @login_required
 def create_post(request):
-    # Проверяем, не отключено ли создание постов
-    try:
-        page_settings = PageSettings.objects.get(page_name=PageSettings.CREATE_POST_PAGE)
-        if not page_settings.is_active:
-            return render(request, 'blog/page_disabled.html', {
-                'message': page_settings.disabled_message,
-                'title': 'Создание постов временно отключено'
-            })
-    except PageSettings.DoesNotExist:
-        pass
-
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
-            post.is_published = True
             
             # Генерируем уникальный slug
             base_slug = slugify(post.title)
@@ -125,19 +113,13 @@ def create_post(request):
             post.slug = unique_slug
             
             try:
-                # Сохраняем пост
                 post.save()
-                # Сохраняем теги
-                form.save_m2m()
-                # Выводим отладочную информацию
-                print(f"Post created: {post.title} (ID: {post.id}, Slug: {post.slug})")
+                form.save_m2m()  # Сохраняем связи many-to-many (теги)
                 messages.success(request, 'Пост успешно создан!')
                 return redirect('blog:post_detail', slug=post.slug)
             except Exception as e:
-                print(f"Error creating post: {str(e)}")
                 messages.error(request, f'Ошибка при создании поста: {str(e)}')
         else:
-            print(f"Form errors: {form.errors}")
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'Ошибка в поле {field}: {error}')
@@ -266,7 +248,7 @@ def home(request):
 
 def get_page_range(paginator, current_page, show_pages=2):
     """
-    Возвращает ди��пазон страниц для отображения в пагинации
+    Возвращает дипазон страниц для отображения в пагинации
     show_pages определяет количество страниц до и после текущей
     """
     page_range = []
@@ -425,16 +407,53 @@ def register(request):
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
-    fields = ['bio', 'location', 'website', 'occupation']
+    fields = ['avatar', 'bio', 'location', 'website', 'occupation', 'cover']
     template_name = 'blog/profile_form.html'
     success_url = reverse_lazy('blog:profile')
 
     def get_object(self, queryset=None):
-        return self.request.user.profile
+        # Получаем или создаем профиль для текущего пользователя
+        profile, created = Profile.objects.get_or_create(user=self.request.user)
+        return profile
 
     def form_valid(self, form):
+        # Обработка загрузки файлов
+        profile = form.save(commit=False)
+        
+        # Обработка аватара
+        if 'avatar' in self.request.FILES:
+            if profile.avatar:
+                profile.avatar.delete(save=False)
+            profile.avatar = self.request.FILES['avatar']
+        
+        # Обработка обложки
+        if 'cover' in self.request.FILES:
+            if profile.cover:
+                profile.cover.delete(save=False)
+            profile.cover = self.request.FILES['cover']
+        
+        # Сохраняем изменения
+        profile.save()
+        
         messages.success(self.request, 'Профиль успешно обновлен!')
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
+        return super().form_invalid(form)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Добавляем атрибуты для файловых полей
+        form.fields['avatar'].widget.attrs.update({
+            'class': 'hidden',
+            'accept': 'image/*'
+        })
+        form.fields['cover'].widget.attrs.update({
+            'class': 'hidden',
+            'accept': 'image/*'
+        })
+        return form
 
 def user_profile(request, username):
     """Публичный профиль пользателя"""
@@ -489,7 +508,12 @@ def admin_panel(request):
     # Получаем активные инвайт-коды
     active_invites = InviteCode.objects.filter(is_active=True)
     
-    # Добавим получение настроек страниц
+    # Получаем популярные категории с подсчетом постов через annotate
+    popular_categories = Category.objects.annotate(
+        total_posts=Count('posts')
+    ).order_by('-total_posts')[:5]
+    
+    # Добавим полуение настроек страниц
     page_settings = {
         'contacts': PageSettings.objects.get_or_create(
             page_name=PageSettings.CONTACTS_PAGE,
@@ -518,12 +542,12 @@ def admin_panel(request):
         'users': User.objects.all().order_by('-date_joined')[:10],
         'recent_posts': Post.objects.select_related('author', 'category').order_by('-created_at')[:10],
         'recent_comments': Comment.objects.select_related('author', 'post').order_by('-created_date')[:10],
-        'active_invites': active_invites,  # Передаем QuerySet вместо количества
+        'active_invites': active_invites,
+        'popular_categories': popular_categories,  # Используем аннотированный QuerySet
         
         # Логи и активность
         'recent_logs': LogEntry.objects.select_related('user', 'content_type')[:10],
         'user_activity': get_user_activity_stats(),
-        'popular_categories': get_popular_categories(),
         'system_info': get_system_info(),
         'page_settings': page_settings,
     }
@@ -705,7 +729,7 @@ def can_moderate(user):
 @login_required
 def delete_post(request, slug):
     post = get_object_or_404(Post, slug=slug)
-    # Проверяем права на удаление
+    # Проверям права на удаление
     if post.author == request.user or can_moderate(request.user):
         post.delete()
         messages.success(request, 'Пост успешно удален')
@@ -957,25 +981,6 @@ def toggle_page_status(request, page_name):
 
 @login_required
 @require_POST
-def update_profile_cover(request):
-    """Обнвление обложки профиля"""
-    if 'cover' in request.FILES:
-        try:
-            profile = request.user.profile
-            # Удаляем старую обложку, если она есть
-            if profile.cover:
-                profile.cover.delete()
-            profile.cover = request.FILES['cover']
-            profile.save()
-            messages.success(request, 'Обложка профиля обновлена')
-            return JsonResponse({'success': True})
-        except Exception as e:
-            messages.error(request, f'Ошибка при обновлении обложки: {str(e)}')
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Файл не был загружен'})
-
-@login_required
-@require_POST
 def update_profile_avatar(request):
     """Обновление аватара профиля"""
     if 'avatar' in request.FILES:
@@ -983,15 +988,54 @@ def update_profile_avatar(request):
             profile = request.user.profile
             # Удаляем старый аватар, если он есть
             if profile.avatar:
-                profile.avatar.delete()
+                profile.avatar.delete(save=False)
             profile.avatar = request.FILES['avatar']
             profile.save()
-            messages.success(request, 'Аватар профиля бновлен')
-            return JsonResponse({'success': True})
+            
+            # Возвращаем URL нового аватара
+            return JsonResponse({
+                'success': True,
+                'avatar_url': profile.avatar.url,
+                'message': 'Аватар успешно обновлен'
+            })
         except Exception as e:
-            messages.error(request, f'Ошибка при обновлении аватара: {str(e)}')
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Файл не был загружен'})
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    return JsonResponse({
+        'success': False,
+        'error': 'Файл не был загружен'
+    }, status=400)
+
+@login_required
+@require_POST
+def update_profile_cover(request):
+    """Обновление обложки профиля"""
+    if 'cover' in request.FILES:
+        try:
+            profile = request.user.profile
+            # Удаляем старую обложку, если она есть
+            if profile.cover:
+                profile.cover.delete(save=False)
+            profile.cover = request.FILES['cover']
+            profile.save()
+            
+            # Возвращаем URL новой обложки
+            return JsonResponse({
+                'success': True,
+                'cover_url': profile.cover.url,
+                'message': 'Обложка успешно обновлена'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    return JsonResponse({
+        'success': False,
+        'error': 'Файл не был загружен'
+    }, status=400)
 
 @login_required
 @require_POST

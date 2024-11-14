@@ -411,7 +411,6 @@
 
 .avatar-container {
     position: relative;
-    z-index: 2;
 }
 
 .avatar-container::before {
@@ -1286,4 +1285,86 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка загрузки аватара
+    const avatarInput = document.getElementById('avatar-upload');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const formData = new FormData();
+                formData.append('avatar', this.files[0]);
+                
+                // Добавляем CSRF токен
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                fetch('{% url "blog:update_profile_avatar" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Обновляем изображение аватара
+                        const avatarImages = document.querySelectorAll('.avatar-container img');
+                        avatarImages.forEach(img => {
+                            img.src = data.avatar_url;
+                        });
+                        location.reload(); // Перезагружаем страницу
+                    } else {
+                        alert('Ошибка при загрузке аватара: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Произошла ошибка при загрузке файла');
+                });
+            }
+        });
+    }
+
+    // Обработка загрузки обложки
+    const coverInput = document.getElementById('cover-upload');
+    if (coverInput) {
+        coverInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const formData = new FormData();
+                formData.append('cover', this.files[0]);
+                
+                // Добавляем CSRF токен
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                fetch('{% url "blog:update_profile_cover" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Обновляем изображение обложки
+                        const coverImage = document.querySelector('.profile-cover img');
+                        if (coverImage) {
+                            coverImage.src = data.cover_url;
+                        }
+                        location.reload(); // Перезагружаем страницу
+                    } else {
+                        alert('Ошибка при загрузке обложки: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Произошла ошибка при загрузке файла');
+                });
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -75,6 +75,7 @@ class Category(models.Model):
     icon = models.CharField(max_length=50, default='fa-folder')
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
+    _posts_count = models.IntegerField(default=0, db_column='posts_count')
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -87,6 +88,8 @@ class Category(models.Model):
                 unique_slug = f"{base_slug}-{counter}"
                 counter += 1
             self.slug = unique_slug
+        
+        self._posts_count = self.posts.count()
         super().save(*args, **kwargs)
 
     class Meta:
@@ -103,7 +106,7 @@ class Category(models.Model):
 
     @property
     def posts_count(self):
-        return self.posts.count()
+        return self._posts_count
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
