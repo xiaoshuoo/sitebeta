@@ -529,32 +529,54 @@ def get_database_info():
         is_connected = True
         cursor = conn.cursor()
 
+        # Проверяем возможность записи
+        try:
+            cursor.execute("CREATE TABLE IF NOT EXISTS test_table (id serial PRIMARY KEY)")
+            cursor.execute("INSERT INTO test_table DEFAULT VALUES")
+            cursor.execute("SELECT COUNT(*) FROM test_table")
+            write_test = cursor.fetchone()[0]
+            cursor.execute("DROP TABLE test_table")
+            conn.commit()
+            can_write = True
+        except Exception as e:
+            print(f"Write test error: {str(e)}")
+            can_write = False
+
         # Получаем список таблиц и их размеры
         cursor.execute("""
             SELECT 
-                t.table_name,
-                pg_size_pretty(pg_total_relation_size(quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))) as size,
-                pg_total_relation_size(quote_ident(t.table_schema) || '.' || quote_ident(t.table_name)) as raw_size
-            FROM information_schema.tables t
-            WHERE t.table_schema = 'public'
-            AND t.table_type = 'BASE TABLE'
-            ORDER BY 3 DESC
+                relname as table_name,
+                pg_size_pretty(pg_relation_size(relid)) as size,
+                pg_relation_size(relid) as raw_size
+            FROM pg_stat_user_tables
+            WHERE schemaname = 'public'
+            ORDER BY pg_relation_size(relid) DESC
         """)
         tables = cursor.fetchall()
 
         # Получаем общий размер базы данных
         cursor.execute("""
-            SELECT pg_size_pretty(pg_database_size(current_database()))
-        """)
+            SELECT pg_size_pretty(pg_database_size(%s))
+        """, [conn.info.dbname])
         total_size = cursor.fetchone()[0]
 
-        # Получаем количество подключений
+        # Проверяем наличие данных в основных таблицах
         cursor.execute("""
-            SELECT count(*) 
-            FROM pg_stat_activity 
-            WHERE datname = current_database()
+            SELECT 
+                relname, 
+                n_live_tup as row_count
+            FROM pg_stat_user_tables
+            WHERE schemaname = 'public'
         """)
-        connections = cursor.fetchone()[0]
+        table_stats = cursor.fetchall()
+        
+        # Получаем время последней записи
+        cursor.execute("""
+            SELECT MAX(last_vacuum) as last_write
+            FROM pg_stat_user_tables
+            WHERE schemaname = 'public'
+        """)
+        last_write = cursor.fetchone()[0]
 
         cursor.close()
         conn.close()
@@ -562,6 +584,7 @@ def get_database_info():
         return {
             'connection_status': {
                 'is_connected': is_connected,
+                'can_write': can_write,
                 'version': 'PostgreSQL',
             },
             'size': total_size if total_size else 'N/A',
@@ -572,11 +595,15 @@ def get_database_info():
                     'raw_size': table[2]
                 } for table in tables
             ],
+            'data_status': {
+                'has_data': any(count > 0 for _, count in table_stats),
+                'total_rows': sum(count for _, count in table_stats),
+                'last_write': last_write.strftime('%Y-%m-%d %H:%M:%S') if last_write else 'Never'
+            },
             'memory_usage': {
-                'total_connections': connections,
-                'active_connections': connections,
-                'idle_connections': 0,
-                'table_count': len(tables),
+                'total_connections': len(table_stats),
+                'active_tables': sum(1 for _, count in table_stats if count > 0),
+                'empty_tables': sum(1 for _, count in table_stats if count == 0),
                 'total_size': total_size if total_size else 'N/A'
             }
         }
@@ -586,15 +613,20 @@ def get_database_info():
             'error': str(e),
             'connection_status': {
                 'is_connected': False,
+                'can_write': False,
                 'version': 'Unknown'
             },
             'size': 'N/A',
             'tables': [],
+            'data_status': {
+                'has_data': False,
+                'total_rows': 0,
+                'last_write': 'Never'
+            },
             'memory_usage': {
                 'total_connections': 0,
-                'active_connections': 0,
-                'idle_connections': 0,
-                'table_count': 0,
+                'active_tables': 0,
+                'empty_tables': 0,
                 'total_size': 'N/A'
             }
         }
