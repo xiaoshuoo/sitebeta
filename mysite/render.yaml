@@ -2,7 +2,10 @@ services:
   - type: web
     name: sity-lvo8
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py migrate
+      python manage.py create_superuser
     startCommand: gunicorn config.wsgi:application
     healthCheckPath: /health/
     
@@ -16,4 +19,4 @@ databases:
   - name: django-blog-db
     databaseName: django_blog
     plan: free
-    ipAllowList: [] # Разрешить доступ только с сервисов Render
+    ipAllowList: []
