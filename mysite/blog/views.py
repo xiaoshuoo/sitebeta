@@ -203,7 +203,7 @@ def post_detail(request, slug):
             # Пробуем найти просмотр по session_key
             PostView.objects.get(post=post, session_key=session_key)
         except PostView.DoesNotExist:
-            # Есл просмотра нет, создаем новый
+            # Есл просмотра ��ет, создаем новый
             PostView.objects.create(
                 post=post,
                 user=None,
@@ -483,7 +483,7 @@ def user_profile(request, username):
     total_views = posts.aggregate(Sum('views_count'))['views_count__sum'] or 0
     comments_count = Comment.objects.filter(post__author=viewed_user).count()
     
-    # Получае�� статистику
+    # Получае статистику
     streak_days = calculate_streak_days(viewed_user)
     achievements_count = calculate_achievements(viewed_user)
     
@@ -966,7 +966,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Создание нового поста'
+        context['title'] = 'Со��дание нового ��оста'
         context['button_text'] = 'Опубликовать'
         context['is_edit'] = False
         return context
@@ -1175,3 +1175,6 @@ def restore_database(request):
         return redirect('blog:admin_panel')
     
     return render(request, 'blog/restore_database.html')
+
+def health_check(request):
+    return HttpResponse("OK")

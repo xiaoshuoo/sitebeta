@@ -1,25 +1,16 @@
 services:
   - type: web
-    name: your-blog
+    name: sity-lvo8
     env: python
-    buildCommand: "./build.sh"
-    startCommand: "cd mysite && gunicorn config.wsgi:application"
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: DATABASE_URL
-        value: sqlite:///db.sqlite3
-      - key: SECRET_KEY
-        generateValue: true
-      - key: WEB_CONCURRENCY
-        value: 4
-      - key: DJANGO_SETTINGS_MODULE
-        value: config.settings
-    disk:
-      name: sqlite
-      mountPath: /opt/render/project/src/mysite
-      sizeGB: 1
-    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn config.wsgi:application
+    healthCheckPath: /health/
+    
+  - type: cron
+    name: keep-alive
+    schedule: "* * * * *"
+    httpMethod: GET
+    url: https://sity-lvo8.onrender.com/health/
 
 databases:
   - name: django-blog-db
