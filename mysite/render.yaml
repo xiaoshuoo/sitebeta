@@ -5,12 +5,22 @@ services:
     buildCommand: sh build.sh
     startCommand: gunicorn config.wsgi:application
     healthCheckPath: /health/
+    disk:
+      name: sqlite-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///data/db.sqlite3
     
   - type: cron
     name: keep-alive
-    schedule: "* * * * *"
+    schedule: "*/2 * * * *"
     httpMethod: GET
     url: https://sity-lvo8.onrender.com/health/
+    retryPolicy:
+      attempts: 3
+      delay: 30s
 
 databases:
   - name: django-blog-db

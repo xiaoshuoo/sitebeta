@@ -6,6 +6,8 @@ dj-database-url==2.1.0
 django-tinymce==3.6.1
 Pillow==10.1.0
 django-crontab==0.7.1
+psycopg2-binary==2.9.9
+requests==2.31.0
 
 # Для бэкапов и восстановления
 django-dbbackup

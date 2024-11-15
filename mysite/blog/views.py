@@ -39,6 +39,7 @@ from django.utils.text import slugify
 import tempfile
 from django.core import management
 import time
+from django.db import connection
 
 def calculate_streak_days(user):
     """Подсчет дней подряд с публикациями"""
@@ -203,7 +204,7 @@ def post_detail(request, slug):
             # Пробуем найти просмотр по session_key
             PostView.objects.get(post=post, session_key=session_key)
         except PostView.DoesNotExist:
-            # Есл просмотра ��ет, создаем новый
+            # Есл просмотра ет, создаем новый
             PostView.objects.create(
                 post=post,
                 user=None,
@@ -966,7 +967,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Со��дание нового ��оста'
+        context['title'] = 'Содание нового оста'
         context['button_text'] = 'Опубликовать'
         context['is_edit'] = False
         return context
@@ -1177,4 +1178,28 @@ def restore_database(request):
     return render(request, 'blog/restore_database.html')
 
 def health_check(request):
-    return HttpResponse("OK")
+    try:
+        # Проверяем соединение с базой данных
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        
+        status = {
+            'status': 'healthy',
+            'database': 'connected'
+        }
+        return HttpResponse(
+            json.dumps(status),
+            content_type='application/json',
+            status=200
+        )
+    except Exception as e:
+        status = {
+            'status': 'unhealthy',
+            'error': str(e)
+        }
+        return HttpResponse(
+            json.dumps(status),
+            content_type='application/json',
+            status=500
+        )

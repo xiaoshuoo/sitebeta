@@ -70,9 +70,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(os.environ.get('DATABASE_URL', '').replace('sqlite:///', '/opt/render/project/src/data/') or BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# Настройки для постоянного хранилища
+if os.environ.get('RENDER'):
+    DATABASES['default']['NAME'] = os.path.join('/opt/render/project/src/data/', 'db.sqlite3')
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
