@@ -68,11 +68,14 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(os.environ.get('DATABASE_URL', '').replace('sqlite:///', '/opt/render/project/src/data/') or BASE_DIR, 'db.sqlite3'),
-    }
+    'default': dj_database_url.config(
+        default='postgresql://postgres:postgres@localhost:5432/django_blog',
+        conn_max_age=600
+    )
 }
+
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
 
 # Настройки для постоянного хранилища
 if os.environ.get('RENDER'):
