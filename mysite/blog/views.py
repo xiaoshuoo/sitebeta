@@ -289,7 +289,7 @@ def get_page_range(paginator, current_page, show_pages=2):
     if end_page < paginator.num_pages - 1:
         page_range.append('...')
     
-    # Всегд показываем последнюю страницу, если она не входит в диапазон
+    # Всегд показываем последюю страницу, если она не входит в диапазон
     if paginator.num_pages > 1 and paginator.num_pages not in page_range:
         page_range.append(paginator.num_pages)
     
@@ -516,62 +516,70 @@ def post_delete(request, slug):
 def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
-        with connection.cursor() as cursor:
-            # Проверяем подключение
-            cursor.execute("SELECT 1")
-            is_connected = cursor.fetchone() is not None
+        # Создаем прямое подключение к PostgreSQL
+        conn = psycopg2.connect(
+            dbname='django_blog_7f9a',
+            user='django_blog_7f9a_user',
+            password='qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+            host='dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
+            port='5432',
+            sslmode='require'
+        )
+        
+        is_connected = True
+        cursor = conn.cursor()
 
-            # Получаем информацию о таблицах
-            cursor.execute("""
-                SELECT 
-                    table_name,
-                    pg_size_pretty(pg_relation_size(table_name)) as size,
-                    pg_relation_size(table_name) as raw_size
-                FROM information_schema.tables
-                WHERE table_schema = 'public'
-                AND table_type = 'BASE TABLE'
-                ORDER BY 3 DESC
-            """)
-            tables = cursor.fetchall()
+        # Получаем список таблиц и их размеры
+        cursor.execute("""
+            SELECT 
+                t.table_name,
+                pg_size_pretty(pg_total_relation_size(quote_ident(t.table_schema) || '.' || quote_ident(t.table_name))) as size,
+                pg_total_relation_size(quote_ident(t.table_schema) || '.' || quote_ident(t.table_name)) as raw_size
+            FROM information_schema.tables t
+            WHERE t.table_schema = 'public'
+            AND t.table_type = 'BASE TABLE'
+            ORDER BY 3 DESC
+        """)
+        tables = cursor.fetchall()
 
-            # Получаем статистику подключений
-            cursor.execute("""
-                SELECT count(*) 
-                FROM pg_stat_activity 
-                WHERE datname = current_database()
-            """)
-            connections = cursor.fetchone()[0]
+        # Получаем общий размер базы данных
+        cursor.execute("""
+            SELECT pg_size_pretty(pg_database_size(current_database()))
+        """)
+        total_size = cursor.fetchone()[0]
 
-            # Получаем общий размер базы данных
-            cursor.execute("""
-                SELECT pg_size_pretty(sum(pg_relation_size(table_name)))
-                FROM information_schema.tables
-                WHERE table_schema = 'public'
-                AND table_type = 'BASE TABLE'
-            """)
-            total_size = cursor.fetchone()[0]
+        # Получаем количество подключений
+        cursor.execute("""
+            SELECT count(*) 
+            FROM pg_stat_activity 
+            WHERE datname = current_database()
+        """)
+        connections = cursor.fetchone()[0]
 
-            return {
-                'connection_status': {
-                    'is_connected': is_connected,
-                    'version': 'PostgreSQL',
-                },
-                'size': total_size if total_size else 'N/A',
-                'tables': [
-                    {
-                        'name': table[0],
-                        'size': table[1],
-                        'raw_size': table[2]
-                    } for table in tables
-                ],
-                'memory_usage': {
-                    'total_connections': connections,
-                    'active_connections': connections,
-                    'idle_connections': 0,
-                    'table_count': len(tables),
-                    'total_rows': 'N/A'
-                }
+        cursor.close()
+        conn.close()
+
+        return {
+            'connection_status': {
+                'is_connected': is_connected,
+                'version': 'PostgreSQL',
+            },
+            'size': total_size if total_size else 'N/A',
+            'tables': [
+                {
+                    'name': table[0],
+                    'size': table[1],
+                    'raw_size': table[2]
+                } for table in tables
+            ],
+            'memory_usage': {
+                'total_connections': connections,
+                'active_connections': connections,
+                'idle_connections': 0,
+                'table_count': len(tables),
+                'total_size': total_size if total_size else 'N/A'
             }
+        }
     except Exception as e:
         print(f"Database info error: {str(e)}")  # Для отладки
         return {
@@ -587,7 +595,7 @@ def get_database_info():
                 'active_connections': 0,
                 'idle_connections': 0,
                 'table_count': 0,
-                'total_rows': 'N/A'
+                'total_size': 'N/A'
             }
         }
 
@@ -809,7 +817,7 @@ def contacts(request):
                 'message': page_settings.disabled_message
             })
     except PageSettings.DoesNotExist:
-        pass  # Если настройки нет, страница считается активной
+        pass  # Если настройки нет, страница считается ативной
         
     return render(request, 'blog/contacts.html')
 
@@ -1197,7 +1205,7 @@ def update_profile_cover(request):
 @login_required
 @require_POST
 def remove_profile_cover(request):
-    """Удал��ние обложки профиля"""
+    """Удалние обложки профиля"""
     try:
         profile = request.user.profile
         if profile.cover:

@@ -83,17 +83,38 @@ if os.environ.get('RENDER'):
         }
     }
 else:
-    # Локальные настройки
+    # Локальные настройки - используем тот же PostgreSQL
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'django_local_db',  # Создайте эту БД в pgAdmin
-            'USER': 'postgres',         # Стандартный пользователь
-            'PASSWORD': 'ваш_пароль',   # Пароль, который вы указали при установке
-            'HOST': 'localhost',
+            'NAME': 'django_blog_7f9a',
+            'USER': 'django_blog_7f9a_user',
+            'PASSWORD': 'qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+            'HOST': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
             'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+            }
         }
     }
+
+# Добавляем логирование для отслеживания проблем с БД
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -220,7 +241,7 @@ AUTHENTICATION_BACKENDS = [
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Для разработки
-EMAIL_HOST = 'smtp.gmail.com'  # Д��я продкшена
+EMAIL_HOST = 'smtp.gmail.com'  # Дя продкшена
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Ваш email
