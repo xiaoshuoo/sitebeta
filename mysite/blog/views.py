@@ -411,7 +411,7 @@ def register(request):
                 invite = InviteCode.objects.get(code=invite_code, is_active=True)
                 invite.use(user)
                 login(request, user)
-                messages.success(request, 'Регистрация успешно завершена!')
+                messages.success(request, 'Регистрация успешно ��авершена!')
                 return redirect('blog:home')
             except InviteCode.DoesNotExist:
                 messages.error(request, 'Недейстительный инвайт-код')
@@ -517,45 +517,57 @@ def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
         # Создаем прямое подключение к PostgreSQL
-        db_settings = settings.DATABASES['default']
         conn = psycopg2.connect(
-            dbname=db_settings['NAME'],
-            user=db_settings['USER'],
-            password=db_settings['PASSWORD'],
-            host=db_settings['HOST'],
-            port=db_settings['PORT']
+            dbname='django_blog_7f9a',
+            user='django_blog_7f9a_user',
+            password='qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+            host='dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
+            port='5432',
+            sslmode='require'
         )
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         
         with conn.cursor() as cursor:
             # Получаем размер базы данных
             cursor.execute("""
-                SELECT pg_size_pretty(pg_database_size(current_database()))
+                SELECT pg_size_pretty(sum(pg_relation_size(pg_class.oid)))
+                FROM pg_class
+                JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+                WHERE pg_namespace.nspname = 'public'
             """)
             size_info = cursor.fetchone()
             
             # Получаем информацию о таблицах
             cursor.execute("""
                 SELECT 
-                    tablename,
-                    pg_size_pretty(pg_total_relation_size(quote_ident(tablename))) as size,
-                    pg_total_relation_size(quote_ident(tablename)) as raw_size
-                FROM pg_tables
-                WHERE schemaname = 'public'
-                ORDER BY pg_total_relation_size(quote_ident(tablename)) DESC
+                    relname as tablename,
+                    pg_size_pretty(pg_relation_size(pg_class.oid)) as size,
+                    pg_relation_size(pg_class.oid) as raw_size
+                FROM pg_class
+                JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+                WHERE pg_namespace.nspname = 'public'
+                AND pg_class.relkind = 'r'
+                ORDER BY pg_relation_size(pg_class.oid) DESC
             """)
             tables = cursor.fetchall()
             
-            # Получаем статистику использования
+            # Получаем количество активных подключений
+            cursor.execute("""
+                SELECT count(*) 
+                FROM pg_stat_activity 
+                WHERE datname = current_database()
+            """)
+            connections = cursor.fetchone()[0]
+            
+            # Получаем статистику использования памяти
             cursor.execute("""
                 SELECT 
-                    count(*) as connections,
-                    pg_size_pretty(sum(pg_relation_size(relname::regclass))) as cache_size,
-                    pg_size_pretty(pg_database_size(current_database())) as total_size
-                FROM pg_stat_activity, pg_class
-                WHERE pg_class.relkind = 'r'
+                    pg_size_pretty(sum(pg_relation_size(pg_class.oid))) as total_size,
+                    pg_size_pretty(pg_database_size(current_database())) as db_size
+                FROM pg_class
+                JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+                WHERE pg_namespace.nspname = 'public'
             """)
-            stats = cursor.fetchone()
+            memory_stats = cursor.fetchone()
             
             conn.close()
             
@@ -569,9 +581,9 @@ def get_database_info():
                     } for table in tables
                 ],
                 'memory_usage': {
-                    'connections': stats[0] if stats else 0,
-                    'cache_hit_size': stats[1] if stats else 'N/A',
-                    'total_size': stats[2] if stats else 'N/A'
+                    'connections': connections,
+                    'total_size': memory_stats[0] if memory_stats else 'N/A',
+                    'db_size': memory_stats[1] if memory_stats else 'N/A'
                 }
             }
     except Exception as e:
@@ -582,8 +594,8 @@ def get_database_info():
             'tables': [],
             'memory_usage': {
                 'connections': 0,
-                'cache_hit_size': 'N/A',
-                'total_size': 'N/A'
+                'total_size': 'N/A',
+                'db_size': 'N/A'
             }
         }
 
