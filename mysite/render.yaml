@@ -12,16 +12,8 @@ services:
         value: "False"
       - key: RENDER
         value: "true"
-      - key: DATABASE_NAME
-        value: django_blog_7f9a
-      - key: DATABASE_USER
-        value: django_blog_7f9a_user
-      - key: DATABASE_PASSWORD
-        value: qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE
-      - key: DATABASE_HOST
-        value: dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com
-      - key: DATABASE_PORT
-        value: "5432"
+      - key: DATABASE_URL
+        value: postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a/django_blog_7f9a
   
   - type: cron
     name: keep-alive
