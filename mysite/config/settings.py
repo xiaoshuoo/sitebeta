@@ -68,12 +68,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database settings
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a/django_blog_7f9a',
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=True
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'django_blog_7f9a',
+        'USER': 'django_blog_7f9a_user',
+        'PASSWORD': 'qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+        'HOST': 'dpg-csrl8f1u0jms7392hlrg-a',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        }
+    }
 }
 
 # Static files (CSS, JavaScript, Images)

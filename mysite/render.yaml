@@ -7,7 +7,7 @@ services:
     healthCheckPath: /health/
     envVars:
       - key: DATABASE_URL
-        value: postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a/django_blog_7f9a
+        value: postgres://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: DEBUG

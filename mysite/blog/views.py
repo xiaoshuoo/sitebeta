@@ -516,40 +516,51 @@ def post_delete(request, slug):
 def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
-        with connection.cursor() as cursor:
-            # Получаем версию PostgreSQL
-            cursor.execute("SELECT version()")
-            version = cursor.fetchone()[0]
-            
+        # Создаем прямое подключение к PostgreSQL
+        db_settings = settings.DATABASES['default']
+        conn = psycopg2.connect(
+            dbname=db_settings['NAME'],
+            user=db_settings['USER'],
+            password=db_settings['PASSWORD'],
+            host=db_settings['HOST'],
+            port=db_settings['PORT']
+        )
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        
+        with conn.cursor() as cursor:
             # Получаем размер базы данных
             cursor.execute("""
-                SELECT pg_size_pretty(pg_database_size(%s))
-            """, [connection.settings_dict['NAME']])
-            db_size = cursor.fetchone()[0]
+                SELECT pg_size_pretty(pg_database_size(current_database()))
+            """)
+            size_info = cursor.fetchone()
             
             # Получаем информацию о таблицах
             cursor.execute("""
                 SELECT 
-                    tablename as table_name,
-                    pg_size_pretty(pg_relation_size(quote_ident(tablename)::regclass)) as size,
-                    pg_relation_size(quote_ident(tablename)::regclass) as raw_size
+                    tablename,
+                    pg_size_pretty(pg_total_relation_size(quote_ident(tablename))) as size,
+                    pg_total_relation_size(quote_ident(tablename)) as raw_size
                 FROM pg_tables
                 WHERE schemaname = 'public'
-                ORDER BY pg_relation_size(quote_ident(tablename)::regclass) DESC
+                ORDER BY pg_total_relation_size(quote_ident(tablename)) DESC
             """)
             tables = cursor.fetchall()
             
-            # Получаем количество подключений
+            # Получаем статистику использования
             cursor.execute("""
-                SELECT count(*) 
-                FROM pg_stat_activity 
-                WHERE datname = %s
-            """, [connection.settings_dict['NAME']])
-            connections = cursor.fetchone()[0]
+                SELECT 
+                    count(*) as connections,
+                    pg_size_pretty(sum(pg_relation_size(relname::regclass))) as cache_size,
+                    pg_size_pretty(pg_database_size(current_database())) as total_size
+                FROM pg_stat_activity, pg_class
+                WHERE pg_class.relkind = 'r'
+            """)
+            stats = cursor.fetchone()
+            
+            conn.close()
             
             return {
-                'version': version,
-                'size': db_size,
+                'size': size_info[0] if size_info else 'N/A',
                 'tables': [
                     {
                         'name': table[0],
@@ -558,19 +569,20 @@ def get_database_info():
                     } for table in tables
                 ],
                 'memory_usage': {
-                    'connections': connections,
-                    'total_size': db_size
+                    'connections': stats[0] if stats else 0,
+                    'cache_hit_size': stats[1] if stats else 'N/A',
+                    'total_size': stats[2] if stats else 'N/A'
                 }
             }
     except Exception as e:
         print(f"Database info error: {str(e)}")  # Для отладки
         return {
             'error': str(e),
-            'version': 'Unknown',
             'size': 'N/A',
             'tables': [],
             'memory_usage': {
                 'connections': 0,
+                'cache_hit_size': 'N/A',
                 'total_size': 'N/A'
             }
         }
@@ -1012,7 +1024,7 @@ def post_list(request):
     # Получаем все опубликованные посты
     posts_list = Post.objects.filter(is_published=True).order_by('-created_at')
     
-    # Создаем объект пагинатора, 5 постов на страницу
+    # Создаем объект пагинатора, 5 постов на страниц
     paginator = Paginator(posts_list, 5)  # Изменили с 12 на 5 постов
     
     # Получаем номер текущей страницы из GET-параметра
@@ -1138,7 +1150,7 @@ def update_profile_cover(request):
             profile = request.user.profile
             cover_file = request.FILES['cover']
             
-            # Создаем директорию если её нет
+            # Создаем директорию если её не
             cover_dir = os.path.join(settings.MEDIA_ROOT, 'covers')
             os.makedirs(cover_dir, exist_ok=True)
             
