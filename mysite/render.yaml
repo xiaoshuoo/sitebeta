@@ -2,10 +2,7 @@ services:
   - type: web
     name: sity-lvo8
     env: python
-    buildCommand: |
-      pip install -r requirements.txt
-      python manage.py migrate
-      python manage.py create_superuser
+    buildCommand: sh build.sh
     startCommand: gunicorn config.wsgi:application
     healthCheckPath: /health/
     
