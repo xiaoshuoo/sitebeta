@@ -4,11 +4,20 @@ services:
     env: python
     buildCommand: sh build.sh
     startCommand: gunicorn config.wsgi:application
+    healthCheckPath: /health/
     envVars:
       - key: DATABASE_URL
         value: postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a/django_blog_7f9a
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: DEBUG
+        value: "False"
+  
+  - type: cron
+    name: keep-alive
+    schedule: "*/2 * * * *"
+    httpMethod: GET
+    url: https://sity-lvo8.onrender.com/health/
 
 databases:
   - name: django-blog-db

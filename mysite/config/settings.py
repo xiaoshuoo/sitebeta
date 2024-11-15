@@ -66,20 +66,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database
+# Database settings
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://postgres:postgres@localhost:5432/django_blog',
-        conn_max_age=600
+        default='postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a/django_blog_7f9a',
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=True
     )
 }
-
-if os.environ.get('DATABASE_URL'):
-    DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL'))
-
-# Настройки для постоянного хранилища
-if os.environ.get('RENDER'):
-    DATABASES['default']['NAME'] = os.path.join('/opt/render/project/src/data/', 'db.sqlite3')
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -199,7 +194,7 @@ SESSION_COOKIE_AGE = 1209600  # 2 недели в секундах
 SESSION_COOKIE_NAME = 'sessionid'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
-# Добавляем бэкенды аутентификации
+# Добавляем бэкенды аутнтификации
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]

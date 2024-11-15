@@ -40,6 +40,8 @@ import tempfile
 from django.core import management
 import time
 from django.db import connection
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 def calculate_streak_days(user):
     """Подсчет дней подряд с публикациями"""
@@ -265,7 +267,7 @@ def home(request):
 def get_page_range(paginator, current_page, show_pages=2):
     """
     Возвращает дипазон страниц для отображения в пагинации
-    show_pages определяет количество страниц до и после текущей
+    show_pages определяе количество страниц до и после текущей
     """
     page_range = []
     
@@ -294,7 +296,7 @@ def get_page_range(paginator, current_page, show_pages=2):
     return page_range
 
 def categories_list(request):
-    # Фильтруе категории, исключая те, у которых нет slug
+    # Фильтруе категории, исключая те, у которых не slug
     categories = Category.objects.exclude(slug__isnull=True).exclude(slug='')
     context = {
         'categories': categories,
@@ -443,7 +445,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
                     pass
             profile.avatar = self.request.FILES['avatar']
         
-        # Обработка обложки
+        # Обработка бложки
         if 'cover' in self.request.FILES:
             if profile.cover:
                 try:
@@ -463,7 +465,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
+        messages.error(self.request, 'Поалуйста, исправьте ошибки в форме.')
         return super().form_invalid(form)
 
 def user_profile(request, username):
@@ -511,6 +513,68 @@ def post_delete(request, slug):
     
     return render(request, 'blog/post_confirm_delete.html', {'post': post})
 
+def get_database_info():
+    """Получение базовой информации о базе данных"""
+    try:
+        with connection.cursor() as cursor:
+            # Получаем версию PostgreSQL
+            cursor.execute("SELECT version()")
+            version = cursor.fetchone()[0]
+            
+            # Получаем размер базы данных
+            cursor.execute("""
+                SELECT pg_size_pretty(pg_database_size(%s))
+            """, [connection.settings_dict['NAME']])
+            db_size = cursor.fetchone()[0]
+            
+            # Получаем информацию о таблицах
+            cursor.execute("""
+                SELECT 
+                    tablename as table_name,
+                    pg_size_pretty(pg_relation_size(quote_ident(tablename)::regclass)) as size,
+                    pg_relation_size(quote_ident(tablename)::regclass) as raw_size
+                FROM pg_tables
+                WHERE schemaname = 'public'
+                ORDER BY pg_relation_size(quote_ident(tablename)::regclass) DESC
+            """)
+            tables = cursor.fetchall()
+            
+            # Получаем количество подключений
+            cursor.execute("""
+                SELECT count(*) 
+                FROM pg_stat_activity 
+                WHERE datname = %s
+            """, [connection.settings_dict['NAME']])
+            connections = cursor.fetchone()[0]
+            
+            return {
+                'version': version,
+                'size': db_size,
+                'tables': [
+                    {
+                        'name': table[0],
+                        'size': table[1],
+                        'raw_size': table[2]
+                    } for table in tables
+                ],
+                'memory_usage': {
+                    'connections': connections,
+                    'total_size': db_size
+                }
+            }
+    except Exception as e:
+        print(f"Database info error: {str(e)}")  # Для отладки
+        return {
+            'error': str(e),
+            'version': 'Unknown',
+            'size': 'N/A',
+            'tables': [],
+            'memory_usage': {
+                'connections': 0,
+                'total_size': 'N/A'
+            }
+        }
+
 @staff_member_required
 def admin_panel(request):
     # Добавляем определение thirty_days_ago
@@ -534,6 +598,14 @@ def admin_panel(request):
             page_name=PageSettings.CREATE_POST_PAGE,
             defaults={'updated_by': request.user}
         )[0]
+    }
+    
+    database_config = {
+        'name': 'django_blog_7f9a',
+        'host': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
+        'user': 'django_blog_7f9a_user',
+        'engine': 'PostgreSQL',
+        'version': get_database_info().get('version', 'Unknown')
     }
     
     context = {
@@ -561,6 +633,8 @@ def admin_panel(request):
         'user_activity': get_user_activity_stats(),
         'system_info': get_system_info(),
         'page_settings': page_settings,
+        'database_info': get_database_info(),
+        'database_config': database_config
     }
     return render(request, 'blog/admin_panel.html', context)
 
@@ -695,7 +769,7 @@ def reset_user_password(request, user_id):
         user.set_password(new_password)
         user.save()
         
-        # Отправляем email с новым паролем
+        # Отравляем email с новым паролем
         send_mail(
             'Сброс пароля',
             f'Ваш новый пароль: {new_password}',
@@ -906,10 +980,10 @@ def backup_database():
         # Получаем путь к директории для бэкапов из settings
         backup_dir = getattr(settings, 'BACKUP_DIR', None)
         if not backup_dir:
-            # Если пуь не задан в settings, создаем директорию backups в корне проекта
+            # Если уь не здан в settings, создаем директорию backups в корне проекта
             backup_dir = os.path.join(settings.BASE_DIR, 'backups')
 
-        # Создаем директорию для бэкапов, если она не существует
+        # Создаем директию для бэкапов, если она не существует
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
 
