@@ -244,6 +244,40 @@
                         </div>
                     </div>
 
+                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg {% if database_info.connection_status.is_connected %}bg-green-500/20{% else %}bg-red-500/20{% endif %} flex items-center justify-center">
+                                <i class="fas fa-plug {% if database_info.connection_status.is_connected %}text-green-400{% else %}text-red-400{% endif %}"></i>
+                            </div>
+                            <div>
+                                <p class="text-white">Статус подключения</p>
+                                <p class="text-sm {% if database_info.connection_status.is_connected %}text-green-400{% else %}text-red-400{% endif %}">
+                                    {{ database_info.connection_status.is_connected|yesno:"Подключено,Отключено" }}
+                                </p>
+                                {% if database_info.connection_status.is_connected %}
+                                    <p class="text-xs text-gray-400">Версия: {{ database_info.connection_status.version }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                <i class="fas fa-chart-bar text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white">Статистика использования</p>
+                                <div class="text-sm text-gray-400">
+                                    <p>Всего таблиц: {{ database_info.memory_usage.table_count }}</p>
+                                    <p>Всего записей: {{ database_info.memory_usage.total_rows }}</p>
+                                    <p>Активных подключений: {{ database_info.memory_usage.active_connections }}</p>
+                                    <p>Простаивающих подключений: {{ database_info.memory_usage.idle_connections }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {% if database_info.error %}
                     <div class="p-3 bg-red-500/20 rounded-lg">
                         <p class="text-red-400">

@@ -411,7 +411,7 @@ def register(request):
                 invite = InviteCode.objects.get(code=invite_code, is_active=True)
                 invite.use(user)
                 login(request, user)
-                messages.success(request, 'Регистрация успешно ��авершена!')
+                messages.success(request, 'Регистрация успешно авершена!')
                 return redirect('blog:home')
             except InviteCode.DoesNotExist:
                 messages.error(request, 'Недейстительный инвайт-код')
@@ -465,7 +465,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Поалуйста, исправьте ошибки в форме.')
+        messages.error(self.request, 'Поаста, исправьте ошибки в форме.')
         return super().form_invalid(form)
 
 def user_profile(request, username):
@@ -516,63 +516,47 @@ def post_delete(request, slug):
 def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
-        # Создаем прямое подключение к PostgreSQL
-        conn = psycopg2.connect(
-            dbname='django_blog_7f9a',
-            user='django_blog_7f9a_user',
-            password='qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
-            host='dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
-            port='5432',
-            sslmode='require'
-        )
-        
-        with conn.cursor() as cursor:
-            # Получаем размер базы данных
-            cursor.execute("""
-                SELECT pg_size_pretty(sum(pg_relation_size(pg_class.oid)))
-                FROM pg_class
-                JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
-                WHERE pg_namespace.nspname = 'public'
-            """)
-            size_info = cursor.fetchone()
-            
+        with connection.cursor() as cursor:
+            # Проверяем подключение
+            cursor.execute("SELECT 1")
+            is_connected = cursor.fetchone() is not None
+
             # Получаем информацию о таблицах
             cursor.execute("""
                 SELECT 
-                    relname as tablename,
-                    pg_size_pretty(pg_relation_size(pg_class.oid)) as size,
-                    pg_relation_size(pg_class.oid) as raw_size
-                FROM pg_class
-                JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
-                WHERE pg_namespace.nspname = 'public'
-                AND pg_class.relkind = 'r'
-                ORDER BY pg_relation_size(pg_class.oid) DESC
+                    table_name,
+                    pg_size_pretty(pg_relation_size(table_name)) as size,
+                    pg_relation_size(table_name) as raw_size
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_type = 'BASE TABLE'
+                ORDER BY 3 DESC
             """)
             tables = cursor.fetchall()
-            
-            # Получаем количество активных подключений
+
+            # Получаем статистику подключений
             cursor.execute("""
                 SELECT count(*) 
                 FROM pg_stat_activity 
                 WHERE datname = current_database()
             """)
             connections = cursor.fetchone()[0]
-            
-            # Получаем статистику использования памяти
+
+            # Получаем общий размер базы данных
             cursor.execute("""
-                SELECT 
-                    pg_size_pretty(sum(pg_relation_size(pg_class.oid))) as total_size,
-                    pg_size_pretty(pg_database_size(current_database())) as db_size
-                FROM pg_class
-                JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
-                WHERE pg_namespace.nspname = 'public'
+                SELECT pg_size_pretty(sum(pg_relation_size(table_name)))
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_type = 'BASE TABLE'
             """)
-            memory_stats = cursor.fetchone()
-            
-            conn.close()
-            
+            total_size = cursor.fetchone()[0]
+
             return {
-                'size': size_info[0] if size_info else 'N/A',
+                'connection_status': {
+                    'is_connected': is_connected,
+                    'version': 'PostgreSQL',
+                },
+                'size': total_size if total_size else 'N/A',
                 'tables': [
                     {
                         'name': table[0],
@@ -581,21 +565,29 @@ def get_database_info():
                     } for table in tables
                 ],
                 'memory_usage': {
-                    'connections': connections,
-                    'total_size': memory_stats[0] if memory_stats else 'N/A',
-                    'db_size': memory_stats[1] if memory_stats else 'N/A'
+                    'total_connections': connections,
+                    'active_connections': connections,
+                    'idle_connections': 0,
+                    'table_count': len(tables),
+                    'total_rows': 'N/A'
                 }
             }
     except Exception as e:
         print(f"Database info error: {str(e)}")  # Для отладки
         return {
             'error': str(e),
+            'connection_status': {
+                'is_connected': False,
+                'version': 'Unknown'
+            },
             'size': 'N/A',
             'tables': [],
             'memory_usage': {
-                'connections': 0,
-                'total_size': 'N/A',
-                'db_size': 'N/A'
+                'total_connections': 0,
+                'active_connections': 0,
+                'idle_connections': 0,
+                'table_count': 0,
+                'total_rows': 'N/A'
             }
         }
 
@@ -779,7 +771,7 @@ def generate_backup(request):
                     response['Content-Disposition'] = f'attachment; filename=db_backup_{timestamp}.json'
                     return response
         except Exception as e:
-            messages.error(request, f'Ошибка при создании бэкапа: {str(e)}')
+            messages.error(request, f'Оибка при создании бэкапа: {str(e)}')
     
     return redirect('blog:admin_panel')
 
@@ -999,7 +991,7 @@ def clean_database(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 def backup_database():
-    """Создание резервной копии базы данных"""
+    """Создание резервнй копии бзы данных"""
     try:
         # Получаем путь к директории для бэкапов из settings
         backup_dir = getattr(settings, 'BACKUP_DIR', None)
@@ -1113,11 +1105,11 @@ def update_profile_avatar(request):
             profile = request.user.profile
             avatar_file = request.FILES['avatar']
             
-            # Создаем директорию если её нет
+            # Создаем директорию сли её нет
             avatar_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
             os.makedirs(avatar_dir, exist_ok=True)
             
-            # Удаляем старый аватар, если он есть
+            # Удаляем тарый аватар, если он есть
             if profile.avatar:
                 old_avatar_path = os.path.join(settings.MEDIA_ROOT, str(profile.avatar))
                 if os.path.exists(old_avatar_path):
@@ -1205,7 +1197,7 @@ def update_profile_cover(request):
 @login_required
 @require_POST
 def remove_profile_cover(request):
-    """Удаление обложки профиля"""
+    """Удал��ние обложки профиля"""
     try:
         profile = request.user.profile
         if profile.cover:
@@ -1214,7 +1206,7 @@ def remove_profile_cover(request):
             messages.success(request, 'Обложка профиля удалена')
         return JsonResponse({'success': True})
     except Exception as e:
-        messages.error(request, f'Ошибка при удалении обложки: {str(e)}')
+        messages.error(request, f'Ошибк при удалении бложки: {str(e)}')
         return JsonResponse({'success': False, 'error': str(e)})
 
 @staff_member_required
@@ -1261,7 +1253,7 @@ def restore_database(request):
                 for chunk in backup_file.chunks():
                     tmp_file.write(chunk)
             
-            # Восстанавливаем данные
+            # Восстанавливае данные
             management.call_command('loaddata', tmp_file.name)
             
             # Удаляем временный файл

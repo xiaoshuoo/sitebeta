@@ -67,12 +67,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database settings
-DATABASES = {
-    'default': dj_database_url.parse(
-        'postgres://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a',
-        conn_max_age=600,
-    )
-}
+if os.environ.get('RENDER'):
+    # Настройки для Render
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'django_blog_7f9a',
+            'USER': 'django_blog_7f9a_user',
+            'PASSWORD': 'qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+            'HOST': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+            }
+        }
+    }
+else:
+    # Локальные настройки
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'django_local_db',  # Создайте эту БД в pgAdmin
+            'USER': 'postgres',         # Стандартный пользователь
+            'PASSWORD': 'ваш_пароль',   # Пароль, который вы указали при установке
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -199,7 +220,7 @@ AUTHENTICATION_BACKENDS = [
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Для разработки
-EMAIL_HOST = 'smtp.gmail.com'  # Для продакшена
+EMAIL_HOST = 'smtp.gmail.com'  # Д��я продкшена
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Ваш email

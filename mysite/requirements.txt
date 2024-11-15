@@ -10,3 +10,4 @@ requests==2.31.0
 
 # Для бэкапов и восстановления
 django-dbbackup
+psycopg2-binary>=2.9.9
