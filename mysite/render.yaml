@@ -1,22 +1,25 @@
 services:
   - type: web
-    name: django-blog
+    name: your-blog
     env: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn config.wsgi:application"
+    startCommand: "cd mysite && gunicorn config.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: 3.11.0
       - key: DATABASE_URL
-        fromDatabase:
-          name: django-blog-db
-          property: connectionString
-      - key: DJANGO_SECRET_KEY
+        value: sqlite:///db.sqlite3
+      - key: SECRET_KEY
         generateValue: true
-      - key: DJANGO_DEBUG
-        value: false
       - key: WEB_CONCURRENCY
         value: 4
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+    disk:
+      name: sqlite
+      mountPath: /opt/render/project/src/mysite
+      sizeGB: 1
+    autoDeploy: true
 
 databases:
   - name: django-blog-db

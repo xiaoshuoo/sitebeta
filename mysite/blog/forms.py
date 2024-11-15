@@ -10,7 +10,7 @@ class PostForm(forms.ModelForm):
             'class': 'tinymce',
             'style': 'min-height: 400px;'
         }),
-        required=True,
+        required=False,
     )
     
     title = forms.CharField(
@@ -75,8 +75,6 @@ class PostForm(forms.ModelForm):
 
     def clean_content(self):
         content = self.cleaned_data.get('content', '').strip()
-        if not content:
-            raise forms.ValidationError('Содержание поста не может быть пустым')
         return content
 
     def clean_category(self):
@@ -87,8 +85,6 @@ class PostForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        if not cleaned_data.get('content'):
-            raise forms.ValidationError('Содержание поста не может быть пустым')
         return cleaned_data
 
 class CustomUserCreationForm(UserCreationForm):

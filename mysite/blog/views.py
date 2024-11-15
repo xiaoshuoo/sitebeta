@@ -36,6 +36,9 @@ from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import shutil
 from django.utils.text import slugify
+import tempfile
+from django.core import management
+import time
 
 def calculate_streak_days(user):
     """Подсчет дней подряд с публикациями"""
@@ -69,7 +72,7 @@ def calculate_streak_days(user):
     return streak
 
 def calculate_achievements(user):
-    """Пдсчет достижений пользовател"""
+    """Пчет достижений пользовател"""
     achievements = 0
     
     # Достижение за првый пост
@@ -100,18 +103,6 @@ def create_post(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
-            
-            # Проверяем, что контент не пустой
-            content = request.POST.get('content', '').strip()
-            if not content:
-                form.add_error('content', 'Содержание поста не может быть пустым')
-                return render(request, 'blog/post_form.html', {
-                    'form': form,
-                    'title': 'Создать пост',
-                    'button_text': 'Опубликовать'
-                })
-            
-            post.content = content
             
             # Генерируем уникальный slug
             base_slug = slugify(post.title)
@@ -212,7 +203,7 @@ def post_detail(request, slug):
             # Пробуем найти просмотр по session_key
             PostView.objects.get(post=post, session_key=session_key)
         except PostView.DoesNotExist:
-            # Если просмотра нет, создаем новый
+            # Есл просмотра нет, создаем новый
             PostView.objects.create(
                 post=post,
                 user=None,
@@ -420,13 +411,13 @@ def register(request):
                 messages.success(request, 'Регистрация успешно завершена!')
                 return redirect('blog:home')
             except InviteCode.DoesNotExist:
-                messages.error(request, 'Недействительный инвайт-код')
+                messages.error(request, 'Недейстительный инвайт-код')
     else:
         form = CustomUserCreationForm()
     
     return render(request, 'registration/register.html', {
         'form': form,
-        'title': 'Регистрация'
+        'title': 'Ргстраци'
     })
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -492,7 +483,7 @@ def user_profile(request, username):
     total_views = posts.aggregate(Sum('views_count'))['views_count__sum'] or 0
     comments_count = Comment.objects.filter(post__author=viewed_user).count()
     
-    # Получаем статистику
+    # Получае�� статистику
     streak_days = calculate_streak_days(viewed_user)
     achievements_count = calculate_achievements(viewed_user)
     
@@ -665,23 +656,33 @@ def toggle_user_status(request, user_id):
         return JsonResponse({'success': False, 'error': 'User not found'})
 
 @staff_member_required
-@require_POST
 def generate_backup(request):
-    # Создаем бекап данных
-    data = {
-        'users': list(User.objects.values()),
-        'posts': list(Post.objects.values()),
-        'categories': list(Category.objects.values()),
-        'comments': list(Comment.objects.values()),
-        'invite_codes': list(InviteCode.objects.values()),
-    }
+    """Создание бэкапа базы данных"""
+    if request.method == 'GET':  # Изменили с POST на GET
+        try:
+            # Создаем директорию для бэкапов если её нет
+            backup_dir = 'backups'
+            if not os.path.exists(backup_dir):
+                os.makedirs(backup_dir)
+
+            # Создаем имя файла с текущей датой
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            backup_file = os.path.join(backup_dir, f'db_backup_{timestamp}.json')
+
+            # Создаем бэкап
+            with open(backup_file, 'w') as f:
+                management.call_command('dumpdata', exclude=['contenttypes', 'auth.permission'], indent=2, stdout=f)
+            
+            # Отправляем файл для скачивания
+            if os.path.exists(backup_file):
+                with open(backup_file, 'rb') as f:
+                    response = HttpResponse(f.read(), content_type='application/json')
+                    response['Content-Disposition'] = f'attachment; filename=db_backup_{timestamp}.json'
+                    return response
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании бэкапа: {str(e)}')
     
-    response = HttpResponse(
-        json.dumps(data, indent=2, default=str),
-        content_type='application/json'
-    )
-    response['Content-Disposition'] = 'attachment; filename="backup.json"'
-    return response
+    return redirect('blog:admin_panel')
 
 @staff_member_required
 @require_POST
@@ -751,7 +752,7 @@ def delete_post(request, slug):
     # Проверям права на удаление
     if post.author == request.user or can_moderate(request.user):
         post.delete()
-        messages.success(request, 'Пост успе��но удален')
+        messages.success(request, 'Пост успено удален')
         return redirect('blog:home')
     messages.error(request, 'У ва нет прав для удаления этого поста')
     return redirect('blog:post_detail', slug=post.slug)
@@ -882,7 +883,7 @@ def generate_report(request):
 @staff_member_required
 @require_POST
 def clean_database(request):
-    """Очистка базы данных от неиспользуемых данных"""
+    """Очистк базы данных от неиспользуемых данных"""
     try:
         # Удаление неиспользуемых тегов
         Tag.objects.filter(posts__isnull=True).delete()
@@ -933,17 +934,23 @@ def backup_database():
 
 def post_list(request):
     """Представление для списка всех постов"""
-    posts = Post.objects.filter(is_published=True).order_by('-created_at')
+    # Получаем все опубликованные посты
+    posts_list = Post.objects.filter(is_published=True).order_by('-created_at')
     
-    # Добавляем пагинацию
-    paginator = Paginator(posts, 12)  # 12 постов на страницу
+    # Создаем объект пагинатора, 5 постов на страницу
+    paginator = Paginator(posts_list, 5)  # Изменили с 12 на 5 постов
+    
+    # Получаем номер текущей страницы из GET-параметра
     page = request.GET.get('page')
     
     try:
+        # Получаем объекты для текущей страницы
         posts = paginator.page(page)
     except PageNotAnInteger:
+        # Если page не является целым числом, возвращаем первую страницу
         posts = paginator.page(1)
     except EmptyPage:
+        # Если page больше максимального значени, возвращаем последнюю страницу
         posts = paginator.page(paginator.num_pages)
     
     context = {
@@ -1005,16 +1012,36 @@ def update_profile_avatar(request):
     if 'avatar' in request.FILES:
         try:
             profile = request.user.profile
+            avatar_file = request.FILES['avatar']
+            
+            # Создаем директорию если её нет
+            avatar_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
+            os.makedirs(avatar_dir, exist_ok=True)
+            
             # Удаляем старый аватар, если он есть
             if profile.avatar:
-                profile.avatar.delete(save=False)
-            profile.avatar = request.FILES['avatar']
+                old_avatar_path = os.path.join(settings.MEDIA_ROOT, str(profile.avatar))
+                if os.path.exists(old_avatar_path):
+                    os.remove(old_avatar_path)
+            
+            # Генерируем новое имя файла
+            file_ext = os.path.splitext(avatar_file.name)[1]
+            new_filename = f"avatar_{request.user.id}_{int(time.time())}{file_ext}"
+            file_path = os.path.join('avatars', new_filename)
+            
+            # Сохраняем файл
+            full_path = os.path.join(settings.MEDIA_ROOT, file_path)
+            with open(full_path, 'wb+') as destination:
+                for chunk in avatar_file.chunks():
+                    destination.write(chunk)
+            
+            # Обновляем профиль
+            profile.avatar = file_path
             profile.save()
             
-            # Возвращаем URL нового аватара
             return JsonResponse({
                 'success': True,
-                'avatar_url': profile.avatar.url,
+                'avatar_url': os.path.join(settings.MEDIA_URL, file_path),
                 'message': 'Аватар успешно обновлен'
             })
         except Exception as e:
@@ -1034,16 +1061,36 @@ def update_profile_cover(request):
     if 'cover' in request.FILES:
         try:
             profile = request.user.profile
+            cover_file = request.FILES['cover']
+            
+            # Создаем директорию если её нет
+            cover_dir = os.path.join(settings.MEDIA_ROOT, 'covers')
+            os.makedirs(cover_dir, exist_ok=True)
+            
             # Удаляем старую обложку, если она есть
             if profile.cover:
-                profile.cover.delete(save=False)
-            profile.cover = request.FILES['cover']
+                old_cover_path = os.path.join(settings.MEDIA_ROOT, str(profile.cover))
+                if os.path.exists(old_cover_path):
+                    os.remove(old_cover_path)
+            
+            # Генерируем новое имя файла
+            file_ext = os.path.splitext(cover_file.name)[1]
+            new_filename = f"cover_{request.user.id}_{int(time.time())}{file_ext}"
+            file_path = os.path.join('covers', new_filename)
+            
+            # Сохраняем файл
+            full_path = os.path.join(settings.MEDIA_ROOT, file_path)
+            with open(full_path, 'wb+') as destination:
+                for chunk in cover_file.chunks():
+                    destination.write(chunk)
+            
+            # Обновляем профиль
+            profile.cover = file_path
             profile.save()
             
-            # Возвращаем URL новой обложки
             return JsonResponse({
                 'success': True,
-                'cover_url': profile.cover.url,
+                'cover_url': os.path.join(settings.MEDIA_URL, file_path),
                 'message': 'Обложка успешно обновлена'
             })
         except Exception as e:
@@ -1079,7 +1126,7 @@ def create_custom_invite(request):
             try:
                 # Проверяем, не существует ли уже такой код
                 if InviteCode.objects.filter(code=custom_code).exists():
-                    messages.error(request, 'Такой код уже существует')
+                    messages.error(request, 'Такой код уже сущестует')
                 else:
                     InviteCode.objects.create(
                         code=custom_code,
@@ -1103,3 +1150,28 @@ def deactivate_invite(request, code):
         except InviteCode.DoesNotExist:
             messages.error(request, 'Инвайт-код не найден')
     return redirect('blog:admin_panel')
+
+@staff_member_required
+def restore_database(request):
+    """Восстановление базы данных из бэкапа"""
+    if request.method == 'POST':
+        try:
+            backup_file = request.FILES['backup_file']
+            # Создаем временный файл
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                for chunk in backup_file.chunks():
+                    tmp_file.write(chunk)
+            
+            # Восстанавливаем данные
+            management.call_command('loaddata', tmp_file.name)
+            
+            # Удаляем временный файл
+            os.unlink(tmp_file.name)
+            
+            messages.success(request, 'База данных успешно восстановлена')
+        except Exception as e:
+            messages.error(request, f'Ошибка при восстановлении: {str(e)}')
+        
+        return redirect('blog:admin_panel')
+    
+    return render(request, 'blog/restore_database.html')

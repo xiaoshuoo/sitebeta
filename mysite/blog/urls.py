@@ -61,6 +61,9 @@ urlpatterns = [
     path('profile/remove-cover/', views.remove_profile_cover, name='remove_profile_cover'),
     path('panel/create-custom-invite/', views.create_custom_invite, name='create_custom_invite'),
     path('panel/deactivate-invite/<str:code>/', views.deactivate_invite, name='deactivate_invite'),
+    path('admin/restore-database/', views.restore_database, name='restore_database'),
+    path('panel/backup/', views.generate_backup, name='generate_backup'),
+    path('panel/restore/', views.restore_database, name='restore_database'),
 ]
 
 # Обработчики ошибок

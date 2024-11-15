@@ -9,12 +9,17 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-default-secret-key-here')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
+
+# Добавляем render.com домен
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 INSTALLED_APPS = [
@@ -63,23 +68,28 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static'
-]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Создаем необходимые директории
+os.makedirs(STATIC_ROOT, exist_ok=True)
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+
+# Whitenoise для статических файлов
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -195,6 +205,87 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Ваш email
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  # Пароль приложения
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@example.com')
+
+# Добавьте/обновите эти настройки
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Создаем необходимые директории при запуске
+REQUIRED_DIRS = [
+    os.path.join(MEDIA_ROOT, 'avatars'),
+    os.path.join(MEDIA_ROOT, 'covers'),
+    os.path.join(MEDIA_ROOT, 'thumbnails'),
+    os.path.join(MEDIA_ROOT, 'uploads'),
+]
+
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
+
+# Добавьте эти настройки для обработки файлов
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Настройки для медиа-файлов в продакшене
+if not DEBUG:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
+    
+    # Создаем необходимые директории
+    REQUIRED_DIRS = [
+        os.path.join(MEDIA_ROOT, 'avatars'),
+        os.path.join(MEDIA_ROOT, 'covers'),
+        os.path.join(MEDIA_ROOT, 'thumbnails'),
+        os.path.join(MEDIA_ROOT, 'uploads'),
+    ]
+
+    for directory in REQUIRED_DIRS:
+        os.makedirs(directory, exist_ok=True)
+
+    # Устанавливаем права доступа
+    FILE_UPLOAD_PERMISSIONS = 0o644
+    FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Настройки для Render.com
+if os.environ.get('RENDER'):
+    ALLOWED_HOSTS.append('.onrender.com')
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# В конце файла добавьте/обновите:
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Создаем необходимые директории
+REQUIRED_DIRS = [
+    os.path.join(MEDIA_ROOT, 'avatars'),
+    os.path.join(MEDIA_ROOT, 'covers'),
+    os.path.join(MEDIA_ROOT, 'thumbnails'),
+    os.path.join(MEDIA_ROOT, 'uploads'),
+]
+
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
+
+# Убедитесь, что DEBUG = True для локальной разработки
+DEBUG = True
+
+# Настройка базы данных для Render.com
+if os.environ.get('RENDER'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join('/opt/render/project/src/mysite', 'db.sqlite3'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 
