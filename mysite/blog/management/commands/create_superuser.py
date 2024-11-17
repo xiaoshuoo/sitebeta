@@ -11,12 +11,26 @@ class Command(BaseCommand):
                 superuser = User.objects.create_superuser(
                     username='admin',
                     email='admin@example.com',
-                    password='admin'
+                    password='admin',
+                    first_name='Admin',
+                    last_name='User'
                 )
-                # Проверяем существование профиля
-                if not Profile.objects.filter(user=superuser).exists():
-                    Profile.objects.create(user=superuser)
-                self.stdout.write(self.style.SUCCESS('Superuser created successfully'))
+                
+                profile = Profile.objects.create(
+                    user=superuser,
+                    role='creator',
+                    bio='Администратор сайта',
+                    location='System',
+                    occupation='Site Administrator'
+                )
+                
+                self.stdout.write(self.style.SUCCESS(
+                    f'Superuser created successfully\n'
+                    f'Username: admin\n'
+                    f'Password: admin\n'
+                    f'Email: admin@example.com\n'
+                    f'Role: creator'
+                ))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f'Error creating superuser: {str(e)}'))
         else:
