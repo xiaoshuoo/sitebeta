@@ -193,14 +193,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Отключаем сжатие и манифест для статических файлов
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Используем простое хранилище для статических файлов
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Настройки для Whitenoise
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 WHITENOISE_MANIFEST_STRICT = False
-WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['css', 'scss', 'sass', 'less']
 
 # Настройки для статических файлов
 STATICFILES_FINDERS = [
@@ -219,168 +218,36 @@ REQUIRED_DIRS = [
 for directory in REQUIRED_DIRS:
     os.makedirs(directory, exist_ok=True)
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Создаем необходимые директории
-REQUIRED_DIRS = [
-    STATIC_ROOT,
-    MEDIA_ROOT,
-    os.path.join(MEDIA_ROOT, 'avatars'),
-    os.path.join(MEDIA_ROOT, 'posts'),
-    os.path.join(MEDIA_ROOT, 'covers'),
-    os.path.join(BASE_DIR, 'static', 'css'),
-    os.path.join(BASE_DIR, 'static', 'js'),
-]
-
-for directory in REQUIRED_DIRS:
-    os.makedirs(directory, exist_ok=True)
-
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Auth settings
-LOGIN_REDIRECT_URL = 'blog:home'
-LOGOUT_REDIRECT_URL = 'blog:home'
-LOGIN_URL = 'login'
-
-# Admin settings
-ADMIN_URL = 'admin/'
-
-# Security settings
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
-
-# TinyMCE Configuration
-TINYMCE_JS_URL = os.path.join(STATIC_URL, "tinymce/tinymce.min.js")
-TINYMCE_DEFAULT_CONFIG = {
-    'height': 500,
-    'width': 'auto',
-    'menubar': False,
-    'plugins': '''
-        advlist autolink lists link image charmap print preview anchor
-        searchreplace visualblocks code fullscreen
-        insertdatetime media table paste code help wordcount
-    ''',
-    'toolbar': '''
-        undo redo | formatselect | bold italic backcolor |
-        alignleft aligncenter alignright alignjustify |
-        bullist numlist outdent indent | removeformat | help |
-        link image media | code fullscreen
-    ''',
-    'content_css': [
-        '//fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-    ],
-}
-
-# Создаем необходимые директории
-REQUIRED_DIRS = [
-    STATIC_ROOT,
-    os.path.join(BASE_DIR, 'static'),
-    os.path.join(BASE_DIR, 'static', 'css'),
-    os.path.join(BASE_DIR, 'static', 'js'),
-    os.path.join(BASE_DIR, 'static', 'tinymce'),
-]
-
-for directory in REQUIRED_DIRS:
-    os.makedirs(directory, exist_ok=True)
-
-# Настройки для статических файлов
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-
-# Добавляем MIME-типы
-WHITENOISE_MIMETYPES = {
-    '.js': 'application/javascript',
-    '.css': 'text/css',
-}
-
-# Настройки для статических файов
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static'
-]
-
 # Настройки для медиа файлов
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Добавляем настройки для аутентификации
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-# Настройки сессий
-SESSION_COOKIE_AGE = 1209600  # 2 недели в секундах
-SESSION_COOKIE_NAME = 'sessionid'
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-
-# Добавляем бэкенды аутнтификации
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-# Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Для разработки
-EMAIL_HOST = 'smtp.gmail.com'  # Дя продкшена
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Ваш email
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  # Пароль приложения
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@example.com')
-
-# Добавьте/обновите эти настройки
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Создаем необходимые директории при запуске
-REQUIRED_DIRS = [
+# Создаем директории для медиа файлов
+MEDIA_DIRS = [
     os.path.join(MEDIA_ROOT, 'avatars'),
+    os.path.join(MEDIA_ROOT, 'posts'),
     os.path.join(MEDIA_ROOT, 'covers'),
-    os.path.join(MEDIA_ROOT, 'thumbnails'),
-    os.path.join(MEDIA_ROOT, 'uploads'),
 ]
 
-for directory in REQUIRED_DIRS:
+for directory in MEDIA_DIRS:
     os.makedirs(directory, exist_ok=True)
 
-# Добавьте эти настройки для обработки файлов
+# Настройки для файлов
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# Настройки для медиа-файлов в продакшене
-if not DEBUG:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    MEDIA_URL = '/media/'
-    
-    # Создем необходимые директории
-    REQUIRED_DIRS = [
-        os.path.join(MEDIA_ROOT, 'avatars'),
-        os.path.join(MEDIA_ROOT, 'covers'),
-        os.path.join(MEDIA_ROOT, 'thumbnails'),
-        os.path.join(MEDIA_ROOT, 'uploads'),
-    ]
+# Настройки для Whitenoise
+WHITENOISE_MIMETYPES = {
+    '.css': 'text/css',
+    '.js': 'application/javascript',
+}
 
-    for directory in REQUIRED_DIRS:
-        os.makedirs(directory, exist_ok=True)
+# Отключаем сжатие для CSS файлов
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['css', 'scss']
 
-    # Устанавлиаем права доступа
-    FILE_UPLOAD_PERMISSIONS = 0o644
-    FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+# Настройки для постоянного хранения
+PERSISTENT_DB = True
+DB_PERSISTENT_STORAGE = True
 
 # Настройки для Render.com
 if os.environ.get('RENDER'):
