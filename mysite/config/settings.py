@@ -119,7 +119,7 @@ MEDIA_URL = '/media/'
 for directory in ['media', 'media/avatars', 'media/posts', 'media/covers', 'backups']:
     os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
 
-# Настройк�� для постоянного хранения данных
+# Настройки для постоянного хранения данных
 DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -174,11 +174,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Настройки для Whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'  # Изменили с CompressedManifestStaticFilesStorage
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_ROOT = os.path.join(BASE_DIR, 'static')
-WHITENOISE_INDEX_FILE = True
+# Отключаем Whitenoise для CSS файлов
+WHITENOISE_MIMETYPES = {
+    '.js': 'application/javascript',
+}
+
+# Используем простое хранилище для статических файлов
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Настройки для статических файлов
 STATICFILES_FINDERS = [
