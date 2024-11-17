@@ -3,7 +3,7 @@ services:
     name: sity-lvo8
     env: python
     buildCommand: sh build.sh
-    startCommand: gunicorn config.wsgi:application
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     plan: starter
     disk:
       name: blog_data
@@ -18,17 +18,24 @@ services:
         value: config.settings
       - key: SECRET_KEY
         generateValue: true
-      - key: MEDIA_ROOT
-        value: /opt/render/project/src/data/media
-      - key: STATIC_ROOT
-        value: /opt/render/project/src/data/static
+      - key: DEBUG
+        value: 'True'
+      - key: SECURE_SSL_REDIRECT
+        value: 'false'
+    headers:
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains; preload
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
     routes:
       - type: rewrite
-        source: /media/*
-        destination: /opt/render/project/src/data/media/*
-      - type: rewrite
-        source: /static/*
-        destination: /opt/render/project/src/data/static/*
+        source: /*
+        destination: /
 
 databases:
   - name: django-blog-db
@@ -43,6 +50,27 @@ databases:
       maintenance_work_mem: '256MB'
       effective_cache_size: '1GB'
       shared_buffers: '512MB'
+      wal_level: 'replica'
+      max_wal_size: '2GB'
+      min_wal_size: '100MB'
+      checkpoint_timeout: '10min'
+      checkpoint_completion_target: 0.9
+      autovacuum: 'on'
+      autovacuum_max_workers: 3
+      autovacuum_naptime: '1min'
+      autovacuum_vacuum_threshold: 50
+      autovacuum_analyze_threshold: 50
+      idle_in_transaction_session_timeout: '2h'
+      statement_timeout: '2h'
+      lock_timeout: '2min'
+      random_page_cost: 1.1
+      effective_io_concurrency: 200
+      temp_file_limit: '5GB'
+      vacuum_cost_delay: 2
+      vacuum_cost_limit: 2000
+      bgwriter_delay: '200ms'
+      bgwriter_lru_maxpages: 1000
+      bgwriter_lru_multiplier: 10.0
     disk:
       name: postgres_data
       mountPath: /var/lib/postgresql/data

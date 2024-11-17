@@ -1,0 +1,63 @@
+/* Общие стили */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Стили для карточек */
+.hover-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Hero секция */
+.hero-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+    border-radius: 15px;
+}
+
+/* Карточки постов */
+.card {
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: calc(0.375rem - 1px);
+    border-top-right-radius: calc(0.375rem - 1px);
+}
+
+/* Badges и теги */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 1em;
+}
+
+/* Кнопки */
+.btn-group .btn {
+    border-radius: 0.375rem;
+    margin-right: 0.25rem;
+}
+
+/* Сайдбар */
+.card-header {
+    border-bottom: none;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-in;
+} 

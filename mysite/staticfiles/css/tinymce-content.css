@@ -1,140 +1,92 @@
 /* Основные стили */
 body {
+    background-color: #1A1625 !important;
+    color: #E2E8F0 !important;
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
-    color: #E2E8F0;
-    background: #1A1625;
-    padding: 20px;
+    padding: 2rem;
+    max-width: 100%;
 }
 
 /* Заголовки */
 h1, h2, h3, h4, h5, h6 {
-    color: #E2E8F0;
+    color: #fff !important;
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
 }
-
-h1 { font-size: 2.25rem; }
-h2 { font-size: 1.875rem; }
-h3 { font-size: 1.5rem; }
 
 /* Параграфы */
 p {
-    margin-bottom: 1rem;
-    color: #E2E8F0;
+    margin-bottom: 1em;
 }
 
 /* Ссылки */
 a {
-    color: #8B5CF6;
+    color: #8B5CF6 !important;
     text-decoration: none;
-    transition: all 0.2s;
+    transition: color 0.3s ease;
 }
 
 a:hover {
-    color: #7C3AED;
-    text-decoration: underline;
+    color: #7C3AED !important;
 }
 
-/* Списки */
-ul, ol {
-    margin: 1rem 0;
-    padding-left: 1.5rem;
-    color: #E2E8F0;
-}
-
-li {
-    margin: 0.5rem 0;
-}
-
-/* Таблицы */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
-    background: #2D2A3D;
-    border-radius: 0.75rem;
-    overflow: hidden;
-}
-
-th, td {
-    padding: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-th {
-    background: rgba(139, 92, 246, 0.1);
-    font-weight: 600;
-}
-
-/* Код и блоки кода */
+/* Код */
 pre {
-    background: #2D2A3D !important;
+    background-color: #2D2A3D !important;
     color: #E2E8F0 !important;
-    padding: 1rem !important;
+    padding: 1.5rem !important;
     border-radius: 0.75rem !important;
-    margin: 1rem 0 !important;
-    border: 1px solid rgba(139, 92, 246, 0.2) !important;
-    overflow-x: auto !important;
     font-family: 'Fira Code', monospace !important;
+    margin: 1.5em 0 !important;
+    border: 1px solid rgba(147, 51, 234, 0.2) !important;
 }
 
 code {
-    background: #2D2A3D !important;
+    background-color: #2D2A3D !important;
     color: #E2E8F0 !important;
     padding: 0.2rem 0.4rem !important;
     border-radius: 0.25rem !important;
     font-family: 'Fira Code', monospace !important;
 }
 
-/* Подсветка синтаксиса */
-.ck_source, 
-.ck_content {
-    background: #1A1625 !important;
+/* Списки */
+ul, ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+/* Таблицы */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    background-color: #2D2A3D !important;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(147, 51, 234, 0.2);
     color: #E2E8F0 !important;
 }
 
-/* Стили для текста в редакторе */
-.prose {
-    color: #E2E8F0 !important;
-}
-
-.prose * {
-    color: #E2E8F0 !important;
-}
-
-.prose pre {
-    background: #2D2A3D !important;
-    color: #E2E8F0 !important;
-}
-
-.prose code {
-    background: #2D2A3D !important;
-    color: #E2E8F0 !important;
-}
-
-/* Дополнительные стили для блоков кода */
-.ck-content pre {
-    background: #2D2A3D !important;
-    color: #E2E8F0 !important;
-}
-
-.ck-content code {
-    background: #2D2A3D !important;
-    color: #E2E8F0 !important;
-}
-
-/* Стили для всего текста в редакторе */
-.ck-content,
-.ck-content * {
-    color: #E2E8F0 !important;
+th {
+    background-color: rgba(147, 51, 234, 0.1);
+    font-weight: 600;
 }
 
 /* Изображения */
 img {
     max-width: 100%;
     height: auto;
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     margin: 1rem 0;
 }
 
@@ -142,8 +94,8 @@ img {
 blockquote {
     border-left: 4px solid #8B5CF6;
     margin: 1.5rem 0;
-    padding: 1rem;
-    background: #2D2A3D;
-    border-radius: 0 0.75rem 0.75rem 0;
-    color: #94A3B8;
+    padding: 1rem 1.5rem;
+    background-color: #2D2A3D;
+    border-radius: 0.5rem;
+    font-style: italic;
 } 
