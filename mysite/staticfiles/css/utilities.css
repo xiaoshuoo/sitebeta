@@ -71,32 +71,4 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* Улучшенные поля ввода */
-.form-input {
-    background: rgba(26, 22, 37, 0.8);
-    border: 2px solid transparent;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: white;
-    transition: all 0.3s ease;
-}
-
-.form-input:focus {
-    border-color: #8B5CF6;
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
-    transform: translateY(-1px);
-}
-
-/* Анимированные иконки */
-.icon-animated {
-    transition: all 0.3s ease;
-    transform-origin: center;
-}
-
-.icon-animated:hover {
-    transform: scale(1.2) rotate(8deg);
-    color: #8B5CF6;
-    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
 } 
