@@ -6,10 +6,10 @@ set -o errexit
 pip install -r requirements.txt
 
 # Создаем необходимые директории
-mkdir -p static/css static/js media/avatars media/posts media/covers
-
-# Копируем CSS файлы
-cp -r static/css/* staticfiles/css/ || true
+mkdir -p /opt/render/project/src/data/media/avatars
+mkdir -p /opt/render/project/src/data/media/posts
+mkdir -p /opt/render/project/src/data/media/covers
+mkdir -p /opt/render/project/src/data/static
 
 # Применяем миграции
 python manage.py migrate --noinput
@@ -19,6 +19,9 @@ python manage.py createcachetable
 
 # Создаем суперпользователя
 python manage.py create_superuser
+
+# Синхронизируем базу данных
+python manage.py sync_database
 
 # Проверяем подключение к базе данных
 python -c "
@@ -38,9 +41,5 @@ cursor.close()
 conn.close()
 "
 
-# Собираем статические файлы без пост-обработки
-DISABLE_COLLECTSTATIC=1 python manage.py collectstatic --no-input --clear --no-post-process
-
-# Копируем tailwind CSS файлы
-mkdir -p staticfiles/css/tailwindcss
-cp static/css/tailwindcss/* staticfiles/css/tailwindcss/ || true
+# Собираем статические файлы
+python manage.py collectstatic --no-input

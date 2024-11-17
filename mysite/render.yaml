@@ -43,16 +43,6 @@ databases:
       maintenance_work_mem: '256MB'
       effective_cache_size: '1GB'
       shared_buffers: '512MB'
-      wal_level: 'replica'
-      max_wal_size: '1GB'
-      min_wal_size: '80MB'
-      checkpoint_timeout: '5min'
-      checkpoint_completion_target: 0.9
-      autovacuum: 'on'
-      autovacuum_max_workers: 3
-      autovacuum_naptime: '1min'
-      autovacuum_vacuum_threshold: 50
-      autovacuum_analyze_threshold: 50
     disk:
       name: postgres_data
       mountPath: /var/lib/postgresql/data

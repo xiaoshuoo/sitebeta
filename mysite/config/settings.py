@@ -70,24 +70,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a')
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'django_blog_7f9a',
-        'USER': 'django_blog_7f9a_user',
-        'PASSWORD': 'qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
-        'HOST': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-            'keepalives': 1,
-            'keepalives_idle': 30,
-            'keepalives_interval': 10,
-            'keepalives_count': 5,
-        },
-        'CONN_MAX_AGE': None,
-        'ATOMIC_REQUESTS': True,
-        'CONN_HEALTH_CHECKS': True,
-    }
+    'default': dj_database_url.config(
+        default='postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a',
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=True
+    )
 }
 
 # Настройки для файлов
@@ -98,19 +86,13 @@ STATIC_ROOT = '/opt/render/project/src/data/static'
 
 # Создаем необходимые директории
 REQUIRED_DIRS = [
-    MEDIA_ROOT,
     os.path.join(MEDIA_ROOT, 'avatars'),
     os.path.join(MEDIA_ROOT, 'posts'),
     os.path.join(MEDIA_ROOT, 'covers'),
-    STATIC_ROOT,
 ]
 
 for directory in REQUIRED_DIRS:
     os.makedirs(directory, exist_ok=True)
-
-# Настройки для постоянного хранения
-FILE_UPLOAD_PERMISSIONS = 0o644
-FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 # Настройки для сессий
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
@@ -122,11 +104,6 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'django_cache',
-        'TIMEOUT': None,
-        'OPTIONS': {
-            'MAX_ENTRIES': 100000,
-            'CULL_FREQUENCY': 3,
-        }
     }
 }
 
@@ -295,7 +272,7 @@ else:
         }
     }
 
-# Настройки для п��стоянного хранения
+# Настройки для пстоянного хранения
 PERSISTENT_DB = True
 DB_PERSISTENT_STORAGE = True
 
