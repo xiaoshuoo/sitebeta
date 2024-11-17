@@ -79,23 +79,50 @@ DATABASES = {
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',
-        }
+            'keepalives': 1,
+            'keepalives_idle': 30,
+            'keepalives_interval': 10,
+            'keepalives_count': 5,
+        },
+        'CONN_MAX_AGE': None,  # Постоянное соединение
+        'ATOMIC_REQUESTS': True,
     }
 }
 
 # Настройки для файлов
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
+STATIC_URL = '/static/'
+STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'static'))
 
 # Создаем необходимые директории
 REQUIRED_DIRS = [
+    MEDIA_ROOT,
     os.path.join(MEDIA_ROOT, 'avatars'),
     os.path.join(MEDIA_ROOT, 'posts'),
     os.path.join(MEDIA_ROOT, 'covers'),
+    STATIC_ROOT,
 ]
 
 for directory in REQUIRED_DIRS:
     os.makedirs(directory, exist_ok=True)
+
+# Настройки для постоянного хранения
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Настройки для сессий
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1209600  # 2 недели
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Настройки кэширования
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache',
+    }
+}
 
 # Настройки для постоянного хранения
 PERSISTENT_DB = True

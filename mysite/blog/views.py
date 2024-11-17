@@ -527,7 +527,7 @@ def post_delete(request, slug):
 def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
-        # Создаем прямое подключение к PostgreSQL
+        # Создае�� прямое подключение к PostgreSQL
         conn = psycopg2.connect(
             dbname='django_blog_7f9a',
             user='django_blog_7f9a_user',
@@ -546,11 +546,21 @@ def get_database_info():
         # Получаем список таблиц и их размеры
         cursor.execute("""
             SELECT 
-                relname as table_name,
-                pg_size_pretty(pg_total_relation_size(quote_ident(relname)::regclass)) as size,
-                pg_total_relation_size(quote_ident(relname)::regclass) as raw_size
-            FROM pg_stat_user_tables
-            ORDER BY raw_size DESC
+                t.tablename as table_name,
+                pg_size_pretty(pg_total_relation_size(quote_ident(t.tablename)::text)) as size,
+                pg_total_relation_size(quote_ident(t.tablename)::text) as raw_size,
+                (SELECT count(*) FROM information_schema.columns WHERE table_name=t.tablename) as columns_count,
+                CASE 
+                    WHEN t.tablename = 'auth_user' THEN (SELECT count(*) FROM auth_user)
+                    WHEN t.tablename = 'blog_post' THEN (SELECT count(*) FROM blog_post)
+                    WHEN t.tablename = 'blog_comment' THEN (SELECT count(*) FROM blog_comment)
+                    WHEN t.tablename = 'blog_profile' THEN (SELECT count(*) FROM blog_profile)
+                    WHEN t.tablename = 'blog_category' THEN (SELECT count(*) FROM blog_category)
+                    ELSE 0
+                END as records_count
+            FROM pg_tables t
+            WHERE schemaname = 'public'
+            ORDER BY pg_total_relation_size(quote_ident(t.tablename)::text) DESC
         """)
         tables = cursor.fetchall()
 
@@ -566,29 +576,27 @@ def get_database_info():
         # Подсчитываем записи в каждой таблице
         for table in tables:
             table_name = table[0]
-            try:
-                cursor.execute(f'SELECT COUNT(*) FROM "{table_name}"')
-                count = cursor.fetchone()[0]
-                
-                if 'auth_user' in table_name:
-                    stats['users'] = count
-                elif 'blog_post' in table_name:
-                    stats['posts'] = count
-                elif 'blog_comment' in table_name:
-                    stats['comments'] = count
-                elif 'blog_profile' in table_name:
-                    stats['profiles'] = count
-                elif 'blog_category' in table_name:
-                    stats['categories'] = count
-            except:
-                continue
+            records = table[4]
+            
+            if table_name == 'auth_user':
+                stats['users'] = records
+            elif table_name == 'blog_post':
+                stats['posts'] = records
+            elif table_name == 'blog_comment':
+                stats['comments'] = records
+            elif table_name == 'blog_profile':
+                stats['profiles'] = records
+            elif table_name == 'blog_category':
+                stats['categories'] = records
 
         # Получаем информацию о кэше и использовании памяти
         cursor.execute("""
             SELECT 
                 sum(heap_blks_hit) * current_setting('block_size')::bigint as cache_hit_bytes,
-                sum(heap_blks_read) * current_setting('block_size')::bigint as disk_read_bytes
-            FROM pg_statio_user_tables
+                sum(heap_blks_read) * current_setting('block_size')::bigint as disk_read_bytes,
+                sum(heap_blks_hit)::float / 
+                    nullif(sum(heap_blks_hit) + sum(heap_blks_read), 0) * 100 as cache_hit_ratio
+            FROM pg_statio_user_tables;
         """)
         memory_stats = cursor.fetchone()
 
@@ -620,7 +628,9 @@ def get_database_info():
                 {
                     'name': table[0],
                     'size': table[1],
-                    'raw_size': table[2]
+                    'raw_size': table[2],
+                    'columns': table[3],
+                    'records': table[4]
                 } for table in tables
             ],
             'stats': stats,
@@ -630,8 +640,10 @@ def get_database_info():
                 'idle_connections': connections[2] if connections else 0,
                 'cache_hit_size': f"{memory_stats[0]/1024/1024:.1f}MB" if memory_stats and memory_stats[0] else 'N/A',
                 'disk_read_size': f"{memory_stats[1]/1024/1024:.1f}MB" if memory_stats and memory_stats[1] else 'N/A',
+                'cache_hit_ratio': f"{memory_stats[2]:.1f}%" if memory_stats and memory_stats[2] else 'N/A',
                 'total_size': total_size,
-                'table_count': len(tables)
+                'table_count': len(tables),
+                'total_rows': sum(table[4] for table in tables)
             }
         }
     except Exception as e:
@@ -657,8 +669,10 @@ def get_database_info():
                 'idle_connections': 0,
                 'cache_hit_size': 'N/A',
                 'disk_read_size': 'N/A',
+                'cache_hit_ratio': 'N/A',
                 'total_size': 'N/A',
-                'table_count': 0
+                'table_count': 0,
+                'total_rows': 0
             }
         }
 
@@ -1154,7 +1168,7 @@ def post_list(request):
     # Создаем объект пагинатора, 5 постов на страниц
     paginator = Paginator(posts_list, 5)  # Изменили с 12 на 5 постов
     
-    # Получаем номер те��ущей страницы из GET-параметра
+    # Получаем номер теущей страницы из GET-параметра
     page = request.GET.get('page')
     
     try:
@@ -1348,7 +1362,7 @@ def create_custom_invite(request):
                     )
                     messages.success(request, f'Создан инвайт-код: {custom_code}')
             except Exception as e:
-                messages.error(request, f'Ошибка при создании кода: {str(e)}')
+                messages.error(request, f'Ошибка при ��оздании кода: {str(e)}')
         else:
             messages.error(request, 'Недопустимый формат кода')
     return redirect('blog:admin_panel')
