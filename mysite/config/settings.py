@@ -85,15 +85,16 @@ DATABASES = {
             'keepalives_count': 5,
         },
         'CONN_MAX_AGE': None,  # Постоянное соединение
-        'ATOMIC_REQUESTS': True,
+        'ATOMIC_REQUESTS': True,  # Транзакции для каждого запроса
+        'CONN_HEALTH_CHECKS': True,
     }
 }
 
 # Настройки для файлов
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
+MEDIA_ROOT = '/opt/render/project/src/data/media'
 STATIC_URL = '/static/'
-STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'static'))
+STATIC_ROOT = '/opt/render/project/src/data/static'
 
 # Создаем необходимые директории
 REQUIRED_DIRS = [

@@ -12,10 +12,23 @@ services:
     envVars:
       - key: DATABASE_URL
         value: postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
+      - key: SECRET_KEY
+        generateValue: true
       - key: MEDIA_ROOT
         value: /opt/render/project/src/data/media
       - key: STATIC_ROOT
         value: /opt/render/project/src/data/static
+    routes:
+      - type: rewrite
+        source: /media/*
+        destination: /opt/render/project/src/data/media/*
+      - type: rewrite
+        source: /static/*
+        destination: /opt/render/project/src/data/static/*
 
 databases:
   - name: django-blog-db
@@ -30,3 +43,17 @@ databases:
       maintenance_work_mem: '256MB'
       effective_cache_size: '1GB'
       shared_buffers: '512MB'
+      wal_level: 'replica'
+      max_wal_size: '1GB'
+      min_wal_size: '80MB'
+      checkpoint_timeout: '5min'
+      checkpoint_completion_target: 0.9
+      autovacuum: 'on'
+      autovacuum_max_workers: 3
+      autovacuum_naptime: '1min'
+      autovacuum_vacuum_threshold: 50
+      autovacuum_analyze_threshold: 50
+    disk:
+      name: postgres_data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 1
