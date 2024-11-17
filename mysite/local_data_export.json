@@ -1,0 +1,367 @@
+{
+  "users": [
+    {
+      "username": "Odinochka",
+      "email": "imanovtabriz@gmail.com",
+      "password": "pbkdf2_sha256$870000$VxJvIStA64cwC2VKPJg6WA$ERXGicKSsQFd9g39ZPN5nd2hdrzvcSEFXQjEzJhmKZg=",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-11-12T13:55:04+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "11",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$GG3zxXwx3lnDeuJmgusmGX$ir+iSFn/sOD/GM+K/Y6PNdAkueV7GjZgUzijGPUFsdg=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-12T15:33:06.393478+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "111",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$fmM7xZcCqfYnBK0cZgj7Uh$IfDzfWvJvYPwvKD1q+Vd95DB3LUxmmoUuAUDL0RiiwU=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-12T15:40:23.748142+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "1115",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$Ge5HWEyTs2LzgsQAUzny56$tPDumHBYlS+7pIAVn4tvH8oY9omTor8EwPYDQ6WU65I=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-13T19:47:15.360564+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "1112",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$spxsnc4hg5BclklZt9aRbG$pjBjM1mFsLTIksbCWKpKwpWhA7sz7VR8yUTOkJ4p4CA=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-13T19:50:00.537856+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka1",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$PsSuDBoiegExEFW31HqBxG$4YOKnKnuD3bbmlflfSHyIIfeXY5g6bVBRj3ipanFOpk=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-13T20:05:00.454432+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka3",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$04o0v1vEGFQvz3yaEUjI6N$FduSeNuDUb3W591v/vHWPvGymdyzsntiJubSrrDzJYs=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-14T17:24:58.857696+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka31",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$PMpsVzpohqElcKWtu7M4nE$hrQSKalbej5/whv13xQ8tM00U1SCwbQdPyHtQW+Gu74=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-16T10:20:52.026752+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka4",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$U884HrhCPY7xrfCUoxpf1N$ymi0GsurfWQUX4/b1ceDmDVsh3zTdJtKrjO8jdNet+0=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-16T16:55:46.009699+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka6",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$Cp5dg7b3ZhdOYyMtxjKEHc$c4yKVUNwPTdL8ABzLn1lN+f3+ihbRNAtQsrpTeT1lCU=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-16T16:56:57.995709+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka65",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$Y0D5dvPxGHwhwyfZu5TtIU$S5l8QbxoC+kgsZmnkOIg32jmDranCHa2CH4yzX2t5W0=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-16T16:59:01.863854+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka12",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$PfPaDZM0zII1Amc4YnBZw6$In8ZE0AtishzcoCL59RDlNwSGgAKNu6YeYsVpUrATyA=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-16T17:05:10.040804+00:00",
+      "first_name": "",
+      "last_name": ""
+    },
+    {
+      "username": "Odinochka123",
+      "email": "",
+      "password": "pbkdf2_sha256$870000$Ohop3WaJDj0x4uBf2BRLMQ$Dl9E4J1ebVkzkJ/CiYTyonGLOKWGGywvvaAT8EGrhwU=",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-16T17:06:51.613182+00:00",
+      "first_name": "",
+      "last_name": ""
+    }
+  ],
+  "profiles": [
+    {
+      "user_id": 1,
+      "avatar": "avatars/avatars/avatar_1_1731834180.gif",
+      "cover": "covers/covers/covers/covers/covers/cover_1_1731753561.jpg",
+      "bio": "Я дибил1111",
+      "location": "Russian, Moscow",
+      "website": "https://sity-lvo8.onrender.com/",
+      "occupation": "Хуесос ничтожество и т.д",
+      "role": "creator"
+    },
+    {
+      "user_id": 2,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 3,
+      "avatar": "avatars/9B7407CB-FABB-4930-8162-CDE228A1857E_NPCUk9l.gif",
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 4,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 5,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 6,
+      "avatar": "avatars/4d33337b5d35e34a52ba384156a46926.gif",
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "moderator"
+    },
+    {
+      "user_id": 7,
+      "avatar": "avatars/B7C7DB1E-AEC4-4344-BE7A-5663FDB719AE.gif",
+      "cover": null,
+      "bio": "",
+      "location": "Ukraina, Saranks",
+      "website": "",
+      "occupation": "хуесос",
+      "role": "user"
+    },
+    {
+      "user_id": 8,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 9,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 10,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 11,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 12,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    },
+    {
+      "user_id": 13,
+      "avatar": null,
+      "cover": null,
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "role": "user"
+    }
+  ],
+  "categories": [
+    {
+      "name": "1",
+      "slug": "1",
+      "description": "",
+      "icon": "fas fa-folder",
+      "created_at": "2024-11-14T19:41:37.560836+00:00",
+      "updated_at": "2024-11-14T19:41:37.565822+00:00",
+      "_posts_count": 0
+    },
+    {
+      "name": "1111154",
+      "slug": "1111154",
+      "description": "",
+      "icon": "fa-folder",
+      "created_at": "2024-11-17T09:56:03.398480+00:00",
+      "updated_at": "2024-11-17T09:56:03.398480+00:00",
+      "_posts_count": 0
+    },
+    {
+      "name": "11114",
+      "slug": "11114",
+      "description": "",
+      "icon": "fa-folder",
+      "created_at": "2024-11-17T09:00:25.331415+00:00",
+      "updated_at": "2024-11-17T09:00:25.331415+00:00",
+      "_posts_count": 0
+    },
+    {
+      "name": "666",
+      "slug": "666",
+      "description": "",
+      "icon": "fa-folder",
+      "created_at": "2024-11-17T09:01:17.829196+00:00",
+      "updated_at": "2024-11-17T09:01:17.829196+00:00",
+      "_posts_count": 0
+    },
+    {
+      "name": "Odinochestvo",
+      "slug": "odinochestvo",
+      "description": "",
+      "icon": "fas fa-folder",
+      "created_at": "2024-11-14T19:41:37.560836+00:00",
+      "updated_at": "2024-11-14T19:41:37.565822+00:00",
+      "_posts_count": 0
+    }
+  ],
+  "tags": [],
+  "posts": [
+    {
+      "title": "1111111",
+      "slug": "1111111-0b3d23cb",
+      "content": "<p>111111 ! ! ! ! ! 1 11111111111111 1111111111111111111</p>",
+      "created_at": "2024-11-12T14:00:58.688605+00:00",
+      "updated_at": "2024-11-13T20:05:27.588994+00:00",
+      "author_id": 1,
+      "category_id": 2,
+      "thumbnail": "thumbnails/5B0623EF-D104-4B14-95ED-8C7C6B832ADB.gif",
+      "is_published": true,
+      "views_count": 2
+    },
+    {
+      "title": "111111",
+      "slug": "111111-87af147e",
+      "content": "11111111111111",
+      "created_at": "2024-11-14T15:06:49.915672+00:00",
+      "updated_at": "2024-11-14T15:06:49.956561+00:00",
+      "author_id": 1,
+      "category_id": 2,
+      "thumbnail": "thumbnails/4d33337b5d35e34a52ba384156a46926.gif",
+      "is_published": true,
+      "views_count": 1
+    },
+    {
+      "title": "11111",
+      "slug": "11111-cff33404",
+      "content": "1111111111",
+      "created_at": "2024-11-14T15:55:14.401880+00:00",
+      "updated_at": "2024-11-14T15:55:14.427813+00:00",
+      "author_id": 1,
+      "category_id": 1,
+      "thumbnail": "thumbnails/5322c86c700bc62e7466f370aa8de79f.gif",
+      "is_published": true,
+      "views_count": 1
+    }
+  ],
+  "comments": [],
+  "post_views": []
+}

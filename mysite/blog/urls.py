@@ -64,7 +64,7 @@ urlpatterns = [
     path('admin/restore-database/', views.restore_database, name='restore_database'),
     path('panel/backup/', views.generate_backup, name='generate_backup'),
     path('panel/restore/', views.restore_database, name='restore_database'),
-    path('health/', views.health_check, name='health_check'),
+    path('health/', views.health_check, name='health'),
 ]
 
 # Обработчики ошибок

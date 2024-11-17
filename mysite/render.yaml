@@ -4,77 +4,20 @@ services:
     env: python
     buildCommand: sh build.sh
     startCommand: gunicorn config.wsgi:application
-    healthCheckPath: /health/
-    disk:
-      name: data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+    plan: starter
     envVars:
+      - key: DATABASE_URL
+        value: postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: DEBUG
-        value: "False"
-      - key: RENDER
-        value: "true"
-      - key: DATABASE_URL
-        value: postgres://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a
 
 databases:
   - name: django-blog-db
     databaseName: django_blog_7f9a
     user: django_blog_7f9a_user
-    ipAllowList: []
     plan: starter
-    postgresMajorVersion: 15
-    region: oregon
-    disk:
-      name: postgres_data
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 1
-    settings:
-      max_connections: 100
-      synchronous_commit: 'on'
-      work_mem: '128MB'
-      maintenance_work_mem: '256MB'
-      effective_cache_size: '1GB'
-      shared_buffers: '512MB'
-      wal_level: 'replica'
-      max_wal_size: '1GB'
-      min_wal_size: '80MB'
-      checkpoint_timeout: '5min'
-      checkpoint_completion_target: 0.9
-      random_page_cost: 1.1
-      effective_io_concurrency: 200
-      autovacuum: 'on'
-      autovacuum_max_workers: 4
-      autovacuum_naptime: '15s'
-      autovacuum_vacuum_scale_factor: 0.1
-      autovacuum_analyze_scale_factor: 0.05
-
-  - type: cron
-    name: database-backup
-    schedule: "0 */6 * * *"
-    disk:
-      name: backups
-      mountPath: /opt/render/project/src/backups
-      sizeGB: 1
-    command: |
-      pg_dump $DATABASE_URL > /opt/render/project/src/backups/backup_$(date +%Y%m%d_%H%M%S).sql
-
-  - type: cron
-    name: keep-db-alive
-    schedule: "*/10 * * * *"
-    command: |
-      psql $DATABASE_URL -c "SELECT 1;"
-
-  - type: cron
-    name: db-maintenance
-    schedule: "0 3 * * *"
-    command: |
-      psql $DATABASE_URL -c "VACUUM ANALYZE;"
-
-  - type: cron
-    name: keep-web-alive
-    schedule: "*/2 * * * *"
-    httpMethod: GET
-    url: https://sity-lvo8.onrender.com/health/
+    ipAllowList: []

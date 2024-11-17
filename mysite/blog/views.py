@@ -65,7 +65,7 @@ def calculate_streak_days(user):
             streak = 1
             continue
             
-        # Если разница между постами больше 1 дня, прерывм подсчет
+        # Если разница между постами больше 1 дня, прерыв подсчет
         if (last_post_date - post_date).days > 1:
             break
             
@@ -271,10 +271,10 @@ def get_page_range(paginator, current_page, show_pages=2):
     """
     page_range = []
     
-    # Всегда показываем первую страницу
+    # Всегда показываем первую страниц��
     page_range.append(1)
     
-    # Вычсляем диапазон страниц вокруг кущей
+    # Вычсляем диапазон страниц вокруг ущей
     start_page = max(2, current_page - show_pages)
     end_page = min(paginator.num_pages, current_page + show_pages)
     
@@ -385,7 +385,7 @@ def generate_invite_code():
 @login_required
 def create_invite(request):
     if not request.user.is_staff:
-        messages.error(request, "У вас нет прав для создания приглашений")
+        messages.error(request, "У в��с нет прав для создания приглашений")
         return redirect('blog:home')
     
     code = generate_invite_code()
@@ -420,7 +420,7 @@ def register(request):
                 Profile.objects.get_or_create(user=user)
                 
                 messages.success(request, 'Регистрация успешно завершена! Добро пожаловать!')
-                return redirect('blog:home')  # Перенаправляем на главную
+                return redirect('blog:home')  # Пеенаправляем на главную
                 
             except InviteCode.DoesNotExist:
                 messages.error(request, 'Недействительный инвайт-код')
@@ -483,7 +483,7 @@ def user_profile(request, username):
     """Публичный профиль пользателя"""
     viewed_user = get_object_or_404(User, username=username)
     
-    # Получаем все опубликованные посты пользователя
+    # Полчаем все опубликованные посты пользователя
     posts = Post.objects.filter(
         author=viewed_user,
         is_published=True
@@ -527,52 +527,49 @@ def post_delete(request, slug):
 def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
-        with connection.cursor() as cursor:
-            # Проверяем подключение
-            cursor.execute("SELECT 1")
-            is_connected = cursor.fetchone() is not None
+        # Создаем прямое подключение к PostgreSQL
+        conn = psycopg2.connect(
+            dbname='django_blog_7f9a',
+            user='django_blog_7f9a_user',
+            password='qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+            host='dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
+            port='5432',
+            sslmode='require'
+        )
+        
+        cursor = conn.cursor()
 
-            # Получаем список таблиц Django
-            cursor.execute("""
-                SELECT name FROM sqlite_master 
-                WHERE type='table' 
-                AND name NOT LIKE 'sqlite_%'
-                AND name NOT LIKE 'django_%'
-            """)
-            tables = cursor.fetchall()
+        # Получаем версию PostgreSQL
+        cursor.execute("SELECT version()")
+        version = cursor.fetchone()[0]
 
-            # Получаем статистику по каждой таблице
-            stats = {
-                'users': 0,
-                'posts': 0,
-                'comments': 0,
-                'profiles': 0,
-                'categories': 0
-            }
+        # Получаем список таблиц и их размеры
+        cursor.execute("""
+            SELECT 
+                relname as table_name,
+                pg_size_pretty(pg_total_relation_size(quote_ident(relname)::regclass)) as size,
+                pg_total_relation_size(quote_ident(relname)::regclass) as raw_size
+            FROM pg_stat_user_tables
+            ORDER BY raw_size DESC
+        """)
+        tables = cursor.fetchall()
 
-            tables_info = []
-            total_size = 0
+        # Получаем статистику записей
+        stats = {
+            'users': 0,
+            'posts': 0,
+            'comments': 0,
+            'profiles': 0,
+            'categories': 0
+        }
 
-            for table in tables:
-                table_name = table[0]
-                
-                # Получаем количество записей
-                cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+        # Подсчитываем записи в каждой таблице
+        for table in tables:
+            table_name = table[0]
+            try:
+                cursor.execute(f'SELECT COUNT(*) FROM "{table_name}"')
                 count = cursor.fetchone()[0]
                 
-                # Получаем размер таблицы (примерный)
-                cursor.execute(f"SELECT COUNT(*) * avg(length(rowid)) FROM {table_name}")
-                size = cursor.fetchone()[0] or 0
-                total_size += size
-                
-                # Добавляем информацию о таблице
-                tables_info.append({
-                    'name': table_name,
-                    'size': f"{size/1024:.1f} KB",
-                    'raw_size': size
-                })
-                
-                # Обновляем статистику
                 if 'auth_user' in table_name:
                     stats['users'] = count
                 elif 'blog_post' in table_name:
@@ -583,23 +580,60 @@ def get_database_info():
                     stats['profiles'] = count
                 elif 'blog_category' in table_name:
                     stats['categories'] = count
+            except:
+                continue
 
-            return {
-                'connection_status': {
-                    'is_connected': is_connected,
-                    'version': 'SQLite3',
-                },
-                'size': f"{total_size/1024:.1f} KB",
-                'tables': tables_info,
-                'stats': stats,
-                'memory_usage': {
-                    'total_connections': 1,  # SQLite использует одно соединение
-                    'active_connections': 1,
-                    'idle_connections': 0,
-                    'total_size': f"{total_size/1024:.1f} KB",
-                    'table_count': len(tables)
-                }
+        # Получаем информацию о кэше и использовании памяти
+        cursor.execute("""
+            SELECT 
+                sum(heap_blks_hit) * current_setting('block_size')::bigint as cache_hit_bytes,
+                sum(heap_blks_read) * current_setting('block_size')::bigint as disk_read_bytes
+            FROM pg_statio_user_tables
+        """)
+        memory_stats = cursor.fetchone()
+
+        # Получаем информацию о подключениях
+        cursor.execute("""
+            SELECT 
+                count(*) as total,
+                count(*) FILTER (WHERE state = 'active') as active,
+                count(*) FILTER (WHERE state = 'idle') as idle
+            FROM pg_stat_activity 
+            WHERE datname = current_database()
+        """)
+        connections = cursor.fetchone()
+
+        # Получаем общий размер базы данных
+        cursor.execute("SELECT pg_size_pretty(pg_database_size(current_database()))")
+        total_size = cursor.fetchone()[0]
+
+        cursor.close()
+        conn.close()
+
+        return {
+            'connection_status': {
+                'is_connected': True,
+                'version': version,
+            },
+            'size': total_size,
+            'tables': [
+                {
+                    'name': table[0],
+                    'size': table[1],
+                    'raw_size': table[2]
+                } for table in tables
+            ],
+            'stats': stats,
+            'memory_usage': {
+                'total_connections': connections[0] if connections else 0,
+                'active_connections': connections[1] if connections else 0,
+                'idle_connections': connections[2] if connections else 0,
+                'cache_hit_size': f"{memory_stats[0]/1024/1024:.1f}MB" if memory_stats and memory_stats[0] else 'N/A',
+                'disk_read_size': f"{memory_stats[1]/1024/1024:.1f}MB" if memory_stats and memory_stats[1] else 'N/A',
+                'total_size': total_size,
+                'table_count': len(tables)
             }
+        }
     except Exception as e:
         print(f"Database info error: {str(e)}")  # Для отладки
         return {
@@ -621,6 +655,8 @@ def get_database_info():
                 'total_connections': 0,
                 'active_connections': 0,
                 'idle_connections': 0,
+                'cache_hit_size': 'N/A',
+                'disk_read_size': 'N/A',
                 'total_size': 'N/A',
                 'table_count': 0
             }
@@ -824,7 +860,7 @@ def generate_backup(request):
             cursor.execute(f'SELECT * FROM "{table_name}"')
             rows = cursor.fetchall()
             
-            # Сохраняем структуру и данные таблицы
+            # Сохраяем структуру и данные таблицы
             backup_data[table_name] = {
                 'structure': [
                     {'name': col[0], 'type': col[1]} for col in columns
@@ -1009,7 +1045,7 @@ def bulk_user_action(request):
 @staff_member_required
 @require_POST
 def bulk_post_action(request):
-    """Мссовые действя с пос��ами"""
+    """Мссовые действя с посами"""
     action = request.POST.get('action')
     post_ids = request.POST.getlist('post_ids')
     
@@ -1112,7 +1148,7 @@ def backup_database():
 
 def post_list(request):
     """Представление для списка всех постов"""
-    # Получаем все опубликованные посты
+    # Получаем все публикованные посты
     posts_list = Post.objects.filter(is_published=True).order_by('-created_at')
     
     # Создаем объект пагинатора, 5 постов на страниц
@@ -1251,7 +1287,7 @@ def update_profile_cover(request):
                 if os.path.exists(old_cover_path):
                     os.remove(old_cover_path)
             
-            # Генерируем новое имя файла
+            # Герируем новое имя файла
             file_ext = os.path.splitext(cover_file.name)[1]
             new_filename = f"cover_{request.user.id}_{int(time.time())}{file_ext}"
             file_path = os.path.join('covers', new_filename)
@@ -1355,28 +1391,26 @@ def restore_database(request):
     return render(request, 'blog/restore_database.html')
 
 def health_check(request):
+    """Проверка здоровья приложения"""
     try:
-        # Проверяем соединение с базой данных
+        # Проверяем подключение к базе данных
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             cursor.fetchone()
+            
+        # Проверяем наличие данных
+        users_count = User.objects.count()
+        posts_count = Post.objects.count()
         
         status = {
             'status': 'healthy',
-            'database': 'connected'
+            'database': 'connected',
+            'users_count': users_count,
+            'posts_count': posts_count
         }
-        return HttpResponse(
-            json.dumps(status),
-            content_type='application/json',
-            status=200
-        )
+        return JsonResponse(status)
     except Exception as e:
-        status = {
+        return JsonResponse({
             'status': 'unhealthy',
             'error': str(e)
-        }
-        return HttpResponse(
-            json.dumps(status),
-            content_type='application/json',
-            status=500
-        )
+        }, status=500)

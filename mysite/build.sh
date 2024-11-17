@@ -5,20 +5,22 @@ set -o errexit
 # Устанавливаем зависимости
 pip install -r requirements.txt
 
-# Создаем необходимые директории
-mkdir -p static/css static/js media/avatars media/posts media/covers
+# Удаляем старые миграции
+find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+find . -path "*/migrations/*.pyc" -delete
 
-# Копируем CSS файлы
-cp -r static/css/* staticfiles/css/ || true
+# Создаем новые миграции
+python manage.py makemigrations
 
-# Применяем миграции
-python manage.py migrate --noinput
+# Применяем миграции с флагом --force
+python manage.py migrate --force
 
 # Создаем суперпользователя
 python manage.py create_superuser
 
-# Создаем таблицу для кэша
-python manage.py createcachetable
+# Собираем статические файлы
+python manage.py collectstatic --no-input
 
-# Собираем статические файлы без сжатия и манифеста
-DISABLE_COLLECTSTATIC=1 python manage.py collectstatic --noinput --clear --no-post-process
+# Экспортируем данные из SQLite в PostgreSQL
+python manage.py dumpdata --exclude auth.permission --exclude contenttypes > data.json
+python manage.py loaddata data.json

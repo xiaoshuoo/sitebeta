@@ -14,9 +14,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
-# Добавляем render.com домен
+# Add render.com domain
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -77,33 +77,33 @@ DATABASES = {
         'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',
-            'keepalives': 1,
-            'keepalives_idle': 30,
-            'keepalives_interval': 10,
-            'keepalives_count': 5,
-            'client_encoding': 'UTF8',
-            'timezone': 'UTC',
-            'application_name': 'django_blog',
-        },
-        'CONN_MAX_AGE': None,  # Постоянное соединение
-        'ATOMIC_REQUESTS': True,  # Транзакции для каждого запроса
-        'CONN_HEALTH_CHECKS': True,
-        'PERSISTENT_CONNECTIONS': True,
+        }
     }
-}
-
-# Настройки для миграций
-MIGRATION_MODULES = {
-    'blog': 'blog.migrations',
 }
 
 # Настройки для Django ORM
 DATABASE_ROUTERS = []
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Настройки для транзакций
-ATOMIC_REQUESTS = True
-AUTOCOMMIT = True
+# Настройки для файлов
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/opt/render/project/src/media'
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Создаем необходимые директории
+REQUIRED_DIRS = [
+    os.path.join(MEDIA_ROOT, 'avatars'),
+    os.path.join(MEDIA_ROOT, 'posts'),
+    os.path.join(MEDIA_ROOT, 'covers'),
+]
+
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
+
+# Настройки для постоянного хранения
+PERSISTENT_DB = True
+DB_PERSISTENT_STORAGE = True
 
 # Настройки для бэкапов
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
@@ -112,18 +112,13 @@ DBBACKUP_CLEANUP_KEEP = 5
 DBBACKUP_DATE_FORMAT = '%Y-%m-%d-%H-%M-%S'
 
 # Настройки для файлов
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 # Создаем необходимые директории
 for directory in ['media', 'media/avatars', 'media/posts', 'media/covers', 'backups']:
     os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
-
-# Настройки для постоянного хранения данных
-DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
 
 # Настройки для бэкапов
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
@@ -136,7 +131,7 @@ DBBACKUP_FILENAME_TEMPLATE = '{datetime}.{extension}'
 for directory in ['media', 'media/avatars', 'media/posts', 'media/covers', 'backups']:
     os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
 
-# Настройки для файлов
+# Настройки дл файлов
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -446,7 +441,7 @@ MEDIA_ROOT = '/opt/render/project/src/media'  # Постоянная дирек�
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# Создаем директории для файлов
+# Созаем директори для файлов
 REQUIRED_DIRS = [
     os.path.join(MEDIA_ROOT, 'avatars'),
     os.path.join(MEDIA_ROOT, 'posts'),

@@ -1,0 +1,623 @@
+{
+  "users": [
+    {
+      "model": "auth.user",
+      "pk": 1,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$VxJvIStA64cwC2VKPJg6WA$ERXGicKSsQFd9g39ZPN5nd2hdrzvcSEFXQjEzJhmKZg=",
+        "last_login": "2024-11-17T08:54:24.248Z",
+        "is_superuser": true,
+        "username": "Odinochka",
+        "first_name": "",
+        "last_name": "",
+        "email": "imanovtabriz@gmail.com",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2024-11-12T13:55:04Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 2,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$GG3zxXwx3lnDeuJmgusmGX$ir+iSFn/sOD/GM+K/Y6PNdAkueV7GjZgUzijGPUFsdg=",
+        "last_login": "2024-11-12T15:33:11.795Z",
+        "is_superuser": false,
+        "username": "11",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-12T15:33:06.393Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 3,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$fmM7xZcCqfYnBK0cZgj7Uh$IfDzfWvJvYPwvKD1q+Vd95DB3LUxmmoUuAUDL0RiiwU=",
+        "last_login": "2024-11-13T20:50:16.774Z",
+        "is_superuser": false,
+        "username": "111",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-12T15:40:23.748Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 4,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$Ge5HWEyTs2LzgsQAUzny56$tPDumHBYlS+7pIAVn4tvH8oY9omTor8EwPYDQ6WU65I=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "1115",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-13T19:47:15.360Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 5,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$spxsnc4hg5BclklZt9aRbG$pjBjM1mFsLTIksbCWKpKwpWhA7sz7VR8yUTOkJ4p4CA=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "1112",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-13T19:50:00.537Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 6,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$PsSuDBoiegExEFW31HqBxG$4YOKnKnuD3bbmlflfSHyIIfeXY5g6bVBRj3ipanFOpk=",
+        "last_login": "2024-11-13T20:06:15.208Z",
+        "is_superuser": false,
+        "username": "Odinochka1",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-13T20:05:00.454Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 7,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$04o0v1vEGFQvz3yaEUjI6N$FduSeNuDUb3W591v/vHWPvGymdyzsntiJubSrrDzJYs=",
+        "last_login": "2024-11-14T17:52:02.076Z",
+        "is_superuser": false,
+        "username": "Odinochka3",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-14T17:24:58.857Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 8,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$PMpsVzpohqElcKWtu7M4nE$hrQSKalbej5/whv13xQ8tM00U1SCwbQdPyHtQW+Gu74=",
+        "last_login": "2024-11-16T10:20:52.570Z",
+        "is_superuser": false,
+        "username": "Odinochka31",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-16T10:20:52.026Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 9,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$U884HrhCPY7xrfCUoxpf1N$ymi0GsurfWQUX4/b1ceDmDVsh3zTdJtKrjO8jdNet+0=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "Odinochka4",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-16T16:55:46.009Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 10,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$Cp5dg7b3ZhdOYyMtxjKEHc$c4yKVUNwPTdL8ABzLn1lN+f3+ihbRNAtQsrpTeT1lCU=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "Odinochka6",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-16T16:56:57.995Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 11,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$Y0D5dvPxGHwhwyfZu5TtIU$S5l8QbxoC+kgsZmnkOIg32jmDranCHa2CH4yzX2t5W0=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "Odinochka65",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-16T16:59:01.863Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 12,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$PfPaDZM0zII1Amc4YnBZw6$In8ZE0AtishzcoCL59RDlNwSGgAKNu6YeYsVpUrATyA=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "Odinochka12",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-16T17:05:10.040Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    },
+    {
+      "model": "auth.user",
+      "pk": 13,
+      "fields": {
+        "password": "pbkdf2_sha256$870000$Ohop3WaJDj0x4uBf2BRLMQ$Dl9E4J1ebVkzkJ/CiYTyonGLOKWGGywvvaAT8EGrhwU=",
+        "last_login": "2024-11-16T17:07:00.094Z",
+        "is_superuser": false,
+        "username": "Odinochka123",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2024-11-16T17:06:51.613Z",
+        "groups": [],
+        "user_permissions": []
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "model": "blog.profile",
+      "pk": 1,
+      "fields": {
+        "user": 1,
+        "avatar": "avatars/avatars/avatar_1_1731834180.gif",
+        "cover": "covers/covers/covers/covers/covers/cover_1_1731753561.jpg",
+        "bio": "Я дибил1111",
+        "location": "Russian, Moscow",
+        "website": "https://sity-lvo8.onrender.com/",
+        "occupation": "Хуесос ничтожество и т.д",
+        "last_seen": "2024-11-17T09:03:00.438Z",
+        "role": "creator"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 2,
+      "fields": {
+        "user": 2,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-14T18:02:02.118Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 3,
+      "fields": {
+        "user": 3,
+        "avatar": "avatars/9B7407CB-FABB-4930-8162-CDE228A1857E_NPCUk9l.gif",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-14T18:02:02.118Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 4,
+      "fields": {
+        "user": 4,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-14T18:02:02.118Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 5,
+      "fields": {
+        "user": 5,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-14T18:02:02.118Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 6,
+      "fields": {
+        "user": 6,
+        "avatar": "avatars/4d33337b5d35e34a52ba384156a46926.gif",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-14T18:02:02.118Z",
+        "role": "moderator"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 7,
+      "fields": {
+        "user": 7,
+        "avatar": "avatars/B7C7DB1E-AEC4-4344-BE7A-5663FDB719AE.gif",
+        "cover": "",
+        "bio": "",
+        "location": "Ukraina, Saranks",
+        "website": "",
+        "occupation": "хуесос",
+        "last_seen": "2024-11-14T18:02:02.118Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 8,
+      "fields": {
+        "user": 8,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-16T10:20:52.578Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 9,
+      "fields": {
+        "user": 9,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-16T16:55:47.069Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 10,
+      "fields": {
+        "user": 10,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-16T16:56:58.496Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 11,
+      "fields": {
+        "user": 11,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-16T16:59:02.359Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 12,
+      "fields": {
+        "user": 12,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-16T17:05:10.525Z",
+        "role": "user"
+      }
+    },
+    {
+      "model": "blog.profile",
+      "pk": 13,
+      "fields": {
+        "user": 13,
+        "avatar": "",
+        "cover": "",
+        "bio": "",
+        "location": "",
+        "website": "",
+        "occupation": "",
+        "last_seen": "2024-11-16T17:07:00.103Z",
+        "role": "user"
+      }
+    }
+  ],
+  "categories": [
+    {
+      "model": "blog.category",
+      "pk": 1,
+      "fields": {
+        "name": "1",
+        "slug": "1",
+        "description": "",
+        "icon": "fas fa-folder",
+        "created_at": "2024-11-14T19:41:37.560Z",
+        "updated_at": "2024-11-14T19:41:37.565Z",
+        "_posts_count": 0
+      }
+    },
+    {
+      "model": "blog.category",
+      "pk": 5,
+      "fields": {
+        "name": "1111154",
+        "slug": "1111154",
+        "description": "",
+        "icon": "fa-folder",
+        "created_at": "2024-11-17T09:56:03.398Z",
+        "updated_at": "2024-11-17T09:56:03.398Z",
+        "_posts_count": 0
+      }
+    },
+    {
+      "model": "blog.category",
+      "pk": 3,
+      "fields": {
+        "name": "11114",
+        "slug": "11114",
+        "description": "",
+        "icon": "fa-folder",
+        "created_at": "2024-11-17T09:00:25.331Z",
+        "updated_at": "2024-11-17T09:00:25.331Z",
+        "_posts_count": 0
+      }
+    },
+    {
+      "model": "blog.category",
+      "pk": 4,
+      "fields": {
+        "name": "666",
+        "slug": "666",
+        "description": "",
+        "icon": "fa-folder",
+        "created_at": "2024-11-17T09:01:17.829Z",
+        "updated_at": "2024-11-17T09:01:17.829Z",
+        "_posts_count": 0
+      }
+    },
+    {
+      "model": "blog.category",
+      "pk": 2,
+      "fields": {
+        "name": "Odinochestvo",
+        "slug": "odinochestvo",
+        "description": "",
+        "icon": "fas fa-folder",
+        "created_at": "2024-11-14T19:41:37.560Z",
+        "updated_at": "2024-11-14T19:41:37.565Z",
+        "_posts_count": 0
+      }
+    }
+  ],
+  "tags": [
+    {
+      "model": "blog.tag",
+      "pk": 1,
+      "fields": {
+        "name": "1",
+        "slug": "1"
+      }
+    },
+    {
+      "model": "blog.tag",
+      "pk": 2,
+      "fields": {
+        "name": "Odinochestvo",
+        "slug": "odinochestvo"
+      }
+    }
+  ],
+  "posts": [
+    {
+      "model": "blog.post",
+      "pk": 1,
+      "fields": {
+        "title": "1111111",
+        "slug": "1111111-0b3d23cb",
+        "content": "<p>111111 ! ! ! ! ! 1 11111111111111 1111111111111111111</p>",
+        "created_at": "2024-11-12T14:00:58.688Z",
+        "updated_at": "2024-11-13T20:05:27.588Z",
+        "author": 1,
+        "category": 2,
+        "thumbnail": "thumbnails/5B0623EF-D104-4B14-95ED-8C7C6B832ADB.gif",
+        "is_published": true,
+        "views_count": 2,
+        "tags": [
+          1
+        ]
+      }
+    },
+    {
+      "model": "blog.post",
+      "pk": 3,
+      "fields": {
+        "title": "111111",
+        "slug": "111111-87af147e",
+        "content": "11111111111111",
+        "created_at": "2024-11-14T15:06:49.915Z",
+        "updated_at": "2024-11-14T15:06:49.956Z",
+        "author": 1,
+        "category": 2,
+        "thumbnail": "thumbnails/4d33337b5d35e34a52ba384156a46926.gif",
+        "is_published": true,
+        "views_count": 1,
+        "tags": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "model": "blog.post",
+      "pk": 4,
+      "fields": {
+        "title": "11111",
+        "slug": "11111-cff33404",
+        "content": "1111111111",
+        "created_at": "2024-11-14T15:55:14.401Z",
+        "updated_at": "2024-11-14T15:55:14.427Z",
+        "author": 1,
+        "category": 1,
+        "thumbnail": "thumbnails/5322c86c700bc62e7466f370aa8de79f.gif",
+        "is_published": true,
+        "views_count": 1,
+        "tags": [
+          2
+        ]
+      }
+    }
+  ],
+  "comments": [],
+  "post_views": [
+    {
+      "model": "blog.postview",
+      "pk": 1,
+      "fields": {
+        "post": 1,
+        "user": 1,
+        "session_key": null,
+        "timestamp": "2024-11-12T14:00:58.709Z"
+      }
+    },
+    {
+      "model": "blog.postview",
+      "pk": 4,
+      "fields": {
+        "post": 1,
+        "user": 6,
+        "session_key": null,
+        "timestamp": "2024-11-13T20:05:27.585Z"
+      }
+    },
+    {
+      "model": "blog.postview",
+      "pk": 5,
+      "fields": {
+        "post": 3,
+        "user": 1,
+        "session_key": null,
+        "timestamp": "2024-11-14T15:06:49.952Z"
+      }
+    },
+    {
+      "model": "blog.postview",
+      "pk": 6,
+      "fields": {
+        "post": 4,
+        "user": 1,
+        "session_key": null,
+        "timestamp": "2024-11-14T15:55:14.423Z"
+      }
+    }
+  ]
+}
