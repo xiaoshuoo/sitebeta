@@ -165,13 +165,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Используем простое хранилище для статических файлов
+# Отключаем сжатие и манифест для статических файлов
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-# Отключаем Whitenoise для CSS файлов
-WHITENOISE_MIMETYPES = {
-    '.js': 'application/javascript',
-}
+# Настройки для Whitenoise
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_MANIFEST_STRICT = False
 
 # Настройки для статических файлов
 STATICFILES_FINDERS = [
@@ -179,35 +179,12 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-# Настройки для TinyMCE
-TINYMCE_JS_URL = os.path.join(STATIC_URL, "tinymce/tinymce.min.js")
-TINYMCE_DEFAULT_CONFIG = {
-    'height': 500,
-    'width': 'auto',
-    'menubar': False,
-    'plugins': '''
-        advlist autolink lists link image charmap print preview anchor
-        searchreplace visualblocks code fullscreen
-        insertdatetime media table paste code help wordcount
-    ''',
-    'toolbar': '''
-        undo redo | formatselect | bold italic backcolor |
-        alignleft aligncenter alignright alignjustify |
-        bullist numlist outdent indent | removeformat | help |
-        link image media | code fullscreen
-    ''',
-    'content_css': [
-        '//fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-    ],
-}
-
 # Создаем необходимые директории
 REQUIRED_DIRS = [
     STATIC_ROOT,
     os.path.join(BASE_DIR, 'static'),
     os.path.join(BASE_DIR, 'static', 'css'),
     os.path.join(BASE_DIR, 'static', 'js'),
-    os.path.join(BASE_DIR, 'static', 'tinymce'),
 ]
 
 for directory in REQUIRED_DIRS:
@@ -248,6 +225,7 @@ SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
 # TinyMCE Configuration
+TINYMCE_JS_URL = os.path.join(STATIC_URL, "tinymce/tinymce.min.js")
 TINYMCE_DEFAULT_CONFIG = {
     'height': 500,
     'width': 'auto',
@@ -266,32 +244,21 @@ TINYMCE_DEFAULT_CONFIG = {
     'content_css': [
         '//fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
     ],
-    'content_style': '''
-        body {
-            font-family: Inter, sans-serif;
-            font-size: 16px;
-            color: white;
-            background-color: #1a1625;
-            padding: 20px;
-            max-width: 100%;
-            margin: 0;
-        }
-        p { line-height: 1.6; margin-bottom: 1em; color: #e2e8f0; }
-        h1, h2, h3, h4, h5, h6 { color: white; }
-    ''',
-    'skin': 'oxide-dark',
-    'content_css_dark': 'dark',
 }
 
-# TinyMCE API Key
-TINYMCE_API_KEY = '69ivue7aox9alaq0v8pv90xk8iysctulgxmx7px3ler2pnp4'
+# Создаем необходимые директории
+REQUIRED_DIRS = [
+    STATIC_ROOT,
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static', 'css'),
+    os.path.join(BASE_DIR, 'static', 'js'),
+    os.path.join(BASE_DIR, 'static', 'tinymce'),
+]
 
-# Создаем директории если их нет
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-CKEDITOR_UPLOAD_PATH = os.path.join(MEDIA_ROOT, 'uploads')
-os.makedirs(CKEDITOR_UPLOAD_PATH, exist_ok=True)
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
 
-# Настройка для статических файлов
+# Настройки для статических файлов
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Добавляем MIME-типы
