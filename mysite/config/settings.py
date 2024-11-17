@@ -84,8 +84,8 @@ DATABASES = {
             'keepalives_interval': 10,
             'keepalives_count': 5,
         },
-        'CONN_MAX_AGE': None,  # Постоянное соединение
-        'ATOMIC_REQUESTS': True,  # Транзакции для каждого запроса
+        'CONN_MAX_AGE': None,
+        'ATOMIC_REQUESTS': True,
         'CONN_HEALTH_CHECKS': True,
     }
 }
@@ -295,7 +295,7 @@ else:
         }
     }
 
-# Настройки для постоянного хранения
+# Настройки для п��стоянного хранения
 PERSISTENT_DB = True
 DB_PERSISTENT_STORAGE = True
 
@@ -347,6 +347,39 @@ if os.environ.get('RENDER'):
     RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
     if RENDER_EXTERNAL_HOSTNAME:
         ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Создаем необходимые директории
+REQUIRED_DIRS = [
+    os.path.join(MEDIA_ROOT, 'avatars'),
+    os.path.join(MEDIA_ROOT, 'covers'),
+    os.path.join(MEDIA_ROOT, 'thumbnails'),
+    os.path.join(MEDIA_ROOT, 'uploads'),
+    STATIC_ROOT,
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static', 'css'),
+    os.path.join(BASE_DIR, 'static', 'js'),
+]
+
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Используем простое хранилище для статических файлов
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# Настройки для файлов
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Создаем необходимые директории
+for directory in ['media/avatars', 'media/posts', 'media/covers', 'static/css', 'static/js']:
+    os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
 
 
 
