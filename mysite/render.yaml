@@ -4,7 +4,6 @@ services:
     env: python
     buildCommand: sh build.sh
     startCommand: gunicorn config.wsgi:application
-    plan: starter
     envVars:
       - key: DATABASE_URL
         value: postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a
@@ -20,4 +19,3 @@ databases:
     databaseName: django_blog_7f9a
     user: django_blog_7f9a_user
     plan: starter
-    ipAllowList: []

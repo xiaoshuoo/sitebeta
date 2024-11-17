@@ -271,7 +271,7 @@ def get_page_range(paginator, current_page, show_pages=2):
     """
     page_range = []
     
-    # Всегда показываем первую страниц��
+    # Всегда показываем первую страниц
     page_range.append(1)
     
     # Вычсляем диапазон страниц вокруг ущей
@@ -385,7 +385,7 @@ def generate_invite_code():
 @login_required
 def create_invite(request):
     if not request.user.is_staff:
-        messages.error(request, "У в��с нет прав для создания приглашений")
+        messages.error(request, "У вс нет прав для создания приглашений")
         return redirect('blog:home')
     
     code = generate_invite_code()
@@ -1154,7 +1154,7 @@ def post_list(request):
     # Создаем объект пагинатора, 5 постов на страниц
     paginator = Paginator(posts_list, 5)  # Изменили с 12 на 5 постов
     
-    # Получаем номер текущей страницы из GET-параметра
+    # Получаем номер те��ущей страницы из GET-параметра
     page = request.GET.get('page')
     
     try:
@@ -1414,3 +1414,13 @@ def health_check(request):
             'status': 'unhealthy',
             'error': str(e)
         }, status=500)
+
+@staff_member_required
+def clear_database(request):
+    if request.method == 'POST':
+        try:
+            management.call_command('clear_database')
+            messages.success(request, 'База данных успешно очищена')
+        except Exception as e:
+            messages.error(request, f'Ошибка при очистке базы данных: {str(e)}')
+    return redirect('blog:admin_panel')

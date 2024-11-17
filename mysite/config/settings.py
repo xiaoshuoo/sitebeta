@@ -66,7 +66,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database settings
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -81,15 +84,9 @@ DATABASES = {
     }
 }
 
-# Настройки для Django ORM
-DATABASE_ROUTERS = []
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 # Настройки для файлов
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/opt/render/project/src/media'
-FILE_UPLOAD_PERMISSIONS = 0o644
-FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Создаем необходимые директории
 REQUIRED_DIRS = [
