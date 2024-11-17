@@ -194,12 +194,13 @@ STATICFILES_DIRS = [
 ]
 
 # Отключаем сжатие и манифест для статических файлов
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Настройки для Whitenoise
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['css', 'scss', 'sass', 'less']
 
 # Настройки для статических файлов
 STATICFILES_FINDERS = [
