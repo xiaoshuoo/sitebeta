@@ -67,36 +67,87 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database settings
-if os.environ.get('RENDER'):
-    # Настройки для Render
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'django_blog_7f9a',
-            'USER': 'django_blog_7f9a_user',
-            'PASSWORD': 'qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
-            'HOST': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
-            'PORT': '5432',
-            'OPTIONS': {
-                'sslmode': 'require',
-            }
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'django_blog_7f9a',
+        'USER': 'django_blog_7f9a_user',
+        'PASSWORD': 'qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+        'HOST': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+            'keepalives': 1,
+            'keepalives_idle': 30,
+            'keepalives_interval': 10,
+            'keepalives_count': 5,
+            'client_encoding': 'UTF8',
+            'timezone': 'UTC',
+            'application_name': 'django_blog',
+        },
+        'CONN_MAX_AGE': None,  # Постоянное соединение
+        'ATOMIC_REQUESTS': True,  # Транзакции для каждого запроса
+        'CONN_HEALTH_CHECKS': True,
+        'PERSISTENT_CONNECTIONS': True,
     }
-else:
-    # Локальные настройки - используем тот же PostgreSQL
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'django_blog_7f9a',
-            'USER': 'django_blog_7f9a_user',
-            'PASSWORD': 'qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
-            'HOST': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
-            'PORT': '5432',
-            'OPTIONS': {
-                'sslmode': 'require',
-            }
-        }
-    }
+}
+
+# Настройки для миграций
+MIGRATION_MODULES = {
+    'blog': 'blog.migrations',
+}
+
+# Настройки для Django ORM
+DATABASE_ROUTERS = []
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Настройки для транзакций
+ATOMIC_REQUESTS = True
+AUTOCOMMIT = True
+
+# Настройки для бэкапов
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/opt/render/project/src/backups'}
+DBBACKUP_CLEANUP_KEEP = 5
+DBBACKUP_DATE_FORMAT = '%Y-%m-%d-%H-%M-%S'
+
+# Настройки для файлов
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+# Создаем необходимые директории
+for directory in ['media', 'media/avatars', 'media/posts', 'media/covers', 'backups']:
+    os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
+
+# Настройки для постоянного хранения данных
+DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+# Настройки для бэкапов
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': os.path.join(BASE_DIR, 'backups')}
+DBBACKUP_CLEANUP_KEEP = 5  # Хранить последние 5 бэкапов
+DBBACKUP_DATE_FORMAT = '%Y-%m-%d-%H-%M-%S'
+DBBACKUP_FILENAME_TEMPLATE = '{datetime}.{extension}'
+
+# Создаем необходимые директории
+for directory in ['media', 'media/avatars', 'media/posts', 'media/covers', 'backups']:
+    os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
+
+# Настройки для файлов
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+# Создаем необходимые директории
+for directory in ['media/avatars', 'media/posts', 'media/covers']:
+    os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
+
+# Настройки для бэкапов
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': os.path.join(BASE_DIR, 'backups')}
 
 # Добавляем логирование для отслеживания проблем с БД
 LOGGING = {
@@ -202,7 +253,7 @@ WHITENOISE_MIMETYPES = {
     '.css': 'text/css',
 }
 
-# Настройки для статических файлов
+# Настройки для статических файов
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
@@ -273,7 +324,7 @@ if not DEBUG:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     MEDIA_URL = '/media/'
     
-    # Создаем необходимые директории
+    # Создем необходимые директории
     REQUIRED_DIRS = [
         os.path.join(MEDIA_ROOT, 'avatars'),
         os.path.join(MEDIA_ROOT, 'covers'),
@@ -284,7 +335,7 @@ if not DEBUG:
     for directory in REQUIRED_DIRS:
         os.makedirs(directory, exist_ok=True)
 
-    # Устанавливаем права доступа
+    # Устанавлиаем права доступа
     FILE_UPLOAD_PERMISSIONS = 0o644
     FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
@@ -328,6 +379,59 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+# Настройки для постоянного хранения
+PERSISTENT_DB = True
+DB_PERSISTENT_STORAGE = True
+
+# Настройки для файлов
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/opt/render/project/src/media'  # Постоянная директория на Render
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Создаем директории для файлов
+REQUIRED_DIRS = [
+    os.path.join(MEDIA_ROOT, 'avatars'),
+    os.path.join(MEDIA_ROOT, 'posts'),
+    os.path.join(MEDIA_ROOT, 'covers'),
+]
+
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
+
+# Настройки для хранения файлов
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Настройки сессий для постоянного хранения
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1209600  # 2 недели
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Настройки кэширования
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache',
+        'TIMEOUT': None,
+        'OPTIONS': {
+            'MAX_ENTRIES': 100000,
+            'CULL_FREQUENCY': 3,
+        }
+    }
+}
+
+# Настройки для постоянного хранения
+PERSISTENT_DB = True
+DB_PERSISTENT_STORAGE = True
+
+# Настройки для Render.com
+if os.environ.get('RENDER'):
+    ALLOWED_HOSTS.append('.onrender.com')
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 

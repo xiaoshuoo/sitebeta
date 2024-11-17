@@ -278,6 +278,45 @@
                         </div>
                     </div>
 
+                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                <i class="fas fa-table text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white">Содержимое базы данных</p>
+                                <div class="text-sm text-gray-400">
+                                    <p>Пользователей: {{ database_info.stats.users }}</p>
+                                    <p>Постов: {{ database_info.stats.posts }}</p>
+                                    <p>Комментариев: {{ database_info.stats.comments }}</p>
+                                    <p>Профилей: {{ database_info.stats.profiles }}</p>
+                                    <p>Категорий: {{ database_info.stats.categories }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Таблицы базы данных -->
+                    <div class="mt-4">
+                        <h4 class="text-white mb-3">Таблицы базы данных</h4>
+                        <div class="space-y-2">
+                            {% for table in database_info.tables %}
+                            <div class="p-3 bg-surface-700/30 rounded-lg">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <p class="text-white">{{ table.name }}</p>
+                                        <p class="text-sm text-gray-400">
+                                            Колонок: {{ table.columns }} | 
+                                            Записей: {{ table.records }} | 
+                                            Размер: {{ table.size }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     {% if database_info.error %}
                     <div class="p-3 bg-red-500/20 rounded-lg">
                         <p class="text-red-400">

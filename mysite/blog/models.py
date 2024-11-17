@@ -4,6 +4,9 @@ from django.utils.text import slugify
 import uuid
 from django.utils import timezone
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+import os
 
 class Profile(models.Model):
     ROLE_CHOICES = [
@@ -59,14 +62,51 @@ class Profile(models.Model):
         return f'{self.user.username} Profile'
 
     def save(self, *args, **kwargs):
-        # Устанавливаем значения по умолчанию для пустых полей
-        if not self.bio:
-            self.bio = ''
-        if not self.location:
-            self.location = ''
-        if not self.occupation:
-            self.occupation = ''
+        # Создаем директории для файлов если их нет
+        if not os.path.exists('media/avatars'):
+            os.makedirs('media/avatars')
+        if not os.path.exists('media/covers'):
+            os.makedirs('media/covers')
+            
+        # Сохраняем файлы
+        if self.avatar:
+            self.avatar.save(
+                self.avatar.name,
+                self.avatar.file,
+                save=False
+            )
+        if self.cover:
+            self.cover.save(
+                self.cover.name,
+                self.cover.file,
+                save=False
+            )
+            
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Удаляем файлы при удалении профиля
+        if self.avatar:
+            if os.path.isfile(self.avatar.path):
+                os.remove(self.avatar.path)
+        if self.cover:
+            if os.path.isfile(self.cover.path):
+                os.remove(self.cover.path)
+        super().delete(*args, **kwargs)
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Создает профиль пользователя при создании пользователя"""
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Сохраняет профиль пользователя при сохранении пользователя"""
+    try:
+        instance.profile.save()
+    except Profile.DoesNotExist:
+        Profile.objects.create(user=instance)
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

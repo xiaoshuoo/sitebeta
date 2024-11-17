@@ -65,7 +65,7 @@ def calculate_streak_days(user):
             streak = 1
             continue
             
-        # Если разница между постами больше 1 дня, прерываем подсчет
+        # Если разница между постами больше 1 дня, прерывм подсчет
         if (last_post_date - post_date).days > 1:
             break
             
@@ -274,7 +274,7 @@ def get_page_range(paginator, current_page, show_pages=2):
     # Всегда показываем первую страницу
     page_range.append(1)
     
-    # Вычисляем диапазон страниц вокруг текущей
+    # Вычсляем диапазон страниц вокруг кущей
     start_page = max(2, current_page - show_pages)
     end_page = min(paginator.num_pages, current_page + show_pages)
     
@@ -402,25 +402,36 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.save()
-            
-            # Получаем и используем инвайт-код
-            invite_code = form.cleaned_data['invite_code']
             try:
+                # Получаем и проверяем инвайт-код
+                invite_code = form.cleaned_data['invite_code']
                 invite = InviteCode.objects.get(code=invite_code, is_active=True)
+                
+                # Создаем пользователя
+                user = form.save()
+                
+                # Используем инвайт-код
                 invite.use(user)
+                
+                # Автоматически входим в систему
                 login(request, user)
-                messages.success(request, 'Регистрация успешно авершена!')
-                return redirect('blog:home')
+                
+                # Создаем профиль пользователя (если не создался автоматически)
+                Profile.objects.get_or_create(user=user)
+                
+                messages.success(request, 'Регистрация успешно завершена! Добро пожаловать!')
+                return redirect('blog:home')  # Перенаправляем на главную
+                
             except InviteCode.DoesNotExist:
-                messages.error(request, 'Недейстительный инвайт-код')
+                messages.error(request, 'Недействительный инвайт-код')
+            except Exception as e:
+                messages.error(request, f'Ошибка при регистрации: {str(e)}')
     else:
         form = CustomUserCreationForm()
     
     return render(request, 'registration/register.html', {
         'form': form,
-        'title': 'Ргстраци'
+        'title': 'Регистрация'
     })
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -436,7 +447,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         profile = form.save(commit=False)
         
-        # Обработка аватара
+        # Обработк аватара
         if 'avatar' in self.request.FILES:
             if profile.avatar:
                 try:
@@ -516,118 +527,102 @@ def post_delete(request, slug):
 def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
-        # Создаем прямое подключение к PostgreSQL
-        conn = psycopg2.connect(
-            dbname='django_blog_7f9a',
-            user='django_blog_7f9a_user',
-            password='qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
-            host='dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
-            port='5432',
-            sslmode='require'
-        )
-        
-        is_connected = True
-        cursor = conn.cursor()
+        with connection.cursor() as cursor:
+            # Проверяем подключение
+            cursor.execute("SELECT 1")
+            is_connected = cursor.fetchone() is not None
 
-        # Проверяем возможность записи
-        try:
-            cursor.execute("CREATE TABLE IF NOT EXISTS test_table (id serial PRIMARY KEY)")
-            cursor.execute("INSERT INTO test_table DEFAULT VALUES")
-            cursor.execute("SELECT COUNT(*) FROM test_table")
-            write_test = cursor.fetchone()[0]
-            cursor.execute("DROP TABLE test_table")
-            conn.commit()
-            can_write = True
-        except Exception as e:
-            print(f"Write test error: {str(e)}")
-            can_write = False
+            # Получаем список таблиц Django
+            cursor.execute("""
+                SELECT name FROM sqlite_master 
+                WHERE type='table' 
+                AND name NOT LIKE 'sqlite_%'
+                AND name NOT LIKE 'django_%'
+            """)
+            tables = cursor.fetchall()
 
-        # Получаем список таблиц и их размеры
-        cursor.execute("""
-            SELECT 
-                relname as table_name,
-                pg_size_pretty(pg_relation_size(relid)) as size,
-                pg_relation_size(relid) as raw_size
-            FROM pg_stat_user_tables
-            WHERE schemaname = 'public'
-            ORDER BY pg_relation_size(relid) DESC
-        """)
-        tables = cursor.fetchall()
-
-        # Получаем общий размер базы данных
-        cursor.execute("""
-            SELECT pg_size_pretty(pg_database_size(%s))
-        """, [conn.info.dbname])
-        total_size = cursor.fetchone()[0]
-
-        # Проверяем наличие данных в основных таблицах
-        cursor.execute("""
-            SELECT 
-                relname, 
-                n_live_tup as row_count
-            FROM pg_stat_user_tables
-            WHERE schemaname = 'public'
-        """)
-        table_stats = cursor.fetchall()
-        
-        # Получаем время последней записи
-        cursor.execute("""
-            SELECT MAX(last_vacuum) as last_write
-            FROM pg_stat_user_tables
-            WHERE schemaname = 'public'
-        """)
-        last_write = cursor.fetchone()[0]
-
-        cursor.close()
-        conn.close()
-
-        return {
-            'connection_status': {
-                'is_connected': is_connected,
-                'can_write': can_write,
-                'version': 'PostgreSQL',
-            },
-            'size': total_size if total_size else 'N/A',
-            'tables': [
-                {
-                    'name': table[0],
-                    'size': table[1],
-                    'raw_size': table[2]
-                } for table in tables
-            ],
-            'data_status': {
-                'has_data': any(count > 0 for _, count in table_stats),
-                'total_rows': sum(count for _, count in table_stats),
-                'last_write': last_write.strftime('%Y-%m-%d %H:%M:%S') if last_write else 'Never'
-            },
-            'memory_usage': {
-                'total_connections': len(table_stats),
-                'active_tables': sum(1 for _, count in table_stats if count > 0),
-                'empty_tables': sum(1 for _, count in table_stats if count == 0),
-                'total_size': total_size if total_size else 'N/A'
+            # Получаем статистику по каждой таблице
+            stats = {
+                'users': 0,
+                'posts': 0,
+                'comments': 0,
+                'profiles': 0,
+                'categories': 0
             }
-        }
+
+            tables_info = []
+            total_size = 0
+
+            for table in tables:
+                table_name = table[0]
+                
+                # Получаем количество записей
+                cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                count = cursor.fetchone()[0]
+                
+                # Получаем размер таблицы (примерный)
+                cursor.execute(f"SELECT COUNT(*) * avg(length(rowid)) FROM {table_name}")
+                size = cursor.fetchone()[0] or 0
+                total_size += size
+                
+                # Добавляем информацию о таблице
+                tables_info.append({
+                    'name': table_name,
+                    'size': f"{size/1024:.1f} KB",
+                    'raw_size': size
+                })
+                
+                # Обновляем статистику
+                if 'auth_user' in table_name:
+                    stats['users'] = count
+                elif 'blog_post' in table_name:
+                    stats['posts'] = count
+                elif 'blog_comment' in table_name:
+                    stats['comments'] = count
+                elif 'blog_profile' in table_name:
+                    stats['profiles'] = count
+                elif 'blog_category' in table_name:
+                    stats['categories'] = count
+
+            return {
+                'connection_status': {
+                    'is_connected': is_connected,
+                    'version': 'SQLite3',
+                },
+                'size': f"{total_size/1024:.1f} KB",
+                'tables': tables_info,
+                'stats': stats,
+                'memory_usage': {
+                    'total_connections': 1,  # SQLite использует одно соединение
+                    'active_connections': 1,
+                    'idle_connections': 0,
+                    'total_size': f"{total_size/1024:.1f} KB",
+                    'table_count': len(tables)
+                }
+            }
     except Exception as e:
         print(f"Database info error: {str(e)}")  # Для отладки
         return {
             'error': str(e),
             'connection_status': {
                 'is_connected': False,
-                'can_write': False,
                 'version': 'Unknown'
             },
             'size': 'N/A',
             'tables': [],
-            'data_status': {
-                'has_data': False,
-                'total_rows': 0,
-                'last_write': 'Never'
+            'stats': {
+                'users': 0,
+                'posts': 0,
+                'comments': 0,
+                'profiles': 0,
+                'categories': 0
             },
             'memory_usage': {
                 'total_connections': 0,
-                'active_tables': 0,
-                'empty_tables': 0,
-                'total_size': 'N/A'
+                'active_connections': 0,
+                'idle_connections': 0,
+                'total_size': 'N/A',
+                'table_count': 0
             }
         }
 
@@ -671,7 +666,7 @@ def admin_panel(request):
         'categories_count': Category.objects.count(),
         'comments_count': Comment.objects.count(),
         
-        # Статистика активности
+        # Статистика активноти
         'new_users_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
         'new_posts_month': Post.objects.filter(created_at__gte=thirty_days_ago).count(),
         'active_users_month': User.objects.filter(last_login__gte=thirty_days_ago).count(),
@@ -788,32 +783,84 @@ def toggle_user_status(request, user_id):
 
 @staff_member_required
 def generate_backup(request):
-    """Создание бэкапа базы данных"""
-    if request.method == 'GET':  # Изменили с POST на GET
-        try:
-            # Создаем директорию для бэкапов если её нет
-            backup_dir = 'backups'
-            if not os.path.exists(backup_dir):
-                os.makedirs(backup_dir)
+    """Создание бэкапа баз данных"""
+    try:
+        # Создаем прямое подключение к PostgreSQL
+        conn = psycopg2.connect(
+            dbname='django_blog_7f9a',
+            user='django_blog_7f9a_user',
+            password='qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
+            host='dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
+            port='5432',
+            sslmode='require'
+        )
+        
+        cursor = conn.cursor()
 
-            # Создаем имя файла с текущей датой
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            backup_file = os.path.join(backup_dir, f'db_backup_{timestamp}.json')
+        # Получаем список вех таблиц
+        cursor.execute("""
+            SELECT tablename 
+            FROM pg_tables 
+            WHERE schemaname = 'public'
+        """)
+        tables = cursor.fetchall()
 
-            # Создаем бэкап
-            with open(backup_file, 'w') as f:
-                management.call_command('dumpdata', exclude=['contenttypes', 'auth.permission'], indent=2, stdout=f)
+        # Создаем словарь для хранения данных
+        backup_data = {}
+        
+        # Получаем данные из каждой таблицы
+        for table in tables:
+            table_name = table[0]
             
-            # Отправляем файл для скачивания
-            if os.path.exists(backup_file):
-                with open(backup_file, 'rb') as f:
-                    response = HttpResponse(f.read(), content_type='application/json')
-                    response['Content-Disposition'] = f'attachment; filename=db_backup_{timestamp}.json'
-                    return response
-        except Exception as e:
-            messages.error(request, f'Оибка при создании бэкапа: {str(e)}')
-    
-    return redirect('blog:admin_panel')
+            # Получаем структуру таблицы
+            cursor.execute(f"""
+                SELECT column_name, data_type 
+                FROM information_schema.columns 
+                WHERE table_name = %s
+            """, [table_name])
+            columns = cursor.fetchall()
+            
+            # Получаем данные таблицы
+            cursor.execute(f'SELECT * FROM "{table_name}"')
+            rows = cursor.fetchall()
+            
+            # Сохраняем структуру и данные таблицы
+            backup_data[table_name] = {
+                'structure': [
+                    {'name': col[0], 'type': col[1]} for col in columns
+                ],
+                'data': [
+                    dict(zip([col[0] for col in columns], row)) 
+                    for row in rows
+                ]
+            }
+
+        cursor.close()
+        conn.close()
+
+        # Добавляем метаданные
+        backup_data['_metadata'] = {
+            'timestamp': datetime.now().isoformat(),
+            'database': 'django_blog_7f9a',
+            'version': 'PostgreSQL',
+            'tables_count': len(tables),
+            'total_records': sum(len(table_data['data']) for table_data in backup_data.values() if isinstance(table_data, dict) and 'data' in table_data)
+        }
+
+        # Созаем JSON-фал
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        response = HttpResponse(
+            json.dumps(backup_data, indent=2, default=str),
+            content_type='application/json'
+        )
+        response['Content-Disposition'] = f'attachment; filename=db_backup_{timestamp}.json'
+        
+        return response
+
+    except Exception as e:
+        messages.error(request, f'Ошибка при создании бэкапа: {str(e)}')
+        print(f"Backup error: {str(e)}")  # Для отладки
+        return redirect('blog:admin_panel')
 
 @staff_member_required
 @require_POST
@@ -941,7 +988,7 @@ def edit_profile(request):
 @staff_member_required
 @require_POST
 def bulk_user_action(request):
-    """Массовые действия с пользователями"""
+    """Масовые действия с пользователями"""
     action = request.POST.get('action')
     user_ids = request.POST.getlist('user_ids')
     
@@ -962,7 +1009,7 @@ def bulk_user_action(request):
 @staff_member_required
 @require_POST
 def bulk_post_action(request):
-    """Мссовые действя с постами"""
+    """Мссовые действя с пос��ами"""
     action = request.POST.get('action')
     post_ids = request.POST.getlist('post_ids')
     
@@ -1007,7 +1054,7 @@ def generate_report(request):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="site_report.pdf"'
     
-    # Здесь код для генерации PDF
+    # Здесь ко для генерации PDF
     
     return response
 
@@ -1016,7 +1063,7 @@ def generate_report(request):
 def clean_database(request):
     """Очистк базы данных от неиспользуемых данных"""
     try:
-        # Удаление неиспользуемых тегов
+        # Удаление неиспользуемых тего
         Tag.objects.filter(posts__isnull=True).delete()
         
         # Удаление старых просмотров
@@ -1033,13 +1080,13 @@ def clean_database(request):
 def backup_database():
     """Создание резервнй копии бзы данных"""
     try:
-        # Получаем путь к директории для бэкапов из settings
+        # Получаем путь к диектории для бэкапов из settings
         backup_dir = getattr(settings, 'BACKUP_DIR', None)
         if not backup_dir:
-            # Если уь не здан в settings, создаем директорию backups в корне проекта
+            # Если уь не здан в settings, создаем директорию backups в коне проекта
             backup_dir = os.path.join(settings.BASE_DIR, 'backups')
 
-        # Создаем директию для бэкапов, если она не существует
+        # Создаем директию для экапов, если она не существует
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
 
@@ -1060,7 +1107,7 @@ def backup_database():
         print(f"Бэкап спешно создан: {backup_path}")
         return True
     except Exception as e:
-        print(f"Ошибка при создании бэкапа: {str(e)}")
+        print(f"Ошибка при создании бкапа: {str(e)}")
         return False
 
 def post_list(request):
@@ -1149,7 +1196,7 @@ def update_profile_avatar(request):
             avatar_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
             os.makedirs(avatar_dir, exist_ok=True)
             
-            # Удаляем тарый аватар, если он есть
+            # Удаляем тарый аватар, если он есь
             if profile.avatar:
                 old_avatar_path = os.path.join(settings.MEDIA_ROOT, str(profile.avatar))
                 if os.path.exists(old_avatar_path):
@@ -1198,7 +1245,7 @@ def update_profile_cover(request):
             cover_dir = os.path.join(settings.MEDIA_ROOT, 'covers')
             os.makedirs(cover_dir, exist_ok=True)
             
-            # Удаляем старую обложку, если она есть
+            # Удаляем сарую обложку, если она есть
             if profile.cover:
                 old_cover_path = os.path.join(settings.MEDIA_ROOT, str(profile.cover))
                 if os.path.exists(old_cover_path):
