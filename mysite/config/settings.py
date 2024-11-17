@@ -169,13 +169,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+# Используем простое хранилище для статических файлов
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
 # Отключаем Whitenoise для CSS файлов
 WHITENOISE_MIMETYPES = {
     '.js': 'application/javascript',
 }
-
-# Используем простое хранилище для статических файлов
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Настройки для статических файлов
 STATICFILES_FINDERS = [

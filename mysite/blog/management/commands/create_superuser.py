@@ -16,13 +16,14 @@ class Command(BaseCommand):
                     last_name='User'
                 )
                 
-                profile = Profile.objects.create(
-                    user=superuser,
-                    role='creator',
-                    bio='Администратор сайта',
-                    location='System',
-                    occupation='Site Administrator'
-                )
+                if not Profile.objects.filter(user=superuser).exists():
+                    Profile.objects.create(
+                        user=superuser,
+                        role='creator',
+                        bio='Администратор сайта',
+                        location='System',
+                        occupation='Site Administrator'
+                    )
                 
                 self.stdout.write(self.style.SUCCESS(
                     f'Superuser created successfully\n'
