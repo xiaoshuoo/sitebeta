@@ -4,3 +4,5 @@ gunicorn==21.2.0
 python-dotenv==1.0.0
 dj-database-url==2.1.0
 psycopg2-binary==2.9.9
+django-tinymce==3.6.1
+Pillow==10.1.0
