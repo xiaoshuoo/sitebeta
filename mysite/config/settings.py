@@ -119,7 +119,7 @@ MEDIA_URL = '/media/'
 for directory in ['media', 'media/avatars', 'media/posts', 'media/covers', 'backups']:
     os.makedirs(os.path.join(BASE_DIR, directory), exist_ok=True)
 
-# Настройки для постоянного хранения данных
+# Настройк�� для постоянного хранения данных
 DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 26214400  # 25MB
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -175,10 +175,50 @@ STATICFILES_DIRS = [
 ]
 
 # Настройки для Whitenoise
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'  # Изменили с CompressedManifestStaticFilesStorage
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'  # Изменили с CompressedManifestStaticFilesStorage
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_ROOT = os.path.join(BASE_DIR, 'static')
 WHITENOISE_INDEX_FILE = True
+
+# Настройки для статических файлов
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# Настройки для TinyMCE
+TINYMCE_JS_URL = os.path.join(STATIC_URL, "tinymce/tinymce.min.js")
+TINYMCE_DEFAULT_CONFIG = {
+    'height': 500,
+    'width': 'auto',
+    'menubar': False,
+    'plugins': '''
+        advlist autolink lists link image charmap print preview anchor
+        searchreplace visualblocks code fullscreen
+        insertdatetime media table paste code help wordcount
+    ''',
+    'toolbar': '''
+        undo redo | formatselect | bold italic backcolor |
+        alignleft aligncenter alignright alignjustify |
+        bullist numlist outdent indent | removeformat | help |
+        link image media | code fullscreen
+    ''',
+    'content_css': [
+        '//fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+    ],
+}
+
+# Создаем необходимые директории
+REQUIRED_DIRS = [
+    STATIC_ROOT,
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static', 'css'),
+    os.path.join(BASE_DIR, 'static', 'js'),
+    os.path.join(BASE_DIR, 'static', 'tinymce'),
+]
+
+for directory in REQUIRED_DIRS:
+    os.makedirs(directory, exist_ok=True)
 
 # Media files
 MEDIA_URL = '/media/'
