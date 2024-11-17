@@ -8,21 +8,6 @@ pip install -r requirements.txt
 # Создаем необходимые директории
 mkdir -p static/css static/js media/avatars media/posts media/covers
 
-# Копируем CSS файлы
-cp -r static/css/* staticfiles/css/ || true
-
-# Применяем миграции
-python manage.py migrate --noinput
-
-# Создаем таблицу кэша
-python manage.py createcachetable
-
-# Создаем суперпользователя
-python manage.py create_superuser
-
-# Собираем статические файлы без пост-обработки
-DISABLE_COLLECTSTATIC=1 python manage.py collectstatic --no-input --clear --no-post-process --ignore=*.scss --ignore=*.sass --ignore=tailwind.config.js
-
 # Проверяем подключение к базе данных
 python -c "
 import psycopg2
@@ -40,3 +25,15 @@ print('Database connection successful:', cursor.fetchone()[0])
 cursor.close()
 conn.close()
 "
+
+# Синхронизируем базу данных
+python manage.py sync_database
+
+# Применяем миграции
+python manage.py migrate --noinput
+
+# Создаем суперпользователя
+python manage.py create_superuser
+
+# Собираем статические файлы
+python manage.py collectstatic --no-input --clear --no-post-process

@@ -527,7 +527,7 @@ def post_delete(request, slug):
 def get_database_info():
     """Получение базовой информации о базе данных"""
     try:
-        # Создае�� прямое подключение к PostgreSQL
+        # Создаем прямое подключение к PostgreSQL
         conn = psycopg2.connect(
             dbname='django_blog_7f9a',
             user='django_blog_7f9a_user',
@@ -543,26 +543,13 @@ def get_database_info():
         cursor.execute("SELECT version()")
         version = cursor.fetchone()[0]
 
-        # Получаем список таблиц и их размеры
+        # Сначала получаем список существующих таблиц
         cursor.execute("""
-            SELECT 
-                t.tablename as table_name,
-                pg_size_pretty(pg_total_relation_size(quote_ident(t.tablename)::text)) as size,
-                pg_total_relation_size(quote_ident(t.tablename)::text) as raw_size,
-                (SELECT count(*) FROM information_schema.columns WHERE table_name=t.tablename) as columns_count,
-                CASE 
-                    WHEN t.tablename = 'auth_user' THEN (SELECT count(*) FROM auth_user)
-                    WHEN t.tablename = 'blog_post' THEN (SELECT count(*) FROM blog_post)
-                    WHEN t.tablename = 'blog_comment' THEN (SELECT count(*) FROM blog_comment)
-                    WHEN t.tablename = 'blog_profile' THEN (SELECT count(*) FROM blog_profile)
-                    WHEN t.tablename = 'blog_category' THEN (SELECT count(*) FROM blog_category)
-                    ELSE 0
-                END as records_count
-            FROM pg_tables t
+            SELECT tablename 
+            FROM pg_tables 
             WHERE schemaname = 'public'
-            ORDER BY pg_total_relation_size(quote_ident(t.tablename)::text) DESC
         """)
-        tables = cursor.fetchall()
+        existing_tables = [table[0] for table in cursor.fetchall()]
 
         # Получаем статистику записей
         stats = {
@@ -573,32 +560,48 @@ def get_database_info():
             'categories': 0
         }
 
-        # Подсчитываем записи в каждой таблице
-        for table in tables:
-            table_name = table[0]
-            records = table[4]
-            
-            if table_name == 'auth_user':
-                stats['users'] = records
-            elif table_name == 'blog_post':
-                stats['posts'] = records
-            elif table_name == 'blog_comment':
-                stats['comments'] = records
-            elif table_name == 'blog_profile':
-                stats['profiles'] = records
-            elif table_name == 'blog_category':
-                stats['categories'] = records
+        # Подсчитываем записи только для существующих таблиц
+        if 'auth_user' in existing_tables:
+            cursor.execute("SELECT COUNT(*) FROM auth_user")
+            stats['users'] = cursor.fetchone()[0]
 
-        # Получаем информацию о кэше и использовании памяти
-        cursor.execute("""
-            SELECT 
-                sum(heap_blks_hit) * current_setting('block_size')::bigint as cache_hit_bytes,
-                sum(heap_blks_read) * current_setting('block_size')::bigint as disk_read_bytes,
-                sum(heap_blks_hit)::float / 
-                    nullif(sum(heap_blks_hit) + sum(heap_blks_read), 0) * 100 as cache_hit_ratio
-            FROM pg_statio_user_tables;
-        """)
-        memory_stats = cursor.fetchone()
+        if 'blog_post' in existing_tables:
+            cursor.execute("SELECT COUNT(*) FROM blog_post")
+            stats['posts'] = cursor.fetchone()[0]
+
+        if 'blog_comment' in existing_tables:
+            cursor.execute("SELECT COUNT(*) FROM blog_comment")
+            stats['comments'] = cursor.fetchone()[0]
+
+        if 'blog_profile' in existing_tables:
+            cursor.execute("SELECT COUNT(*) FROM blog_profile")
+            stats['profiles'] = cursor.fetchone()[0]
+
+        if 'blog_category' in existing_tables:
+            cursor.execute("SELECT COUNT(*) FROM blog_category")
+            stats['categories'] = cursor.fetchone()[0]
+
+        # Получаем информацию о таблицах
+        tables_info = []
+        for table_name in existing_tables:
+            cursor.execute(f"""
+                SELECT 
+                    pg_size_pretty(pg_total_relation_size(quote_ident(%s))),
+                    pg_total_relation_size(quote_ident(%s)),
+                    (SELECT count(*) FROM information_schema.columns WHERE table_name = %s)
+                """, [table_name, table_name, table_name])
+            
+            table_info = cursor.fetchone()
+            tables_info.append({
+                'name': table_name,
+                'size': table_info[0],
+                'raw_size': table_info[1],
+                'columns': table_info[2]
+            })
+
+        # Получаем общий размер базы данных
+        cursor.execute("SELECT pg_size_pretty(pg_database_size(current_database()))")
+        total_size = cursor.fetchone()[0]
 
         # Получаем информацию о подключениях
         cursor.execute("""
@@ -611,10 +614,6 @@ def get_database_info():
         """)
         connections = cursor.fetchone()
 
-        # Получаем общий размер базы данных
-        cursor.execute("SELECT pg_size_pretty(pg_database_size(current_database()))")
-        total_size = cursor.fetchone()[0]
-
         cursor.close()
         conn.close()
 
@@ -624,26 +623,15 @@ def get_database_info():
                 'version': version,
             },
             'size': total_size,
-            'tables': [
-                {
-                    'name': table[0],
-                    'size': table[1],
-                    'raw_size': table[2],
-                    'columns': table[3],
-                    'records': table[4]
-                } for table in tables
-            ],
+            'tables': tables_info,
             'stats': stats,
             'memory_usage': {
                 'total_connections': connections[0] if connections else 0,
                 'active_connections': connections[1] if connections else 0,
                 'idle_connections': connections[2] if connections else 0,
-                'cache_hit_size': f"{memory_stats[0]/1024/1024:.1f}MB" if memory_stats and memory_stats[0] else 'N/A',
-                'disk_read_size': f"{memory_stats[1]/1024/1024:.1f}MB" if memory_stats and memory_stats[1] else 'N/A',
-                'cache_hit_ratio': f"{memory_stats[2]:.1f}%" if memory_stats and memory_stats[2] else 'N/A',
                 'total_size': total_size,
-                'table_count': len(tables),
-                'total_rows': sum(table[4] for table in tables)
+                'table_count': len(existing_tables),
+                'total_rows': sum(stats.values())
             }
         }
     except Exception as e:
@@ -667,9 +655,6 @@ def get_database_info():
                 'total_connections': 0,
                 'active_connections': 0,
                 'idle_connections': 0,
-                'cache_hit_size': 'N/A',
-                'disk_read_size': 'N/A',
-                'cache_hit_ratio': 'N/A',
                 'total_size': 'N/A',
                 'table_count': 0,
                 'total_rows': 0
@@ -1362,7 +1347,7 @@ def create_custom_invite(request):
                     )
                     messages.success(request, f'Создан инвайт-код: {custom_code}')
             except Exception as e:
-                messages.error(request, f'Ошибка при ��оздании кода: {str(e)}')
+                messages.error(request, f'Ошибка при оздании кода: {str(e)}')
         else:
             messages.error(request, 'Недопустимый формат кода')
     return redirect('blog:admin_panel')
