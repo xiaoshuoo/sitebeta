@@ -8,4 +8,4 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Настройки Gunicorn
 bind = "0.0.0.0:10000"  # Порт будет автоматически установлен Render
 workers = multiprocessing.cpu_count() * 2 + 1
-wsgi_app = "mysite.config.wsgi:application"  # Измените путь в соответствии с вашей структурой 
+wsgi_app = "config.wsgi:application"  # Убрали mysite из пути
