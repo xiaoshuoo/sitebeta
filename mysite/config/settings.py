@@ -109,6 +109,7 @@ REQUIRED_DIRS = [
     os.path.join(MEDIA_ROOT, 'avatars'),
     os.path.join(MEDIA_ROOT, 'posts'),
     os.path.join(MEDIA_ROOT, 'covers'),
+    os.path.join(MEDIA_ROOT, 'thumbnails'),
 ]
 
 for directory in REQUIRED_DIRS:

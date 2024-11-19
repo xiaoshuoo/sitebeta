@@ -36,6 +36,8 @@ from datetime import datetime
 import zipfile
 from django.db import connection
 from django.apps import apps
+import hashlib
+import time
 
 def home(request):
     """Представление главной страницы"""
@@ -195,7 +197,7 @@ def create_post(request):
             post.slug = unique_slug
             
             try:
-                # С��здаем новое подключение для сохранения
+                # Сздаем новое подключение для сохранения
                 with transaction.atomic():
                     post.save()
                     form.save_m2m()  # Сохраняем связи many-to-many (теги)
@@ -527,7 +529,7 @@ def calculate_achievements(user):
     return achievements
 
 def generate_invite_code():
-    """Генерация 8-символьного кода приглашения"""
+    """��енерация 8-символьного кода приглашения"""
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
 @login_required
@@ -643,7 +645,7 @@ def get_database_info():
         
         cursor = conn.cursor()
 
-        # Получаем версию PostgreSQL
+        # Полуаем версию PostgreSQL
         cursor.execute("SELECT version()")
         version = cursor.fetchone()[0]
 
@@ -1045,7 +1047,7 @@ def bulk_post_action(request):
             else:
                 return JsonResponse({
                     'success': False,
-                    'error': 'Неизвестное действие'
+                    'error': 'Неизвестно действие'
                 }, status=400)
             
             return JsonResponse({
@@ -1214,53 +1216,100 @@ def toggle_page_status(request, page_name):
         }, status=500)
 
 @login_required
-def update_profile_cover(request):
-    """Обновление обложки профиля"""
-    if request.method == 'POST' and request.FILES.get('cover'):
-        try:
-            profile = request.user.profile
-            if profile.cover:
-                profile.cover.delete(save=False)
-            profile.cover = request.FILES['cover']
-            profile.save()
-            
-            return JsonResponse({
-                'success': True,
-                'cover_url': profile.cover.url
-            })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-    return JsonResponse({
-        'success': False,
-        'error': 'Файл обложки не предоставлен'
-    }, status=400)
-
-@login_required
 def update_profile_avatar(request):
     """Обновление аватара профиля"""
     if request.method == 'POST' and request.FILES.get('avatar'):
         try:
             profile = request.user.profile
+            
+            # Удаляем старый аватар если он существует
             if profile.avatar:
-                profile.avatar.delete(save=False)
-            profile.avatar = request.FILES['avatar']
+                try:
+                    old_path = profile.avatar.path
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                except Exception as e:
+                    print(f"Error removing old avatar: {e}")
+            
+            # Сохраняем новый аватар
+            new_avatar = request.FILES['avatar']
+            # Генерируем уникальное имя файла
+            ext = new_avatar.name.split('.')[-1]
+            new_name = f"{hashlib.md5(str(time.time()).encode()).hexdigest()}.{ext}"
+            # Устанавливаем новое имя файла
+            new_avatar.name = new_name
+            
+            profile.avatar = new_avatar
             profile.save()
             
+            # Проверяем что файл сохранился
+            if profile.avatar and os.path.exists(profile.avatar.path):
+                return JsonResponse({
+                    'success': True,
+                    'avatar_url': profile.avatar.url
+                })
+            
             return JsonResponse({
-                'success': True,
-                'avatar_url': profile.avatar.url
+                'success': False,
+                'error': 'File not saved correctly'
             })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+            
+    return JsonResponse({
+        'success': False,
+        'error': 'No file uploaded'
+    })
+
+@login_required
+def update_profile_cover(request):
+    """Обновление обложки профиля"""
+    if request.method == 'POST' and request.FILES.get('cover'):
+        try:
+            profile = request.user.profile
+            # Сохраняем старую обложку для удаления
+            old_cover = profile.cover.path if profile.cover else None
+            
+            # Получаем новый файл
+            new_cover = request.FILES['cover']
+            
+            # Сохраняем новую обложку
+            profile.cover = new_cover
+            profile.save()
+            
+            # Удаляем старую обложку если она существует
+            if old_cover and os.path.exists(old_cover):
+                try:
+                    os.remove(old_cover)
+                except Exception as e:
+                    print(f"Error removing old cover: {e}")
+            
+            # Убеждаемся что файл сохранился и возвращаем правильный URL
+            if profile.cover and os.path.exists(profile.cover.path):
+                return JsonResponse({
+                    'success': True,
+                    'cover_url': profile.cover.url,
+                    'message': 'Cover updated successfully'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Cover file not saved correctly'
+                }, status=500)
+                
         except Exception as e:
             return JsonResponse({
                 'success': False,
                 'error': str(e)
             }, status=500)
+            
     return JsonResponse({
         'success': False,
-        'error': 'Файл аватара не предоставлен'
+        'error': 'No file uploaded'
     }, status=400)
 
 @login_required

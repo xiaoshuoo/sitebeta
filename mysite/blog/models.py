@@ -7,6 +7,15 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import os
+import hashlib
+import time
+
+def avatar_upload_path(instance, filename):
+    # Генерируем хеш для имени файла
+    ext = filename.split('.')[-1]
+    filename = f"{hashlib.md5(str(time.time()).encode()).hexdigest()}.{ext}"
+    # Возвращаем путь без дублирования папки avatars
+    return os.path.join('avatars', filename)  # Убираем дублирование пути
 
 class Profile(models.Model):
     ROLE_CHOICES = [
@@ -16,7 +25,7 @@ class Profile(models.Model):
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    avatar = models.ImageField(upload_to=avatar_upload_path, null=True, blank=True)
     cover = models.ImageField(upload_to='covers/', null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=100, blank=True)
@@ -195,7 +204,7 @@ class Comment(models.Model):
         ordering = ['-created_date']
     
     def __str__(self):
-        return f'Комментарий от {self.author} к {self.post}'
+        return f'Коммент��рий от {self.author} к {self.post}'
 
 class PostView(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
