@@ -66,6 +66,9 @@ class PostForm(forms.ModelForm):
         self.fields['tags'].help_text = 'Выберите несколько тегов для лучшей навигации (Ctrl+Click для множественного выбора)'
         self.fields['thumbnail'].help_text = 'Рекомендуемый размер: 1200x630px'
         self.fields['is_published'].help_text = 'Отметьте для немедленной публикации'
+        
+        # Оптимизируем запрос категорий
+        self.fields['category'].queryset = Category.objects.only('id', 'name')
 
     def clean_title(self):
         title = self.cleaned_data.get('title')

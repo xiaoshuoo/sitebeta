@@ -3,18 +3,17 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from blog.views import SignUpView
+from blog.views import register
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
-    path('tinymce/', include('tinymce.urls')),
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(
         template_name='registration/logged_out.html',
         next_page='blog:home'
     ), name='logout'),
-    path('signup/', SignUpView.as_view(), name='signup'),
+    path('signup/', register, name='signup'),
     path('password_reset/', 
          auth_views.PasswordResetView.as_view(), 
          name='password_reset'),
@@ -27,15 +26,8 @@ urlpatterns = [
     path('reset/done/', 
          auth_views.PasswordResetCompleteView.as_view(), 
          name='password_reset_complete'),
-    path('password_change/', 
-         auth_views.PasswordChangeView.as_view(), 
-         name='password_change'),
-    path('password_change/done/', 
-         auth_views.PasswordChangeDoneView.as_view(), 
-         name='password_change_done'),
 ]
 
-# Добавляем обработку медиа-файлов для режима разработки
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

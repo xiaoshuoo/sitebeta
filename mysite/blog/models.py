@@ -110,8 +110,8 @@ def save_user_profile(sender, instance, **kwargs):
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True, blank=True)
-    description = models.TextField(blank=True)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True, default='')
     icon = models.CharField(max_length=50, default='fa-folder')
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, null=True)
@@ -174,25 +174,13 @@ class Post(models.Model):
     views_count = models.PositiveIntegerField(default=0)
     
     def save(self, *args, **kwargs):
-        # Генерируем slug если его нет
         if not self.slug:
-            self.slug = slugify(self.title)
-        
-        # Создаем теги из контента
-        content_words = set(word.lower() for word in self.content.split() if len(word) > 4)
-        for word in content_words:
-            if word.isalnum():  # Только буквенно-цифровые слова
-                tag, created = Tag.objects.get_or_create(
-                    name=word.capitalize(),
-                    defaults={'slug': slugify(word)}
-                )
-                self.tags.add(tag)
-        
+            base_slug = slugify(self.title)
+            if not base_slug:
+                base_slug = 'post'
+            unique_id = str(uuid.uuid4())[:8]
+            self.slug = f"{base_slug}-{unique_id}"
         super().save(*args, **kwargs)
-        
-        # Обновляем счетчик постов в категории
-        if self.category:
-            self.category.save()  # Это вызовет обновление _posts_count
     
     def __str__(self):
         return self.title
