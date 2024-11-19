@@ -94,6 +94,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
 # Определяем, локальная разработка или сервер
 if DEBUG:
@@ -101,16 +102,13 @@ if DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
-    # Настройки для сервера Render
+    # Настройки для сервера Render с постоянным хранилищем
     STATIC_ROOT = '/opt/render/project/src/staticfiles'
-    # Используем постоянную директорию на Render
     MEDIA_ROOT = '/opt/render/project/src/persistent/media'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-
-MEDIA_URL = '/media/'
 
 # Создаем необходимые директории для медиа файлов
 MEDIA_DIRS = [
@@ -120,16 +118,22 @@ MEDIA_DIRS = [
     'thumbnails'
 ]
 
-# Создаем директории если их нет
+# Создаем директории если их нет и устанавливаем права
 for directory in MEDIA_DIRS:
     media_path = os.path.join(MEDIA_ROOT, directory)
     os.makedirs(media_path, exist_ok=True)
+    # Устанавливаем права на запись для директорий
+    if not DEBUG:
+        os.chmod(media_path, 0o777)
 
 # Настройки для Whitenoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Настройки для хранения файлов
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# Добавляем настройку для сохранения файлов
+FILE_UPLOAD_PERMISSIONS = 0o644
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -2,17 +2,27 @@
 # exit on error
 set -o errexit
 
-# Устанавливаем зависимости
+# Создаем директории для постоянного хранения медиа файлов
+mkdir -p /opt/render/project/src/media/avatars
+mkdir -p /opt/render/project/src/media/posts
+mkdir -p /opt/render/project/src/media/covers
+mkdir -p /opt/render/project/src/media/thumbnails
+
+# Устанавливаем права на запись для всех директорий
+chmod -R 777 /opt/render/project/src/media
+
+# Создаем символическую ссылку для доступа к медиа файлам
+ln -sf /opt/render/project/src/media /opt/render/project/src/staticfiles/media
+
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# Создаем необходимые директории
-mkdir -p /opt/render/project/src/data/media/avatars
-mkdir -p /opt/render/project/src/data/media/posts
-mkdir -p /opt/render/project/src/data/media/covers
-mkdir -p /opt/render/project/src/data/static
+# Собираем статические файлы
+python manage.py collectstatic --noinput
 
 # Применяем миграции
 python manage.py migrate --noinput
+
 
 # Создаем таблицу кэша
 python manage.py createcachetable
@@ -22,6 +32,7 @@ python manage.py create_superuser
 
 # Синхронизируем базу данных
 python manage.py sync_database
+
 
 # Проверяем подключение к базе данных
 python -c "
@@ -41,5 +52,5 @@ cursor.close()
 conn.close()
 "
 
-# Собираем статические файлы
-python manage.py collectstatic --no-input
+# Запускаем gunicorn
+exec gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --workers=4 --access-logfile=- --error-logfile=-
