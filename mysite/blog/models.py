@@ -11,11 +11,22 @@ import hashlib
 import time
 
 def avatar_upload_path(instance, filename):
-    # Генерируем хеш для имени файла
+    """Генерация пути для аватара"""
     ext = filename.split('.')[-1]
     filename = f"{hashlib.md5(str(time.time()).encode()).hexdigest()}.{ext}"
-    # Возвращаем путь без дублирования папки avatars
-    return os.path.join('avatars', filename)  # Убираем дублирование пути
+    return f"avatars/{filename}"  # Просто avatars без дублирования
+
+def cover_upload_path(instance, filename):
+    """Генерация пути для обложки"""
+    ext = filename.split('.')[-1]
+    filename = f"{hashlib.md5(str(time.time()).encode()).hexdigest()}.{ext}"
+    return f"covers/{filename}"  # Просто covers без дублирования
+
+def thumbnail_upload_path(instance, filename):
+    """Генерация пути для миниатюры"""
+    ext = filename.split('.')[-1]
+    filename = f"{hashlib.md5(str(time.time()).encode()).hexdigest()}.{ext}"
+    return f"thumbnails/{filename}"  # Просто thumbnails без дублирования
 
 class Profile(models.Model):
     ROLE_CHOICES = [
@@ -26,7 +37,7 @@ class Profile(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to=avatar_upload_path, null=True, blank=True)
-    cover = models.ImageField(upload_to='covers/', null=True, blank=True)
+    cover = models.ImageField(upload_to=cover_upload_path, null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=100, blank=True)
     website = models.URLField(max_length=200, blank=True)
@@ -71,26 +82,14 @@ class Profile(models.Model):
         return f'{self.user.username} Profile'
 
     def save(self, *args, **kwargs):
-        # Создаем директории для файлов если их нет
-        if not os.path.exists('media/avatars'):
-            os.makedirs('media/avatars')
-        if not os.path.exists('media/covers'):
-            os.makedirs('media/covers')
-            
-        # Сохраняем файлы
         if self.avatar:
-            self.avatar.save(
-                self.avatar.name,
-                self.avatar.file,
-                save=False
-            )
+            # Исправляем путь если он содержит дублирование
+            if 'avatars/avatars/' in self.avatar.name:
+                self.avatar.name = self.avatar.name.replace('avatars/avatars/', 'avatars/')
         if self.cover:
-            self.cover.save(
-                self.cover.name,
-                self.cover.file,
-                save=False
-            )
-            
+            # Исправляем путь если он содержит дублирование
+            if 'covers/covers/' in self.cover.name:
+                self.cover.name = self.cover.name.replace('covers/covers/', 'covers/')
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -178,7 +177,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='posts')
     tags = models.ManyToManyField(Tag, related_name='posts')
-    thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)
+    thumbnail = models.ImageField(upload_to=thumbnail_upload_path, null=True, blank=True)
     is_published = models.BooleanField(default=False)
     views_count = models.PositiveIntegerField(default=0)
     
@@ -189,6 +188,10 @@ class Post(models.Model):
                 base_slug = 'post'
             unique_id = str(uuid.uuid4())[:8]
             self.slug = f"{base_slug}-{unique_id}"
+        if self.thumbnail:
+            # Проверяем и исправляем путь миниатюры
+            if 'thumbnails/thumbnails/' in self.thumbnail.name:
+                self.thumbnail.name = self.thumbnail.name.replace('thumbnails/thumbnails/', 'thumbnails/')
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -204,7 +207,7 @@ class Comment(models.Model):
         ordering = ['-created_date']
     
     def __str__(self):
-        return f'Коммент��рий от {self.author} к {self.post}'
+        return f'Комментрий от {self.author} к {self.post}'
 
 class PostView(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

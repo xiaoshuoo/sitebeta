@@ -94,26 +94,41 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/render/project/src/data/static'
+
+# Определяем, локальная разработка или сервер
+if DEBUG:
+    # Локальные настройки
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    # Настройки для сервера
+    STATIC_ROOT = '/opt/render/project/src/data/static'
+    MEDIA_ROOT = '/opt/render/project/src/data/media'
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/opt/render/project/src/data/media'
 
-# Создаем необходимые директории
-REQUIRED_DIRS = [
-    os.path.join(MEDIA_ROOT, 'avatars'),
-    os.path.join(MEDIA_ROOT, 'posts'),
-    os.path.join(MEDIA_ROOT, 'covers'),
-    os.path.join(MEDIA_ROOT, 'thumbnails'),
+# Создаем необходимые директории для медиа файлов
+MEDIA_DIRS = [
+    'avatars',
+    'posts',
+    'covers',
+    'thumbnails'
 ]
 
-for directory in REQUIRED_DIRS:
-    os.makedirs(directory, exist_ok=True)
+# Создаем директории если их нет
+for directory in MEDIA_DIRS:
+    media_path = os.path.join(MEDIA_ROOT, directory)
+    os.makedirs(media_path, exist_ok=True)
+
+# Настройки для Whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Настройки для хранения файлов
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
