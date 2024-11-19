@@ -1,9 +1,9 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
+/*@import 'tailwindcss/base';*/
+/*@import 'tailwindcss/components';*/
 @import './components.css';
 @import './utilities.css';
 @import './mixins.css';
-@import 'tailwindcss/utilities';
+/*@import 'tailwindcss/utilities';*/
 
 /* Добавляем префиксы для background-clip */
 .bg-clip-text {
