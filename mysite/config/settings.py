@@ -94,14 +94,15 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = '/opt/render/project/src/data/static'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/opt/render/project/src/data/media'
-STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/render/project/src/data/static'
 
 # Создаем необходимые директории
 REQUIRED_DIRS = [
