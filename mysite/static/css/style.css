@@ -1112,7 +1112,7 @@ textarea::placeholder {
     transform: none;
 }
 
-/* Улучшенные стили для кнопок в выпадающем меню */
+/* Улучшенные стили для кнопок в выпадаю��ем меню */
 .dropdown-menu button,
 .dropdown-menu a {
     width: 100%;
@@ -1306,4 +1306,41 @@ textarea::placeholder {
 
 .dropdown-menu[x-show] {
     animation: menuAppear 0.2s ease-out;
+}
+
+/* Префиксы для background-clip */
+.bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* Кросс-браузерные анимации */
+@-webkit-keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Поддержка для старых браузеров */
+@supports not (line-clamp: 2) {
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 }
