@@ -101,9 +101,10 @@ if DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
-    # Настройки для сервера
-    STATIC_ROOT = '/opt/render/project/src/data/static'
-    MEDIA_ROOT = '/opt/render/project/src/data/media'
+    # Настройки для сервера Render
+    STATIC_ROOT = '/opt/render/project/src/staticfiles'
+    # Используем постоянную директорию на Render
+    MEDIA_ROOT = '/opt/render/project/src/persistent/media'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
