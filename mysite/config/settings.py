@@ -309,63 +309,36 @@ for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
     os.makedirs(os.path.join(MEDIA_ROOT, dir_name), exist_ok=True)
     os.makedirs(os.path.join(MEDIA_BACKUP_ROOT, dir_name), exist_ok=True)
 
-# Cloudinary settings
+# Настройки Cloudinary
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dztabzn19',
     'API_KEY': '637516781124235',
     'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
     'SECURE': True,
-    'STATIC_TRANSFORMATIONS': {
-        'default': {
-            'quality': 'auto',
-            'fetch_format': 'auto',
-            'secure': True
-        }
-    }
 }
 
-# Static and Media Files Settings
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
-# Static files directories
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+# Cloudinary credentials
+CLOUDINARY_URL = f"cloudinary://{CLOUDINARY_STORAGE['API_KEY']}:{CLOUDINARY_STORAGE['API_SECRET']}@{CLOUDINARY_STORAGE['CLOUD_NAME']}"
+
+# Media settings
+MEDIA_URL = '/media/'  # URL для доступа к медиафайлам
+
+# Настройки для загрузки файлов
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Настройки для хранения файлов
+DEFAULT_FILE_STORAGE = 'blog.cloudinary_storage.CustomCloudinaryStorage'
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+
+# Настройки для обработки загрузки файлов
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
-
-if DEBUG:
-    # Local development settings
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-else:
-    # Production settings
-    STATIC_ROOT = '/opt/render/project/src/staticfiles'
-    MEDIA_ROOT = '/opt/render/project/src/media'
-    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# Cloudinary settings
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dztabzn19',
-    'API_KEY': '637516781124235',
-    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
-    'SECURE': True,
-    'STATIC_TRANSFORMATIONS': {
-        'default': {
-            'quality': 'auto',
-            'fetch_format': 'auto',
-            'secure': True
-        }
-    }
-}
-
-# Create necessary directories
-for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
-    os.makedirs(os.path.join(MEDIA_ROOT, dir_name), exist_ok=True)
-    if not DEBUG:
-        os.chmod(os.path.join(MEDIA_ROOT, dir_name), 0o777)
 
 # Настройки авторизации
 LOGIN_URL = '/login/'  # Изменено с 'login' на '/login/'
@@ -402,5 +375,23 @@ LOGGING = {
         },
     },
 }
+
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dztabzn19',
+    'API_KEY': '637516781124235',
+    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
+    'SECURE': True,
+}
+
+# Настройка хранилища для медиафайлов
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+
+# Cloudinary credentials
+CLOUDINARY_URL = f"cloudinary://{CLOUDINARY_STORAGE['API_KEY']}:{CLOUDINARY_STORAGE['API_SECRET']}@{CLOUDINARY_STORAGE['CLOUD_NAME']}"
+
+# Media settings
+MEDIA_URL = '/media/'  # URL для доступа к медиафайлам
 
 
