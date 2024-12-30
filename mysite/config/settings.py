@@ -79,13 +79,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'b3fbgpfjiisirtqyqdry',
-        'USER': 'utihi7xqxpcfj2b5nzxr',
-        'PASSWORD': 'JMq9iLTaBX23jV4oFu9JsIqHIO45dB',
-        'HOST': 'b3fbgpfjiisirtqyqdry-postgresql.services.clever-cloud.com',
-        'PORT': '50013',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT', '50013'),
         'OPTIONS': {
-            'sslmode': 'disable',  # Отключаем SSL для тестирования
+            'sslmode': 'disable',
             'connect_timeout': 30,
             'keepalives': 1,
             'keepalives_idle': 30,
