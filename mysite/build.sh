@@ -29,32 +29,7 @@ python manage.py collectstatic --no-input
 # Run migrations
 python manage.py migrate
 
-# Print success message
-echo "Build completed successfully"
-
-# Function to check if service is healthy
-check_service() {
-    for i in {1..30}; do
-        if curl -f "http://localhost:$PORT/health/" >/dev/null 2>&1 || curl -f "http://0.0.0.0:$PORT/health/" >/dev/null 2>&1; then
-            echo "Service is up!"
-            return 0
-        fi
-        echo "Waiting for service to start... ($i/30)"
-        sleep 2
-    done
-    return 1
-}
-
-# Start gunicorn in background
-gunicorn config.wsgi:application \
+# Start gunicorn
+exec gunicorn config.wsgi:application \
     --bind=0.0.0.0:$PORT \
-    --config=gunicorn.conf.py &
-
-# Wait for service to be healthy
-if check_service; then
-    # Keep the script running
-    wait
-else
-    echo "Service failed to start"
-    exit 1
-fi
+    --config=gunicorn.conf.py
