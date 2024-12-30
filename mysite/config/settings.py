@@ -178,14 +178,26 @@ BASE_MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 BASE_STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Определяем пути для хранения файлов
-if DEBUG:
-    # Локальные пути
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    MEDIA_ROOT = BASE_MEDIA_ROOT
-else:
-    # Пути на сервере Render
-    STATIC_ROOT = '/opt/render/project/src/staticfiles'
-    MEDIA_ROOT = '/opt/render/project/src/media'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Настройки для Whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Общие директории для статических файлов
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Настройки для медиа файлов
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dztabzn19',
+    'API_KEY': '637516781124235',
+    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c'
+}
 
 # Настройки для загрузки файлов
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
@@ -238,13 +250,80 @@ DEFAULT_FILE_STORAGE = 'blog.cloudinary_storage.CustomCloudinaryStorage'
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# Настройки для Whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Настройки для авторизации
+LOGIN_URL = '/login/'  # Изменено с 'login' на '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
-# Общие директории для статических айлов
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+# Настройки для аутентификации
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
 ]
+
+# Настройки для проверки состояия БД
+DATABASE_CHECK_TIMEOUT = 5  # секунды
+DATABASE_CHECK_INTERVAL = 300  # 5 минут
+
+# Добавьте в LOGGING
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'db.log',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+# Настройки для медиа-файлов
+MEDIA_BACKUP_ROOT = os.path.join(BASE_DIR, 'media_backup')
+os.makedirs(MEDIA_BACKUP_ROOT, exist_ok=True)
+
+# Создаем директории для бэкапов
+for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
+    backup_dir = os.path.join(MEDIA_BACKUP_ROOT, dir_name)
+    os.makedirs(backup_dir, exist_ok=True)
+
+# Настройки логирования
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'media.log'),
+        },
+    },
+    'loggers': {
+        'blog.storage': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+# Настройки для медиа-файлов
+MEDIA_BACKUP_ENABLED = True
+MEDIA_BACKUP_ROOT = os.path.join(BASE_DIR, 'media_backup')
+MEDIA_SYNC_INTERVAL = 300  # 5 минут
+
+# Создаем необходимые директории
+for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
+    os.makedirs(os.path.join(MEDIA_ROOT, dir_name), exist_ok=True)
+    os.makedirs(os.path.join(MEDIA_BACKUP_ROOT, dir_name), exist_ok=True)
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
