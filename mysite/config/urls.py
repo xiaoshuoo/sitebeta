@@ -6,6 +6,10 @@ from django.contrib.auth import views as auth_views
 from blog.views import register, upload_image
 from django.views.static import serve
 from django.urls import re_path
+from django.http import HttpResponse
+
+def health_check(request):
+    return HttpResponse("OK")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -62,6 +66,7 @@ urlpatterns = [
     re_path(r'^static/(?P<path>.*)$', serve, {
         'document_root': settings.STATIC_ROOT,
     }),
+    path('health/', health_check, name='health_check'),
 ]
 
 # Добавляем обработку медиа и статических файлов для разработки
