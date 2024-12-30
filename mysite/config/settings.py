@@ -323,17 +323,24 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Static files settings
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = '/opt/render/project/src/staticfiles'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
 # Media settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = '/opt/render/project/src/media'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Whitenoise settings
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+WHITENOISE_MAX_AGE = 31536000
+
+# Media settings
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/opt/render/project/src/media'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Whitenoise options
 WHITENOISE_MIMETYPES = {

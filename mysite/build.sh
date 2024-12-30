@@ -23,11 +23,14 @@ python -c "import os; os.makedirs('static', exist_ok=True)"
 # Clean up old static files
 rm -rf /opt/render/project/src/staticfiles/*
 
-# Collect static files without post-processing
-python manage.py collectstatic --no-input --no-post-process
+# Collect static files
+python manage.py collectstatic --no-input
 
 # Run migrations
 python manage.py migrate
 
-# Start gunicorn
-exec gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --workers=4
+# Print success message
+echo "Build completed successfully"
+
+# Start gunicorn in the background
+exec gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --workers=4 --access-logfile - --error-logfile - --capture-output
