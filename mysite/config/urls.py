@@ -6,6 +6,19 @@ from django.contrib.auth import views as auth_views
 from blog.views import register, upload_image
 from django.views.static import serve
 from django.urls import re_path
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
+from django.db import connection
+from django.utils import timezone
+
+@never_cache
+@require_GET
+def health_check(request):
+    return JsonResponse({
+        "status": "healthy",
+        "timestamp": timezone.now().isoformat()
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -62,6 +75,7 @@ urlpatterns = [
     re_path(r'^static/(?P<path>.*)$', serve, {
         'document_root': settings.STATIC_ROOT,
     }),
+    path('health/', health_check, name='health_check'),
 ]
 
 # Добавляем обработку медиа и статических файлов для разработки
