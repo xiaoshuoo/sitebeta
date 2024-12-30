@@ -32,5 +32,25 @@ python manage.py migrate
 # Print success message
 echo "Build completed successfully"
 
-# Start gunicorn in the background
-exec gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --workers=4 --access-logfile - --error-logfile - --capture-output
+# Start gunicorn in the background and save PID
+gunicorn config.wsgi:application \
+    --bind=0.0.0.0:$PORT \
+    --workers=4 \
+    --access-logfile - \
+    --error-logfile - \
+    --capture-output \
+    --daemon \
+    --pid gunicorn.pid
+
+# Wait a few seconds for gunicorn to start
+sleep 5
+
+# Check if gunicorn is running
+if ps aux | grep -q "[g]unicorn"; then
+    echo "Gunicorn started successfully"
+    # Keep the script running to prevent container from stopping
+    tail -f /dev/null
+else
+    echo "Failed to start Gunicorn"
+    exit 1
+fi
