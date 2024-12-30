@@ -40,5 +40,4 @@ exec gunicorn config.wsgi:application \
     --access-logfile=- \
     --error-logfile=- \
     --log-level=info \
-    --forwarded-allow-ips="*" \
-    --proxy-allow-ips="*"
+    --forwarded-allow-ips="*"
