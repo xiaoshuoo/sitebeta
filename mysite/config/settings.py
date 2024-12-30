@@ -17,12 +17,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    '*',
-    '.onrender.com',
-    'sity-lvo8.onrender.com',  # Ваш актуальный домен
-    'sitebeta.onrender.com'    # Старый домен, если нужен
-]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -238,6 +233,14 @@ SYNC_MEDIA = True
 SYNC_ON_SAVE = True  # Синхронизировать при сохранении файлов
 SYNC_DELETE = True   # Синхронизировать удаление файлов
 
+# Настройки для файлового хранилища
+DEFAULT_FILE_STORAGE = 'blog.cloudinary_storage.CustomCloudinaryStorage'
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Настройки для Whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Общие директории для статических айлов
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -323,56 +326,60 @@ cloudinary.config(
 )
 
 # Storage settings
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
-# Static files settings
-STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/render/project/src/staticfiles'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+# Media settings
+MEDIA_URL = '/media/'
+
+# Настройки для загрузки файлов
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Настройки для хранения файлов
+DEFAULT_FILE_STORAGE = 'blog.cloudinary_storage.CustomCloudinaryStorage'
+STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+
+# Настройки для обработки загрузки файлов
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
 
-# Media settings
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/opt/render/project/src/media'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Настройки авторизации
+LOGIN_URL = '/login/'  # Изменено с 'login' на '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
-# Whitenoise settings
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-WHITENOISE_MAX_AGE = 31536000
+# Настройки для аутентификации
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
 
-# Media settings
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/opt/render/project/src/media'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Настройки для проверки состояия БД
+DATABASE_CHECK_TIMEOUT = 5  # секунды
+DATABASE_CHECK_INTERVAL = 300  # 5 минут
 
-# Whitenoise options
-WHITENOISE_MIMETYPES = {
-    '.svg': 'image/svg+xml',
-    '.woff': 'application/font-woff',
-    '.woff2': 'application/font-woff2',
+# Добавьте в LOGGING
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'db.log',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
-
-WHITENOISE_ALLOW_ALL_ORIGINS = True
-WHITENOISE_SKIP_COMPRESS_EXTENSIONS = [
-    'jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'tgz', 'bz2',
-    'rar', 'svg', 'woff', 'woff2'
-]
-
-# Gunicorn settings
-GUNICORN_TIMEOUT = 300
-GUNICORN_WORKERS = 4
-GUNICORN_WORKER_CLASS = 'sync'
-
-# Render specific settings
-if not DEBUG:
-    ALLOWED_HOSTS = ['*.onrender.com', 'your-app-name.onrender.com']
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# Add these security settings for Render
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False  # Set to True only after confirming everything works
 
 
