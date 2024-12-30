@@ -17,12 +17,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    '*',
-    '.onrender.com',
-    'sity-lvo8.onrender.com',  # Ваш актуальный домен
-    'sitebeta.onrender.com'    # Старый домен, если нужен
-]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -79,13 +74,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT', '50013'),
+        'NAME': 'b3fbgpfjiisirtqyqdry',
+        'USER': 'utihi7xqxpcfj2b5nzxr',
+        'PASSWORD': 'JMq9iLTaBX23jV4oFu9JsIqHIO45dB',
+        'HOST': 'b3fbgpfjiisirtqyqdry-postgresql.services.clever-cloud.com',
+        'PORT': '50013',
         'OPTIONS': {
-            'sslmode': 'disable',
+            'sslmode': 'disable',  # Отключаем SSL для тестирования
             'connect_timeout': 30,
             'keepalives': 1,
             'keepalives_idle': 30,
@@ -280,59 +275,21 @@ for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'media.log'),
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+        'blog.storage': {
+            'handlers': ['file'],
+            'level': 'INFO',
             'propagate': True,
-        },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'django.server': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
         },
     },
 }
-
-# Настройки безопасности
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False
-
-# Настройки CSRF
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
-    'https://sity-lvo8.onrender.com',
-]
-
-# Настройки сессий
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-
-# Разрешаем все хосты (временно для отладки)
-ALLOWED_HOSTS = ['*']
-
-# Отключаем HTTPS редирект (временно для отладки)
-SECURE_SSL_REDIRECT = False
-
-# Настройки для отладки
-DEBUG = True  # Временно включаем для отладки
 
 # Настройки для медиа-файлов
 MEDIA_BACKUP_ENABLED = True
@@ -366,24 +323,17 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Static files settings
 STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/render/project/src/staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
 # Media settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/opt/render/project/src/media'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Whitenoise settings
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-WHITENOISE_MAX_AGE = 31536000
-
-# Media settings
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/opt/render/project/src/media'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Whitenoise options
 WHITENOISE_MIMETYPES = {
@@ -397,20 +347,5 @@ WHITENOISE_SKIP_COMPRESS_EXTENSIONS = [
     'jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'tgz', 'bz2',
     'rar', 'svg', 'woff', 'woff2'
 ]
-
-# Gunicorn settings
-GUNICORN_TIMEOUT = 300
-GUNICORN_WORKERS = 4
-GUNICORN_WORKER_CLASS = 'sync'
-
-# Render specific settings
-if not DEBUG:
-    ALLOWED_HOSTS = ['*.onrender.com', 'your-app-name.onrender.com']
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# Add these security settings for Render
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False  # Set to True only after confirming everything works
 
 
