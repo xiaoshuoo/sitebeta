@@ -24,7 +24,7 @@ python -c "import os; os.makedirs('static', exist_ok=True)"
 rm -rf /opt/render/project/src/staticfiles/*
 
 # Collect static files without post-processing
-python manage.py collectstatic --no-input --noppost-process
+python manage.py collectstatic --no-input --no-post-process
 
 # Run migrations
 python manage.py migrate

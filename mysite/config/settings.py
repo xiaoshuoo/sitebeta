@@ -233,14 +233,6 @@ SYNC_MEDIA = True
 SYNC_ON_SAVE = True  # Синхронизировать при сохранении файлов
 SYNC_DELETE = True   # Синхронизировать удаление файлов
 
-# Настройки для файлового хранилища
-DEFAULT_FILE_STORAGE = 'blog.cloudinary_storage.CustomCloudinaryStorage'
-FILE_UPLOAD_PERMISSIONS = 0o644
-FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
-
-# Настройки для Whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-
 # Общие директории для статических айлов
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -326,7 +318,7 @@ cloudinary.config(
 )
 
 # Storage settings
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Static files settings
