@@ -1,8 +1,9 @@
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, m2m_changed
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import Profile, Post, Category
 import os
+from django.db import transaction
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -36,3 +37,12 @@ def delete_profile_files(sender, instance, **kwargs):
                 os.remove(instance.cover.path)
     except Exception as e:
         print(f"Error deleting profile files: {str(e)}")
+
+@receiver(post_save, sender=Post)
+def update_category_posts_count(sender, instance, **kwargs):
+    """Обновляет счетчик постов в категории"""
+    if instance.category:
+        # Используем select_for_update() для блокировки
+        with transaction.atomic():
+            category = Category.objects.select_for_update().get(id=instance.category.id)
+            category.update_posts_count()

@@ -1,139 +1,197 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="min-h-screen bg-[#2D2A3D] p-6">
-    <div class="max-w-7xl mx-auto">
-        <!-- Заголовок и кнопка создания -->
-        <div class="bg-[#2D2A3D]/70 backdrop-blur-lg rounded-2xl p-6 border border-white/10 mb-6">
-            <div class="flex items-center justify-between">
-                <h1 class="text-3xl font-bold text-white flex items-center">
-                    <i class="fas fa-file-alt text-purple-500 mr-3"></i>
-                    Мои посты
-                </h1>
-                <a href="{% url 'blog:create_post' %}" 
-                   class="px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-all flex items-center">
-                    <i class="fas fa-plus mr-2"></i>
-                    Создать пост
-                </a>
+<div class="min-h-screen bg-[#0F0A1F] relative">
+    <!-- Анимированный фоновый градиент -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="relative z-10 max-w-7xl mx-auto px-4 py-12">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-white animate-gradient">
+                Мои посты
+            </h1>
+            <p class="text-gray-400 mt-2">Управляйте своими публикациями</p>
+        </div>
+
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- Всего постов -->
+            <div class="glass-card p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 mb-1">Всего постов</p>
+                        <h3 class="text-3xl font-bold text-white">{{ posts.count }}</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-all">
+                        <i class="fas fa-newspaper text-purple-400 text-xl group-hover:scale-110 transition-transform"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Опубликованные -->
+            <div class="glass-card p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 mb-1">Опубликовано</p>
+                        <h3 class="text-3xl font-bold text-white">{{ posts.filter.is_published.count }}</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-all">
+                        <i class="fas fa-check text-green-400 text-xl group-hover:scale-110 transition-transform"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Просмотры -->
+            <div class="glass-card p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 mb-1">Просмотров</p>
+                        <h3 class="text-3xl font-bold text-white">{{ total_views }}</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-all">
+                        <i class="fas fa-eye text-blue-400 text-xl group-hover:scale-110 transition-transform"></i>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Фильтры -->
-        <div class="bg-[#2D2A3D]/70 backdrop-blur-lg rounded-2xl p-4 border border-white/10 mb-6">
-            <div class="flex items-center space-x-4">
-                <button class="filter-btn active">
-                    <i class="fas fa-clock mr-2"></i>
-                    <span>Новые</span>
-                </button>
-                <button class="filter-btn">
-                    <i class="fas fa-fire mr-2"></i>
-                    <span>Популярные</span>
-                </button>
-                <button class="filter-btn">
-                    <i class="fas fa-edit mr-2"></i>
-                    <span>Черновики</span>
-                </button>
-            </div>
+        <!-- Кнопка создания поста -->
+        <div class="text-center mb-12">
+            <a href="{% url 'blog:create_post' %}" 
+               class="inline-flex items-center px-6 py-3 bg-purple-500/20 text-purple-400 rounded-xl 
+                      hover:bg-purple-500/30 transition-all group border border-purple-500/20 
+                      hover:border-purple-500/40 hover:scale-105">
+                <i class="fas fa-plus mr-2 group-hover:rotate-90 transition-transform"></i>
+                Создать новый пост
+            </a>
         </div>
 
         <!-- Список постов -->
-        <div class="space-y-4">
+        {% if posts %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             {% for post in posts %}
-            <article class="bg-[#2D2A3D]/70 backdrop-blur-lg rounded-2xl p-6 border border-white/10 hover:bg-[#2D2A3D]/90 transition-all">
-                <div class="flex items-start space-x-6">
-                    {% if post.thumbnail %}
-                    <div class="w-48 h-48 flex-shrink-0 rounded-xl overflow-hidden">
-                        <img src="{{ post.thumbnail.url }}" 
-                             alt="{{ post.title }}" 
-                             class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300">
-                    </div>
-                    {% endif %}
-                    <div class="flex-1">
-                        <!-- Мета информация -->
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center space-x-4 text-sm text-gray-400">
-                                <span class="flex items-center">
-                                    <i class="fas fa-calendar mr-2 text-purple-500/70"></i>
-                                    {{ post.created_at|date:"d.m.Y" }}
-                                </span>
-                                <span class="flex items-center">
-                                    <i class="fas fa-eye mr-2 text-purple-500/70"></i>
-                                    {{ post.views_count }}
-                                </span>
-                                {% if post.is_published %}
-                                <span class="flex items-center text-green-500">
-                                    <i class="fas fa-check-circle mr-2"></i>
-                                    Опубликован
-                                </span>
-                                {% else %}
-                                <span class="flex items-center text-yellow-500">
-                                    <i class="fas fa-clock mr-2"></i>
-                                    Черновик
-                                </span>
-                                {% endif %}
+            <div class="group relative">
+                <div class="glass-card rounded-xl overflow-hidden hover:-translate-y-2 transition-all duration-300">
+                    <!-- Миниатюра -->
+                    <div class="relative h-48 overflow-hidden">
+                        {% if post.thumbnail %}
+                            <img src="{{ post.get_thumbnail_url }}" 
+                                 alt="{{ post.title }}" 
+                                 class="w-full h-full object-cover transform group-hover:scale-105 transition-all duration-700">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 
+                                       flex items-center justify-center">
+                                <i class="fas fa-newspaper text-4xl text-purple-400/50"></i>
                             </div>
-                            <div class="flex items-center space-x-3">
-                                <a href="{% url 'blog:edit_post' slug=post.slug %}" 
-                                   class="p-2 bg-[#1A1625] text-purple-500 rounded-lg hover:bg-purple-500 hover:text-white transition-all">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <a href="{% url 'blog:delete_post' slug=post.slug %}" 
-                                   class="p-2 bg-[#1A1625] text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
-                            </div>
+                        {% endif %}
+                        
+                        <!-- Статус публикации -->
+                        <div class="absolute top-4 left-4">
+                            {% if post.is_published %}
+                            <span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-lg backdrop-blur-sm 
+                                       border border-green-500/20">
+                                <i class="fas fa-check mr-1"></i>
+                                Опубликован
+                            </span>
+                            {% else %}
+                            <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-sm rounded-lg backdrop-blur-sm 
+                                       border border-yellow-500/20">
+                                <i class="fas fa-clock mr-1"></i>
+                                Черновик
+                            </span>
+                            {% endif %}
                         </div>
+                    </div>
 
-                        <!-- Заголовок и контент -->
-                        <h2 class="text-2xl font-bold mb-3">
-                            <a href="{% url 'blog:post_detail' slug=post.slug %}" 
-                               class="text-white hover:text-purple-500 transition-colors">
-                                {{ post.title }}
-                            </a>
-                        </h2>
-                        <p class="text-gray-400 mb-4 line-clamp-2">
+                    <!-- Контент -->
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">
+                            {{ post.title }}
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4 line-clamp-2">
                             {{ post.content|striptags|truncatewords:30 }}
                         </p>
 
-                        <!-- Теги -->
-                        {% if post.tags.all %}
-                        <div class="flex flex-wrap gap-2">
-                            {% for tag in post.tags.all %}
-                            <span class="px-3 py-1 bg-[#1A1625] text-purple-500 rounded-full text-sm">
-                                <i class="fas fa-tag mr-1"></i>
-                                {{ tag.name }}
-                            </span>
-                            {% endfor %}
+                        <!-- Метаданные -->
+                        <div class="flex items-center justify-between text-sm text-gray-400">
+                            <div class="flex items-center space-x-4">
+                                <span class="flex items-center">
+                                    <i class="far fa-calendar mr-1"></i>
+                                    {{ post.created_at|date:"d.m.Y" }}
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="far fa-eye mr-1"></i>
+                                    {{ post.views_count }}
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="far fa-comment mr-1"></i>
+                                    {{ post.comments.count }}
+                                </span>
+                            </div>
                         </div>
-                        {% endif %}
+
+                        <!-- Кнопки управления -->
+                        <div class="flex items-center justify-end space-x-4 mt-4 pt-4 border-t border-white/5">
+                            <a href="{% url 'blog:edit_post' post.slug %}" 
+                               class="text-blue-400 hover:text-blue-300 transition-colors">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'blog:delete_post' post.slug %}" 
+                               class="text-red-400 hover:text-red-300 transition-colors"
+                               onclick="return confirm('Вы уверены, что хотите удалить этот пост?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                            <a href="{% url 'blog:post_detail' post.slug %}" 
+                               class="text-purple-400 hover:text-purple-300 transition-colors">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </article>
-            {% empty %}
-            <div class="bg-[#2D2A3D]/70 backdrop-blur-lg rounded-2xl p-12 border border-white/10 text-center">
-                <div class="w-20 h-20 rounded-full bg-[#1A1625] flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-file-alt text-3xl text-purple-500"></i>
-                </div>
-                <h3 class="text-xl font-bold text-white mb-2">У вас пока нет постов</h3>
-                <p class="text-gray-400 mb-6">Создайте свой первый пост прямо сейчас!</p>
-                <a href="{% url 'blog:create_post' %}" 
-                   class="inline-flex items-center px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-all">
-                    <i class="fas fa-plus mr-2"></i>
-                    Создать первый пост
-                </a>
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <!-- Пустое состояние -->
+        <div class="text-center py-16">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <i class="fas fa-feather-alt text-3xl text-purple-400 animate-bounce"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">У вас пока нет постов</h3>
+            <p class="text-gray-400 mb-8">Начните делиться своими мыслями и идеями</p>
+            <a href="{% url 'blog:create_post' %}" 
+               class="inline-flex items-center px-6 py-3 bg-purple-500/20 text-purple-400 rounded-xl 
+                      hover:bg-purple-500/30 transition-all group">
+                <i class="fas fa-plus mr-2 group-hover:rotate-90 transition-transform"></i>
+                Создать первый пост
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <style>
-.filter-btn {
-    @apply px-4 py-2 bg-[#1A1625] text-gray-400 rounded-xl hover:bg-purple-500/10 hover:text-purple-500 transition-all flex items-center;
+.glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.filter-btn.active {
-    @apply bg-purple-500/10 text-purple-500;
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+    animation: gradient 15s ease infinite;
+    background-size: 200% auto;
 }
 
 .line-clamp-2 {

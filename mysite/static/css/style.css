@@ -799,7 +799,7 @@ a.btn {
 /* Медиа-запрос для мобильных устройств */
 @media (max-width: 768px) {
     .nav-link {
-        padding: 1rem 1.5rem; /* Еще больше увеличиваем область нажатия на мобильных */
+        padding: 1rem 1.5rem; /* Еще больше увеличиваем обл��сть нажатия на мобильных */
     }
     
     .nav-link::before {
@@ -1112,7 +1112,7 @@ textarea::placeholder {
     transform: none;
 }
 
-/* Улучшенные стили для кнопок в выпадаю��ем меню */
+/* Улучшенные стили для кнопок в выпадаюем меню */
 .dropdown-menu button,
 .dropdown-menu a {
     width: 100%;
@@ -1343,4 +1343,16 @@ textarea::placeholder {
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+}
+
+.stars {
+    background: transparent url('../images/stars.png') repeat top center !important;
+}
+
+.twinkling {
+    background: transparent url('../images/twinkling.png') repeat top center !important;
+}
+
+.clouds {
+    background: transparent url('../images/clouds.png') repeat top center !important;
 }

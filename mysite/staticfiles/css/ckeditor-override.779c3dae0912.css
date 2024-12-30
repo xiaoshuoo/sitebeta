@@ -1,0 +1,115 @@
+/* Основной контейнер */
+.cke_chrome {
+    background-color: #1A1625 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Верхняя панель */
+.cke_top {
+    background-color: #1A1625 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Нижняя панель */
+.cke_bottom {
+    background-color: #1A1625 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Область редактирования */
+.cke_editable,
+.cke_wysiwyg_frame,
+.cke_wysiwyg_div {
+    background-color: #1A1625 !important;
+    color: #E2E8F0 !important;
+}
+
+/* Кнопки */
+.cke_button {
+    background: transparent !important;
+}
+
+.cke_button:hover {
+    background-color: rgba(139, 92, 246, 0.1) !important;
+}
+
+.cke_button_on {
+    background-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Иконки */
+.cke_button_icon {
+    filter: invert(1) !important;
+}
+
+/* Выпадающие списки */
+.cke_combo_button {
+    background-color: #1A1625 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_combo_text {
+    color: #E2E8F0 !important;
+}
+
+/* Путь элементов */
+.cke_path_item {
+    color: #E2E8F0 !important;
+}
+
+/* Диалоговые окна */
+.cke_dialog_background_cover {
+    background-color: rgba(26, 22, 37, 0.8) !important;
+}
+
+.cke_dialog {
+    background-color: #2D2A3D !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_dialog_title {
+    background-color: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_dialog_footer {
+    background-color: #1A1625 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_dialog_body {
+    background-color: #2D2A3D !important;
+    color: #E2E8F0 !important;
+}
+
+.cke_dialog_tab {
+    background-color: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.cke_dialog_tab_selected {
+    background-color: #8B5CF6 !important;
+    color: white !important;
+}
+
+/* Поля ввода в диалогах */
+.cke_dialog input,
+.cke_dialog textarea,
+.cke_dialog select {
+    background-color: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Исправление для iframe */
+.cke_wysiwyg_frame {
+    background-color: #1A1625 !important;
+}
+
+/* Содержимое редактора */
+body.cke_editable {
+    background-color: #1A1625 !important;
+    color: #E2E8F0 !important;
+} 

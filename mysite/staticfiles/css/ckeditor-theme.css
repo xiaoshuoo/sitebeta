@@ -1,11 +1,9 @@
 /* Основные цвета и переменные */
 :root {
     --editor-bg: #1A1625;
-    --editor-surface: #2D2A3D;
     --editor-text: #E2E8F0;
-    --editor-border: rgba(255, 255, 255, 0.1);
-    --editor-accent: #8B5CF6;
-    --editor-accent-hover: #7C3AED;
+    --editor-border: rgba(139, 92, 246, 0.2);
+    --editor-focus: rgba(139, 92, 246, 0.4);
 }
 
 /* Основной контейнер редактора */
@@ -14,18 +12,17 @@
 }
 
 .cke_chrome {
-    border: 1px solid var(--editor-border) !important;
+    border-color: var(--editor-border) !important;
     border-radius: 0.75rem !important;
     background: var(--editor-bg) !important;
-    box-shadow: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Верхняя панель инструментов */
 .cke_top {
-    background: var(--editor-bg) !important;
+    background: rgba(26, 22, 37, 0.95) !important;
     border-bottom: 1px solid var(--editor-border) !important;
-    padding: 0.75rem !important;
-    border-radius: 0.75rem 0.75rem 0 0 !important;
+    padding: 8px !important;
 }
 
 /* Нижняя панель */
@@ -47,19 +44,17 @@
 /* Кнопки */
 .cke_button {
     padding: 0.5rem !important;
-    border-radius: 0.5rem !important;
+    border-radius: 4px !important;
     background: transparent !important;
-    transition: all 0.2s ease-in-out !important;
+    transition: all 0.2s !important;
 }
 
 .cke_button:hover {
     background: rgba(139, 92, 246, 0.1) !important;
-    transform: translateY(-1px) !important;
 }
 
 .cke_button_on {
     background: rgba(139, 92, 246, 0.2) !important;
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2) !important;
 }
 
 /* Иконки */
@@ -110,10 +105,7 @@
 .cke_editable {
     background: var(--editor-bg) !important;
     color: var(--editor-text) !important;
-    padding: 1.5rem !important;
-    border-radius: 0.75rem !important;
-    font-family: 'Inter', sans-serif !important;
-    line-height: 1.6 !important;
+    padding: 20px !important;
 }
 
 /* Панель элементов пути */
@@ -136,15 +128,14 @@
 
 /* Диалоговые окна */
 .cke_dialog_background_cover {
-    background: rgba(26, 22, 37, 0.8) !important;
+    background: rgba(0, 0, 0, 0.7) !important;
     backdrop-filter: blur(8px) !important;
 }
 
 .cke_dialog {
-    border-radius: 1rem !important;
-    background: var(--editor-surface) !important;
+    border-radius: 0.75rem !important;
     border: 1px solid var(--editor-border) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    background: var(--editor-bg) !important;
 }
 
 .cke_dialog_title {
@@ -214,4 +205,43 @@
 
 .cke_dialog {
     animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для диалога загрузки изображений */
+.ck.ck-image-upload-dialog {
+    background: #1A1625 !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 1rem !important;
+}
+
+.ck.ck-image-upload-dialog .ck-labeled-field-view {
+    background: rgba(26, 22, 37, 0.8) !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    border-radius: 0.5rem !important;
+    color: #E2E8F0 !important;
+}
+
+.ck.ck-image-upload-dialog .ck-button {
+    background: linear-gradient(to right, #8B5CF6, #7C3AED) !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    color: white !important;
+    padding: 0.75rem 1.5rem !important;
+}
+
+.ck.ck-image-upload-dialog .ck-button:hover {
+    background: linear-gradient(to right, #7C3AED, #6D28D9) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Зона перетаскивания */
+.ck.ck-image-upload-dialog .ck-upload-placeholder-loader {
+    border: 2px dashed rgba(139, 92, 246, 0.3) !important;
+    border-radius: 0.75rem !important;
+    background: rgba(139, 92, 246, 0.05) !important;
+}
+
+.ck.ck-image-upload-dialog .ck-upload-placeholder-loader:hover {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    background: rgba(139, 92, 246, 0.1) !important;
 }

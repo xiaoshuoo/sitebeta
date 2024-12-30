@@ -2,262 +2,1123 @@
 {% load static %}
 
 {% block extra_head %}
-<script src="https://cdn.tiny.cloud/1/69ivue7aox9alaq0v8pv90xk8iysctulgxmx7px3ler2pnp4/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Подключаем jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Подключаем CKEditor -->
+<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/translations/ru.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/decoupled-document/ckeditor.js"></script>
+
+<style>
+/* Основные стили страницы */
+.editor-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #13111C 0%, #171422 50%, #1A1625 100%);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Анимированный фон */
+.editor-background {
+    position: fixed;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 60%);
+    z-index: -1;
+    animation: backgroundPulse 10s ease-in-out infinite;
+}
+
+/* Основные стили редактора */
+.ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
+    background: rgba(26, 22, 37, 0.95) !important;
+    color: #E2E8F0 !important;
+}
+
+.ck.ck-editor__main>.ck-editor__editable.ck-focused {
+    background: rgba(26, 22, 37, 0.95) !important;
+    color: #E2E8F0 !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+}
+
+.ck.ck-editor__main>.ck-editor__editable {
+    min-height: 800px !important;
+    padding: 2rem !important;
+    background: rgba(26, 22, 37, 0.95) !important;
+    color: #E2E8F0 !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    font-size: 16px !important;
+    line-height: 1.8 !important;
+}
+
+/* Стили для тулбара */
+.ck.ck-toolbar {
+    background: rgba(26, 22, 37, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+.ck.ck-toolbar .ck-toolbar__items {
+    background: rgba(26, 22, 37, 0.98) !important;
+    padding: 0.5rem !important;
+}
+
+/* Стили для кнопок */
+.ck.ck-button {
+    color: #E2E8F0 !important;
+    background: transparent !important;
+    padding: 10px 15px !important;
+    margin: 2px !important;
+}
+
+.ck.ck-button:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+.ck.ck-button.ck-on {
+    background: rgba(139, 92, 246, 0.2) !important;
+    color: #E2E8F0 !important;
+}
+
+/* Стили для выпадающих списков */
+.ck.ck-dropdown__panel {
+    background: rgba(26, 22, 37, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    min-width: 200px !important;
+}
+
+.ck.ck-list {
+    background: rgba(26, 22, 37, 0.98) !important;
+}
+
+.ck.ck-list__item:hover:not(.ck-disabled) {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+.ck.ck-list__item.ck-on {
+    background: rgba(139, 92, 246, 0.2) !important;
+    color: #E2E8F0 !important;
+}
+
+/* Стили для диалоговых окон */
+.ck.ck-dialog {
+    background: rgba(26, 22, 37, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+.ck.ck-dialog .ck-dialog__title {
+    color: #E2E8F0 !important;
+}
+
+.ck.ck-dialog .ck-dialog__body {
+    background: rgba(26, 22, 37, 0.98) !important;
+}
+
+.ck.ck-dialog .ck-dialog__footer {
+    background: rgba(26, 22, 37, 0.98) !important;
+    border-top: 1px solid rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Стили для полей ввода в диалогах */
+.ck.ck-input {
+    background: rgba(26, 22, 37, 0.95) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    color: #E2E8F0 !important;
+}
+
+.ck.ck-input:focus {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Стили для контента внутри редактора */
+.ck-content {
+    min-height: 800px !important;
+    font-size: 16px !important;
+    line-height: 1.8 !important;
+    padding: 2rem !important;
+}
+
+.ck-content h1, .ck-content h2, .ck-content h3 {
+    color: #E2E8F0 !important;
+}
+
+.ck-content p {
+    color: #E2E8F0 !important;
+}
+
+.ck-content a {
+    color: #8B5CF6 !important;
+}
+
+/* Стили для разделителя */
+.ck.ck-toolbar__separator {
+    background: rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Стили для подсказок */
+.ck.ck-tooltip .ck-tooltip__text {
+    background: rgba(26, 22, 37, 0.98) !important;
+    color: #E2E8F0 !important;
+}
+
+/* Кнопки в тулбаре */
+.ck-button {
+    background: transparent !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    color: #E2E8F0 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    transition: all 0.2s ease !important;
+}
+
+.ck-button:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    transform: translateY(-1px);
+}
+
+.ck-button.ck-on {
+    background: rgba(139, 92, 246, 0.2) !important;
+    border-color: rgba(139, 92, 246, 0.5) !important;
+}
+
+/* Выпадающие списки */
+.ck-dropdown__panel {
+    background: rgba(26, 22, 37, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Поля ввода */
+.form-input {
+    background: rgba(26, 22, 37, 0.95) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    color: #E2E8F0 !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.5rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-input:focus {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
+    transform: translateY(-2px);
+}
+
+/* Кнопки действий */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-action {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(to right, #8B5CF6, #7C3AED);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.btn-secondary {
+    background: rgba(26, 22, 37, 0.95);
+    color: #E2E8F0;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* Анимации для иконок */
+.btn-action i {
+    transition: transform 0.3s ease;
+}
+
+.btn-action:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* Стили для загрузки изображений */
+.image-upload {
+    border: 2px dashed rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: rgba(26, 22, 37, 0.95);
+}
+
+.image-upload:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+/* Улучшенные стили для диалогов */
+.ck.ck-dialog {
+    background: rgba(26, 22, 37, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.ck.ck-dialog .ck-dialog__title {
+    color: #E2E8F0 !important;
+    font-size: 1.25rem !important;
+    padding: 1.5rem !important;
+}
+
+.ck.ck-dialog .ck-button {
+    background: linear-gradient(to right, #8B5CF6, #7C3AED) !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+}
+
+/* Анимации для страницы */
+@keyframes backgroundPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Увеличиваем размер контейнера редактора */
+.editor-container {
+    min-height: 800px !important;
+    margin-bottom: 2rem !important;
+}
+
+/* Увеличиваем размер панели инструментов */
+#toolbar-container {
+    padding: 1rem !important;
+    background: rgba(26, 22, 37, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+/* Делаем кнопки в тулбаре больше */
+.ck.ck-toolbar .ck-toolbar__items {
+    padding: 0.5rem !important;
+}
+
+.ck.ck-toolbar .ck-button {
+    padding: 10px 15px !important;
+    margin: 2px !important;
+}
+
+/* Увеличиваем размер выпадающих списков */
+.ck.ck-dropdown__panel {
+    min-width: 200px !important;
+}
+
+.ck.ck-list__item {
+    padding: 8px 12px !important;
+}
+
+/* Улучшенный дизайн для заголовка */
+.title-input {
+    background: linear-gradient(145deg, rgba(26, 22, 37, 0.8), rgba(45, 42, 61, 0.8)) !important;
+    border: 2px solid rgba(139, 92, 246, 0.2) !important;
+    border-radius: 16px !important;
+    padding: 1.25rem !important;
+    font-size: 1.25rem !important;
+    color: #E2E8F0 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.title-input:focus {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.1),
+        0 0 20px rgba(139, 92, 246, 0.2) !important;
+    transform: translateY(-2px);
+}
+
+/* Улучшенный дизайн для выпадающих списков */
+select {
+    background: linear-gradient(145deg, rgba(26, 22, 37, 0.8), rgba(45, 42, 61, 0.8)) !important;
+    border: 2px solid rgba(139, 92, 246, 0.2) !important;
+    border-radius: 16px !important;
+    padding: 1rem !important;
+    color: #E2E8F0 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238B5CF6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 1rem center !important;
+    background-size: 1.5em !important;
+    padding-right: 3rem !important;
+}
+
+select:focus {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2) !important;
+    transform: translateY(-2px);
+}
+
+/* Улучшенный дизайн для области загрузки миниатюры */
+.thumbnail-upload {
+    background: linear-gradient(145deg, rgba(26, 22, 37, 0.8), rgba(45, 42, 61, 0.8));
+    border: 2px dashed rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.thumbnail-upload:hover {
+    border-color: rgba(139, 92, 246, 0.6);
+    background: linear-gradient(145deg, rgba(26, 22, 37, 0.9), rgba(45, 42, 61, 0.9));
+    transform: translateY(-2px);
+}
+
+/* Анимированная иконка загрузки */
+.upload-icon {
+    font-size: 2.5rem;
+    color: rgba(139, 92, 246, 0.6);
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Улучшенные метки полей */
+.field-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #E2E8F0;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.field-label i {
+    color: rgba(139, 92, 246, 0.8);
+    font-size: 1.25rem;
+}
+
+/* Улучшенные кнопки действий */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-action {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+    color: white;
+    border: none;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-secondary {
+    background: rgba(26, 22, 37, 0.95);
+    color: #E2E8F0;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* Анимированные иконки в кнопках */
+.btn-action i {
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* Улучшенный контейнер формы */
+.form-container {
+    background: linear-gradient(145deg, rgba(26, 22, 37, 0.9), rgba(45, 42, 61, 0.9));
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 0 32px rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Разделители секций */
+.form-section {
+    position: relative;
+    padding: 2rem 0;
+}
+
+.form-section:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139, 92, 246, 0.2),
+        transparent
+    );
+}
+
+/* Анимированный фон для активных элементов */
+.form-input:focus ~ .input-background {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.input-background {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        circle at center,
+        rgba(139, 92, 246, 0.1),
+        transparent 70%
+    );
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+/* Улучшенный дизайн дя заголовка страницы */
+.page-title {
+    position: relative;
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem 0;
+}
+
+.page-title h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(to right, #fff, #8B5CF6, #fff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: titleGlow 3s ease-in-out infinite;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, rgba(139, 92, 246, 0.5), transparent);
+}
+
+/* Улучшенный дизайн для полей ввода */
+.input-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.input-wrapper label {
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    transform: translateY(-50%);
+    background: #1A1625;
+    padding: 0 0.5rem;
+    color: rgba(139, 92, 246, 0.8);
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.input-wrapper input:focus + label,
+.input-wrapper select:focus + label {
+    color: #8B5CF6;
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* Улучшенный дизайн для выпадающих списков */
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: '▼';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(139, 92, 246, 0.8);
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.select-wrapper:hover::after {
+    color: #8B5CF6;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Улучшенный дизайн для кнопок действий */
+.action-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    color: white;
+    cursor: pointer;
+}
+
+.action-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.action-button:hover::before {
+    left: 100%;
+}
+
+/* Улучшенный дизайн для области редактора */
+.editor-wrapper {
+    position: relative;
+    margin: 2rem 0;
+    transition: all 0.3s ease;
+}
+
+.editor-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 1rem;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(236, 72, 153, 0.5));
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask: 
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+}
+
+.editor-wrapper:hover::before {
+    opacity: 0.5;
+}
+
+/* Улучшенный дизайн для тулбара */
+#toolbar-container {
+    background: rgba(26, 22, 37, 0.95);
+    border-radius: 1rem 1rem 0 0;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    padding: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    backdrop-filter: blur(10px);
+}
+
+/* Анимированный фон для активных элементов */
+.active-glow {
+    position: relative;
+}
+
+.active-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        circle at var(--x, 50%) var(--y, 50%),
+        rgba(139, 92, 246, 0.15),
+        transparent 50%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.active-glow:hover::after {
+    opacity: 1;
+}
+
+/* Улучшенные стили для предпросмотра изображения */
+.image-preview {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    aspect-ratio: 16/9;
+    background: rgba(26, 22, 37, 0.95);
+    border: 2px dashed rgba(139, 92, 246, 0.3);
+    transition: all 0.3s ease;
+}
+
+.image-preview:hover {
+    border-color: rgba(139, 92, 246, 0.6);
+    transform: translateY(-2px);
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.image-preview:hover img {
+    transform: scale(1.05);
+}
+
+/* Анимации для интерактивных элементов */
+@keyframes titleGlow {
+    0%, 100% { text-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+    50% { text-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
+}
+
+@keyframes buttonGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
+}
+
+/* Улучшенные стили для сообщений об ошибках */
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #EF4444;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0 0.75rem 0.75rem 0;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Стили для панели выбора цвета */
+.ck.ck-color-grid {
+    background: rgba(26, 22, 37, 0.95) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    gap: 4px !important;
+}
+
+/* Стили для ячеек с цветами */
+.ck.ck-color-grid__tile {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 6px !important;
+    margin: 2px !important;
+    border: 2px solid transparent !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+}
+
+/* Эффект при наведении */
+.ck.ck-color-grid__tile:hover {
+    transform: scale(1.1) !important;
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    z-index: 1 !important;
+}
+
+/* Стили для выбранного цвета */
+.ck.ck-color-grid__tile.ck-on {
+    border-color: #8B5CF6 !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Подсказка с названием цвета */
+.ck.ck-color-grid__tile::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 22, 37, 0.95);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.ck.ck-color-grid__tile:hover::after {
+    opacity: 1;
+}
+
+/* Стили для разделителя */
+.ck.ck-color-grid__tile[data-separator]::before {
+    content: attr(data-separator);
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Стили для HEX-input */
+.ck.ck-color-picker__input {
+    background: rgba(26, 22, 37, 0.8) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 6px !important;
+    color: #E2E8F0 !important;
+    padding: 4px 8px !important;
+    margin-top: 8px !important;
+    width: 100% !important;
+}
+
+.ck.ck-color-picker__input:focus {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2) !important;
+}
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-background enhanced-bg py-8 relative">
-    <div class="max-w-4xl mx-auto px-4">
-        <!-- Сообщения об ошибках -->
-        {% if form.errors %}
-        <div class="glass-effect rounded-2xl p-6 mb-8 border border-red-500/20">
-            <div class="flex items-start space-x-3">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-circle text-2xl text-red-400"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-red-400 mb-2">Обнаружены ошибки</h3>
-                    <ul class="space-y-2">
-                        {% for field, errors in form.errors.items %}
-                            {% for error in errors %}
-                            <li class="flex items-center space-x-2 text-red-400">
-                                <i class="fas fa-times-circle"></i>
-                                <span>{{ error }}</span>
-                            </li>
-                            {% endfor %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Заголовок -->
-        <div class="glass-effect rounded-2xl p-8 mb-8">
-            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x mb-4">
-                {{ title }}
+<div class="min-h-screen bg-background cosmic-bg py-8">
+    <div class="max-w-7xl mx-auto px-4">
+        <!-- Заголовок страницы -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x">
+                {% if post.pk %}Редактирование поста{% else %}Создание нового поста{% endif %}
             </h1>
-            <p class="text-gray-400">Создайте уникальный и интересный контент для ваших читателей</p>
         </div>
 
-        <!-- Форма -->
-        <form method="post" enctype="multipart/form-data" class="space-y-8" id="postForm">
-            {% csrf_token %}
-            
-            <!-- Обложка поста -->
-            <div class="glass-effect rounded-2xl p-8">
-                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                    <i class="fas fa-image text-purple-400 mr-2"></i>
-                    Обложка поста
-                </h2>
-                <div class="dropzone relative" id="thumbnail-dropzone">
-                    <input type="file" name="thumbnail" id="thumbnail-upload" class="hidden" accept="image/*">
-                    <div class="flex items-center justify-center border-2 border-dashed border-purple-500/20 rounded-xl p-8 hover:border-purple-500/40 transition-all cursor-pointer">
-                        <div class="text-center" id="upload-prompt">
-                            <i class="fas fa-cloud-upload-alt text-4xl text-purple-400 mb-4"></i>
-                            <p class="text-white">Перетащите изображение сюда или кликните для выбора</p>
-                            <p class="text-sm text-gray-400 mt-2">PNG, JPG до 5MB</p>
-                        </div>
-                        <div id="thumbnail-preview" class="hidden">
-                            <img src="" alt="Preview" class="max-h-64 rounded-lg">
-                        </div>
-                    </div>
+        <div class="glass-effect rounded-2xl p-8">
+            <!-- Отображение ошибок -->
+            {% if form.errors %}
+            <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <div class="flex items-center text-red-400 mb-2">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span class="font-medium">Пожалуйста, исправьте следующие ошибки:</span>
                 </div>
+                <ul class="list-disc list-inside text-red-400 text-sm">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
             </div>
+            {% endif %}
 
-            <!-- Основная информация -->
-            <div class="glass-effect rounded-2xl p-8">
-                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                    <i class="fas fa-pen-fancy text-purple-400 mr-2"></i>
-                    Основная информация
-                </h2>
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
                 
                 <!-- Заголовок -->
-                <div class="mb-6">
-                    <label class="block text-gray-400 mb-2">Заголовок</label>
-                    {{ form.title }}
-                    {% if form.title.errors %}
-                        <p class="text-red-400 text-sm mt-1">{{ form.title.errors.0 }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Категория и теги -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-gray-400 mb-2">Категория</label>
-                        {{ form.category }}
-                        {% if form.category.errors %}
-                            <p class="text-red-400 text-sm mt-1">{{ form.category.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <label class="block text-gray-400 mb-2">Теги</label>
-                        {{ form.tags }}
-                        {% if form.tags.errors %}
-                            <p class="text-red-400 text-sm mt-1">{{ form.tags.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Контент -->
-                <div>
-                    <label class="block text-gray-400 mb-2">Содержание</label>
-                    {{ form.content }}
-                    {% if form.content.errors %}
-                        <div class="text-red-400 text-sm mt-2 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-                            <i class="fas fa-exclamation-circle mr-2"></i>
-                            {{ form.content.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Настройки публикации -->
-            <div class="glass-effect rounded-2xl p-8">
-                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                    <i class="fas fa-cog text-purple-400 mr-2"></i>
-                    Настройки публикации
-                </h2>
-                
-                <div class="flex items-center space-x-4">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        {{ form.is_published }}
-                        <span class="text-gray-400">Опубликовать сразу</span>
+                <div class="space-y-2">
+                    <label class="block text-lg font-medium text-white flex items-center space-x-2">
+                        <i class="fas fa-heading text-purple-400"></i>
+                        <span>Заголовок</span>
                     </label>
+                    <input type="text" name="title" id="title" required
+                           class="w-full bg-[#1a1625] border border-purple-500/20 text-white rounded-xl px-4 py-3 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                           placeholder="Введите заголовок поста"
+                           value="{{ form.title.value|default:'' }}">
                 </div>
-            </div>
 
-            <!-- Кнопки -->
-            <div class="flex justify-end space-x-4">
-                <a href="{% url 'blog:home' %}" 
-                   class="px-6 py-3 bg-surface/50 text-white rounded-xl hover:bg-surface/70 transition-all">
-                    Отмена
-                </a>
-                <button type="submit" 
-                        class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all">
-                    {{ button_text }}
-                </button>
-            </div>
-        </form>
+                <!-- Содержание -->
+                <div class="space-y-2">
+                    <label class="block text-lg font-medium text-white flex items-center space-x-2">
+                        <i class="fas fa-pen-fancy text-purple-400"></i>
+                        <span>Содержание</span>
+                    </label>
+                    
+                    <!-- Контейер для тулбара -->
+                    <div id="toolbar-container" class="border border-purple-500/20 rounded-t-xl bg-[#1a1625] p-2"></div>
+                    
+                    <!-- Контейнер для редактора -->
+                    <div class="border border-purple-500/20 rounded-b-xl bg-[#1a1625]">
+                        <!-- Скрытое поле для сохранения контента -->
+                        <input type="hidden" name="content" id="content-input" value="{{ form.content.value|default:'' }}">
+                        <!-- Контейнер для редактора -->
+                        <div id="editor">{{ form.content.value|default:''|safe }}</div>
+                    </div>
+                </div>
+
+                <!-- Миниатюра -->
+                <div class="space-y-2">
+                    <label class="block text-lg font-medium text-white flex items-center space-x-2">
+                        <i class="fas fa-image text-purple-400"></i>
+                        <span>Миниатюра</span>
+                    </label>
+                    <div class="relative group">
+                        <div class="aspect-video rounded-xl border-2 border-dashed border-purple-500/20 hover:border-purple-500/40 transition-all flex items-center justify-center bg-[#1a1625] overflow-hidden">
+                            <input type="file" 
+                                   name="thumbnail" 
+                                   id="thumbnail" 
+                                   accept="image/*"
+                                   class="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                   onchange="handleThumbnailUpload(this)">
+                            <div id="thumbnail-preview" class="absolute inset-0 flex items-center justify-center">
+                                {% if form.instance.thumbnail %}
+                                    <img src="{{ form.instance.thumbnail.url }}" 
+                                         alt="Thumbnail" 
+                                         class="absolute inset-0 w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                        <span class="text-white"><i class="fas fa-edit mr-2"></i>Изменить миниатюру</span>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center text-gray-400">
+                                        <i class="fas fa-cloud-upload-alt text-3xl mb-2"></i>
+                                        <p>Перетащите изображение сюда или кликните для выбора</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Категория -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-400">Категория</label>
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                        {% for error in form.category.errors %}
+                            <p class="text-red-400 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Теги -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-400">Теги</label>
+                    {{ form.tags }}
+                    {% if form.tags.errors %}
+                        {% for error in form.tags.errors %}
+                            <p class="text-red-400 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                    <p class="text-sm text-gray-500">Зажмите Ctrl для выбора нескольких тегов</p>
+                </div>
+
+                <!-- Кнопки действий -->
+                <div class="flex justify-between items-center pt-8 border-t border-purple-500/20">
+                    <a href="{% url 'blog:my_posts' %}" 
+                       class="px-6 py-3 bg-[#1a1625] text-gray-400 rounded-xl hover:bg-[#241e35] transition-all flex items-center space-x-2 group">
+                        <i class="fas fa-arrow-left mr-2 group-hover:translate-x-[-4px] transition-transform"></i>
+                        <span>Врнуться</span>
+                    </a>
+                    
+                    <div class="flex space-x-4">
+                        <button type="submit" name="action" value="draft"
+                                class="px-6 py-3 bg-[#1a1625] text-gray-400 rounded-xl hover:bg-[#241e35] transition-all flex items-center space-x-2 group">
+                            <i class="fas fa-save mr-2 group-hover:scale-110 transition-transform"></i>
+                            <span>Сохранить черновик</span>
+                        </button>
+                        
+                        <button type="submit" name="action" value="publish_later"
+                                class="px-6 py-3 bg-[#1a1625] text-purple-400 border border-purple-500/20 rounded-xl hover:bg-purple-500/10 transition-all flex items-center space-x-2 group">
+                            <i class="fas fa-clock mr-2 group-hover:scale-110 transition-transform"></i>
+                            <span>Опубликовать позже</span>
+                        </button>
+                        
+                        <button type="submit" name="action" value="publish"
+                                class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all flex items-center space-x-2 group relative overflow-hidden">
+                            <!-- Анимированный фон -->
+                            <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-all"></div>
+                            <!-- Блики -->
+                            <div class="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300
+                                        bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.4),transparent_80%)]"></div>
+                            <!-- Контент -->
+                            <div class="relative flex items-center">
+                                <i class="fas fa-paper-plane mr-2 group-hover:scale-110 group-hover:rotate-12 transition-transform"></i>
+                                <span class="group-hover:tracking-wider transition-all">Опубликовать сейчас</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dropzone = document.getElementById('thumbnail-dropzone');
-    const input = document.getElementById('thumbnail-upload');
-    const preview = document.getElementById('thumbnail-preview');
-    const prompt = document.getElementById('upload-prompt');
-    
-    // Обработка перетаскивания
-    dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('border-purple-500/60');
-    });
-    
-    dropzone.addEventListener('dragleave', () => {
-        dropzone.classList.remove('border-purple-500/60');
-    });
-    
-    dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('border-purple-500/60');
-        
-        if (e.dataTransfer.files.length) {
-            handleFile(e.dataTransfer.files[0]);
-        }
-    });
-    
-    // Обработка клика
-    dropzone.addEventListener('click', () => {
-        input.click();
-    });
-    
-    input.addEventListener('change', (e) => {
-        if (e.target.files.length) {
-            handleFile(e.target.files[0]);
-        }
-    });
-    
-    function handleFile(file) {
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.querySelector('img').src = e.target.result;
-                prompt.classList.add('hidden');
-                preview.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-});
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация TinyMCE
-    tinymce.init({
-        selector: '#content-editor',
-        height: 500,
-        plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'media', 'table', 'help', 'wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | ' +
-            'bold italic backcolor | alignleft aligncenter ' +
-            'alignright alignjustify | bullist numlist outdent indent | ' +
-            'removeformat | help',
-        skin: 'oxide-dark',
-        content_css: 'dark',
-        setup: function(editor) {
-            editor.on('change', function() {
-                editor.save(); // Сохраняем содержимое в исходный textarea
-            });
-        },
-        init_instance_callback: function(editor) {
-            editor.on('Change', function(e) {
-                // Обновляем значение скрытого поля
-                document.querySelector('textarea[name="content"]').value = editor.getContent();
-            });
-        }
-    });
-
-    // Инициализация Select2
-    $(document).ready(function() {
-        $('select[name="category"]').select2({
-            theme: 'default',
-            placeholder: 'Выберите категорию',
-            width: '100%'
-        });
-
-        $('select[name="tags"]').select2({
-            theme: 'default',
-            placeholder: 'Выберите теги',
-            width: '100%',
-            multiple: true
-        });
-    });
-
-    // Обработка отправки формы
-    const form = document.getElementById('postForm');
-    form.addEventListener('submit', function(e) {
-        const content = tinymce.get('content-editor').getContent();
-        if (!content.trim()) {
-            e.preventDefault();
-            alert('Содержание поста не может быть пустым');
-        }
-    });
-});
-</script>
-
 <style>
+/* нимированный фон для страницы */
+.cosmic-bg {
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 60%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Анимированные частицы */
+.cosmic-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+/* Улучшенный эффект стекла */
 .glass-effect {
-    background: rgba(26, 22, 37, 0.6);
+    background: rgba(26, 22, 37, 0.7);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 0 32px rgba(139, 92, 246, 0.1);
+}
+
+/* Улучшенные стили для полей ввода */
+input[type="text"], textarea {
+    background: rgba(26, 22, 37, 0.8) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 0 10px rgba(139, 92, 246, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+input[type="text"]:focus, textarea:focus {
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 
+        0 0 0 2px rgba(139, 92, 246, 0.2),
+        inset 0 0 15px rgba(139, 92, 246, 0.2) !important;
+    transform: translateY(-1px);
+}
+
+/* Улучшенные стили для кнопок */
+button {
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+button:hover::after {
+    opacity: 1;
+}
+
+/* Анимация для иконок */
+.fas {
+    transition: all 0.3s ease;
+}
+
+button:hover .fas {
+    transform: scale(1.2) rotate(12deg);
+}
+
+/* Улучшенные стили для Select2 */
+.select2-container--default .select2-selection--multiple,
+.select2-container--default .select2-selection--single {
+    background: rgba(26, 22, 37, 0.8) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 0 10px rgba(139, 92, 246, 0.1) !important;
+}
+
+.select2-dropdown {
+    background: rgba(26, 22, 37, 0.95) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Анимированный заголовок */
+.animate-gradient-x {
+    background-size: 200% 200% !important;
+    animation: gradient-x 15s ease infinite;
 }
 
 @keyframes gradient-x {
@@ -265,9 +1126,431 @@ document.addEventListener('DOMContentLoaded', function() {
     50% { background-position: 100% 50%; }
 }
 
-.animate-gradient-x {
-    animation: gradient-x 15s ease infinite;
-    background-size: 200% auto;
+/* Улучшенные стили для загрузки изображений */
+.aspect-video {
+    transition: all 0.3s ease;
+}
+
+.aspect-video:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 
+        0 0 0 2px rgba(139, 92, 246, 0.2),
+        inset 0 0 15px rgba(139, 92, 246, 0.2);
+}
+
+/* Анимация для сообщений об ошибках */
+.errorlist {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.image-upload-widget {
+    max-width: 300px;
+    transform: translateZ(0);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+#dropZone.border-purple-500 {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.cke_dark_dialog {
+    background: rgba(26, 22, 37, 0.95) !important;
+    backdrop-filter: blur(10px);
+}
+
+.cke_dark_dialog .cke_dialog_title,
+.cke_dark_dialog .cke_dialog_footer {
+    background: rgba(45, 42, 61, 0.8) !important;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+}
+
+.cke_dark_dialog .cke_dialog_ui_input_text,
+.cke_dark_dialog .cke_dialog_ui_input_textarea {
+    background: rgba(26, 22, 37, 0.8) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    color: #E2E8F0 !important;
+}
+
+.cke_dark_dialog .cke_dialog_ui_button {
+    background: linear-gradient(to bottom, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.3)) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    color: #E2E8F0 !important;
+    transition: all 0.3s ease;
+}
+
+.cke_dark_dialog .cke_dialog_ui_button:hover {
+    background: linear-gradient(to bottom, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.4)) !important;
+    transform: translateY(-1px);
 }
 </style>
+
+<script>
+// Определяем адаптер для загруки файлов
+class MyUploadAdapter {
+    constructor(loader) {
+        this.loader = loader;
+    }
+
+    upload() {
+        return this.loader.file.then(file => {
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('upload', file);
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                fetch('/upload/image/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(response => {
+                    if (response.url) {
+                        resolve({
+                            default: response.url
+                        });
+                    } else {
+                        reject(response.error || 'Ошибка агрузки');
+                    }
+                })
+                .catch(error => reject(error));
+            });
+        });
+    }
+
+    abort() {
+        // Отмена загруки если необходимо
+    }
+}
+
+// Определяем пагин перед созданием редактора
+function MyCustomUploadAdapterPlugin(editor) {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        return new MyUploadAdapter(loader);
+    };
+}
+
+// Теперь создаем редактор
+DecoupledEditor
+    .create(document.querySelector('#editor'), {
+        toolbar: {
+            items: [
+                'heading',
+                '|',
+                'fontFamily',
+                'fontSize',
+                'fontColor', 'fontBackgroundColor',
+                '|',
+                'bold', 'italic', 'underline', 'strikethrough',
+                '|',
+                'alignment',
+                'bulletedList', 'numberedList',
+                '|',
+                'indent', 'outdent',
+                '|',
+                'imageUpload',
+                'link', 'blockQuote', 'insertTable',
+                '|'
+            ],
+            shouldNotGroupWhenFull: true
+        },
+
+        image: {
+            toolbar: [
+                'imageStyle:inline',
+                'imageStyle:block',
+                'imageStyle:side',
+                'imageStyle:alignLeft',
+                'imageStyle:alignCenter',
+                'imageStyle:alignRight',
+                '|',
+                'toggleImageCaption',
+                'imageTextAlternative',
+                '|',
+                'resizeImage'
+            ],
+            styles: {
+                options: [
+                    'inline',
+                    'block',
+                    'side',
+                    'alignLeft',
+                    'alignCenter',
+                    'alignRight'
+                ]
+            },
+            resizeOptions: [
+                {
+                    name: 'resizeImage:original',
+                    value: null,
+                    label: 'Original'
+                },
+                {
+                    name: 'resizeImage:50',
+                    value: '50',
+                    label: '50%'
+                },
+                {
+                    name: 'resizeImage:75',
+                    value: '75',
+                    label: '75%'
+                }
+            ]
+        },
+
+        extraPlugins: [MyCustomUploadAdapterPlugin],
+
+        // Упрощенная конфигурация цветов
+        fontColor: {
+            columns: 5,
+            documentColors: 0,
+            colors: [
+                { label: 'Белый', color: '#FFFFFF' },
+                { label: 'Светло-серый', color: '#E2E8F0' },
+                { label: 'Серый', color: '#94A3B8' },
+                { label: 'Фиолетовый', color: '#8B5CF6' },
+                { label: 'Темно-фиолетовый', color: '#6D28D9' },
+                { label: 'Розовый', color: '#EC4899' },
+                { label: 'Темно-розовый', color: '#BE185D' },
+                { label: 'Синий', color: '#3B82F6' },
+                { label: 'Темно-синий', color: '#1D4ED8' },
+                { label: 'Зеленый', color: '#10B981' },
+                { label: 'Темно-зеленый', color: '#059669' }
+            ]
+        },
+        
+        fontBackgroundColor: {
+            columns: 5,
+            documentColors: 0,
+            colors: [
+                { label: 'Темный фон', color: '#1A1625' },
+                { label: 'Темно-фиолетовый фон', color: '#241E35' },
+                { label: 'Темно-синий фон', color: '#312E81' },
+                { label: 'Темно-розовый фон', color: '#831843' },
+                { label: 'Темно-зеленый фон', color: '#064E3B' }
+            ]
+        }
+    })
+    .then(editor => {
+        window.editor = editor;
+        
+        const toolbarContainer = document.querySelector('#toolbar-container');
+        toolbarContainer.appendChild(editor.ui.view.toolbar.element);
+
+        // Очищаем localStorage при загрузке формы
+        localStorage.removeItem('post_draft');
+        
+        // Очищаем редактор
+        editor.setData('');
+
+        // Обработчик отправки формы
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Очищаем localStorage
+            localStorage.removeItem('post_draft');
+            
+            // Отправляем форму
+            this.submit();
+        });
+
+        // Сохраняем изменения в localStorage
+        editor.model.document.on('change:data', () => {
+            localStorage.setItem('post_draft', editor.getData());
+            document.querySelector('#content-input').value = editor.getData();
+        });
+    })
+    .catch(error => {
+        console.error('Ошибка при инициализации CKEditor:', error);
+    });
+
+// Добавляем стили для отображения цветов
+const colorStyles = document.createElement('style');
+colorStyles.innerHTML = `
+    /* Стили для выпадающего меню с цветами */
+    .ck.ck-dropdown .ck-dropdown__panel {
+        background: rgba(26, 22, 37, 0.95) !important;
+        border: 1px solid rgba(139, 92, 246, 0.3) !important;
+        border-radius: 8px !important;
+    }
+
+    /* Стили для сетки цветов */
+    .ck.ck-color-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 4px !important;
+        padding: 8px !important;
+    }
+
+    /* Стили для отдельных цветов */
+    .ck.ck-color-grid__tile {
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
+        min-height: 24px !important;
+        padding: 0 !important;
+        border: 2px solid transparent !important;
+        border-radius: 4px !important;
+        transition: all 0.2s ease !important;
+        position: relative !important;
+    }
+
+    /* Стили для цветного квадрата внутри ячейки */
+    .ck.ck-color-grid__tile .ck.ck-color-grid__tile__color {
+        border: none !important;
+        border-radius: 2px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Эффекты при наведении */
+    .ck.ck-color-grid__tile:hover {
+        transform: scale(1.1) !important;
+        border-color: rgba(139, 92, 246, 0.5) !important;
+        z-index: 1 !important;
+    }
+
+    /* Стили для выбранного цвета */
+    .ck.ck-color-grid__tile.ck-on {
+        border-color: #8B5CF6 !important;
+        box-shadow: 0 0 0 1px #8B5CF6 !important;
+    }
+
+    /* Стили для подписей цветов */
+    .ck.ck-color-grid__tile[title] {
+        position: relative !important;
+    }
+
+    .ck.ck-color-grid__tile[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(26, 22, 37, 0.95);
+        color: #E2E8F0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        white-space: nowrap;
+        z-index: 2;
+    }
+
+    /* Стили для кнопки удаления цвета */
+    .ck.ck-color-grid__tile[data-color="remove-color"] {
+        border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    }
+
+    .ck.ck-color-grid__tile[data-color="remove-color"]:hover {
+        background: rgba(139, 92, 246, 0.1) !important;
+    }
+`;
+document.head.appendChild(colorStyles);
+
+// Добавляем обработчик для кнопки "Создать новый пост"
+document.addEventListener('DOMContentLoaded', function() {
+    const createNewPostButtons = document.querySelectorAll('.create-new-post');
+    createNewPostButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Очищаем localStorage
+            localStorage.removeItem('post_draft');
+            // Очищаем редактор если он существует
+            if (window.editor) {
+                window.editor.setData('');
+            }
+            // Перенаправляем на чистую форму
+            window.location.href = '{% url "blog:create_post" %}?clear=true';
+        });
+    });
+});
+</script>
+
+<!-- Добавляем контейнер для тулбара -->
+<div id="toolbar-container" class="border border-purple-500/20 rounded-t-xl bg-[#1a1625] p-2"></div>
+
+<!-- Добавляем зону для перетаскивания файлов -->
+<div id="drop-zone" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-surface/90 p-8 rounded-2xl border-2 border-dashed border-purple-500/50 text-center">
+        <i class="fas fa-cloud-upload-alt text-4xl text-purple-500 mb-4"></i>
+        <p class="text-white text-lg">Перетащите изображения сюда</p>
+        <p class="text-gray-400 text-sm mt-2">или нажмите для выбора файлов</p>
+    </div>
+</div>
+
+<!-- Добавляем скрипт для обработки загрузки миниатюры -->
+<script>
+function handleThumbnailUpload(input) {
+    if (input.files && input.files[0]) {
+        const preview = document.getElementById('thumbnail-preview');
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            // Очищаем предыдущий контент
+            preview.innerHTML = '';
+            
+            // Создаем элемент изображения
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'absolute inset-0 w-full h-full object-cover';
+            img.alt = 'Thumbnail';
+            
+            // Создаем оверлей для эффекта при наведении
+            const overlay = document.createElement('div');
+            overlay.className = 'absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all';
+            overlay.innerHTML = '<span class="text-white"><i class="fas fa-edit mr-2"></i>Изменить миниатюру</span>';
+            
+            // Добавляем элементы в превью
+            preview.appendChild(img);
+            preview.appendChild(overlay);
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Добавляем поддержку drag and drop
+const dropZone = document.querySelector('.aspect-video');
+const thumbnailInput = document.getElementById('thumbnail');
+
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('border-purple-500/60');
+});
+
+dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-purple-500/60');
+});
+
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('border-purple-500/60');
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        thumbnailInput.files = e.dataTransfer.files;
+        handleThumbnailUpload(thumbnailInput);
+    }
+});
+</script>
 {% endblock %}

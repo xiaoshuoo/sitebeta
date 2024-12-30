@@ -1,145 +1,438 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <article class="glass-effect rounded-2xl overflow-hidden">
-        <!-- Шапка поста -->
-        <div class="p-6 border-b border-purple-500/20">
-            <div class="flex items-center justify-between mb-4">
-                <!-- Автор и дата -->
-                <div class="flex items-center space-x-4">
-                    <!-- Аватар автора -->
-                    <a href="{% url 'blog:user_profile' username=post.author.username %}" 
-                       class="block relative group">
-                        <div class="w-12 h-12 rounded-full overflow-hidden bg-purple-500/20">
-                            {% if post.author.profile.avatar %}
-                                <img src="{{ post.author.profile.avatar.url }}" 
-                                     alt="{{ post.author.username }}" 
-                                     class="w-full h-full object-cover">
-                            {% else %}
-                                <div class="w-full h-full flex items-center justify-center">
-                                    <i class="fas fa-user text-purple-400"></i>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </a>
-                    <div>
+<div class="relative min-h-screen bg-background">
+    <!-- Фоновые эффекты -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-pink-500/5 rounded-full blur-3xl animate-pulse-slow delay-1000"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <article class="glass-effect rounded-2xl overflow-hidden transform hover:scale-[1.01] transition-all duration-500">
+            <!-- Улучшенная обложка поста -->
+            {% if post.thumbnail %}
+            <div class="relative h-[600px] w-full overflow-hidden">
+                <!-- Фоновое размытие -->
+                <div class="absolute inset-0" style="backdrop-filter: blur(20px);">
+                    <img src="{{ post.thumbnail.url }}" 
+                         alt="{{ post.title }}"
+                         class="w-full h-full object-cover opacity-30">
+                </div>
+                
+                <!-- Основное изображение -->
+                <div class="absolute inset-0 flex items-center justify-center p-12">
+                    <img src="{{ post.thumbnail.url }}" 
+                         alt="{{ post.title }}"
+                         class="max-h-full max-w-full object-contain z-10 transform hover:scale-105 transition-all duration-700 
+                                shadow-[0_0_50px_rgba(139,92,246,0.3)] rounded-lg">
+                </div>
+                
+                <!-- Улучшенные градиенты -->
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-90"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-background via-transparent to-transparent opacity-90"></div>
+                
+                <!-- Декоративные элементы -->
+                <div class="absolute inset-0 overflow-hidden mix-blend-overlay opacity-30">
+                    <div class="stars"></div>
+                    <div class="twinkling"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Контент поста -->
+            <div class="relative p-8 md:p-12">
+                <!-- Улучшенные метаданые -->
+                <div class="flex flex-col md:flex-row items-center justify-between mb-12 p-6 bg-purple-500/5 
+                            rounded-xl border border-purple-500/10 hover:bg-purple-500/10 transition-all duration-300 
+                            transform hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10">
+                    <div class="flex items-center space-x-6 mb-4 md:mb-0">
                         <a href="{% url 'blog:user_profile' username=post.author.username %}" 
-                           class="text-white hover:text-purple-400 font-medium transition-colors">
-                            {{ post.author.username }}
+                           class="flex items-center space-x-4 group">
+                            <div class="relative">
+                                <!-- Анимированная рамка для аватара -->
+                                <div class="absolute -inset-1.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full 
+                                            blur opacity-50 group-hover:opacity-75 transition-all duration-300 animate-pulse"></div>
+                                {% if post.author.profile.avatar %}
+                                    <img src="{{ post.author.profile.avatar.url }}" 
+                                         alt="{{ post.author.username }}" 
+                                         class="relative w-12 h-12 rounded-full object-cover">
+                                {% else %}
+                                    <div class="relative w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
+                                        <i class="fas fa-user text-purple-400"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="text-white font-medium group-hover:text-purple-400 transition-colors">
+                                    {{ post.author.username }}
+                                </div>
+                                <div class="text-sm text-gray-400">
+                                    <i class="fas fa-clock mr-2 text-purple-500/70"></i>
+                                    {{ post.created_at|date:"d M Y в H:i" }}
+                                </div>
+                            </div>
                         </a>
-                        <div class="text-sm text-gray-400">{{ post.created_at|date:"d M Y" }}</div>
+                    </div>
+                    
+                    <!-- Улучшенная статистика -->
+                    <div class="flex items-center space-x-6">
+                        <div class="flex items-center text-gray-400 group hover:bg-purple-500/10 px-4 py-2 
+                                    rounded-lg transition-all space-x-2">
+                            <i class="fas fa-eye text-xl text-purple-500/70 group-hover:scale-110 transition-transform"></i>
+                            <span class="group-hover:text-purple-400 transition-colors">{{ post.views_count }}</span>
+                        </div>
+                        <div class="flex items-center text-gray-400 group hover:bg-purple-500/10 px-4 py-2 
+                                    rounded-lg transition-all space-x-2">
+                            <i class="fas fa-comment text-xl text-purple-500/70 group-hover:scale-110 transition-transform"></i>
+                            <span class="group-hover:text-purple-400 transition-colors">{{ post.comments.count }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Категория -->
-                {% if post.category %}
-                <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
-                   class="text-purple-400 hover:text-purple-300 transition-colors">
-                    <i class="{{ post.category.icon }} mr-1"></i>
-                    {{ post.category.name }}
-                </a>
+                <!-- Улучшенный заголовок -->
+                <h1 class="relative py-12 px-6">
+                    <!-- Фоновые декоративные элементы -->
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-500/20 to-purple-600/20 
+                                blur-3xl -z-10 animate-pulse"></div>
+                    <div class="absolute -inset-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 
+                                rounded-3xl blur-2xl -z-20"></div>
+                    
+                    <!-- Контейнер заголовка -->
+                    <div class="relative z-10 max-w-4xl mx-auto">
+                        <!-- Декоративный элемент сверху -->
+                        <div class="flex justify-center mb-6">
+                            <div class="h-1 w-24 bg-gradient-to-r from-transparent via-purple-500 to-transparent 
+                                        rounded-full transform -translate-y-2"></div>
+                        </div>
+                        
+                        <!-- Заголовок -->
+                        <div class="text-4xl md:text-6xl font-bold text-center mb-6 
+                                    transform hover:scale-[1.01] transition-transform duration-500">
+                            <span class="block text-transparent bg-clip-text 
+                                         bg-gradient-to-r from-white via-purple-200 to-white 
+                                         animate-gradient-x leading-tight">
+                                {{ post.title }}
+                            </span>
+                        </div>
+                        
+                        <!-- Декоративные элементы снизу -->
+                        <div class="flex justify-center items-center gap-4 mt-6">
+                            <div class="h-[2px] w-16 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
+                            <div class="text-purple-400/50 text-2xl">✧</div>
+                            <div class="h-[2px] w-16 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
+                        </div>
+                    </div>
+                </h1>
+
+                <!-- Улучшенный контент -->
+                <div class="prose prose-invert max-w-none prose-lg px-6">
+                    <div class="bg-purple-500/5 p-8 md:p-12 rounded-xl border border-purple-500/10 
+                                hover:bg-purple-500/10 transition-all duration-300 shadow-lg shadow-purple-500/5
+                                relative overflow-hidden">
+                        <!-- Добавляем декоративные элементы -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -z-10 animate-pulse"></div>
+                        <div class="absolute bottom-0 left-0 w-64 h-64 bg-pink-500/5 rounded-full blur-3xl -z-10 animate-pulse delay-700"></div>
+                        
+                        <!-- Улучшенный контейнер для контента -->
+                        <div class="relative z-10 space-y-6">
+                            {{ post.content|safe }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Улучшенные теги -->
+                {% if post.tags.all %}
+                <div class="flex flex-wrap gap-3 mt-12 px-6">
+                    {% for tag in post.tags.all %}
+                    <a href="{% url 'blog:tag_detail' slug=tag.slug %}" 
+                       class="px-6 py-3 bg-purple-500/10 text-purple-400 rounded-xl hover:bg-purple-500/20 
+                              transition-all flex items-center space-x-3 group hover:scale-105 transform
+                              border border-purple-500/10 hover:border-purple-500/30">
+                        <i class="fas fa-tag text-lg group-hover:rotate-12 transition-transform"></i>
+                        <span class="group-hover:tracking-wider transition-all">{{ tag.name }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Кнопки управления постом -->
+                {% if user.is_authenticated and user == post.author or user.is_staff %}
+                <div class="flex justify-end space-x-4 mt-12 px-6">
+                    <a href="{% url 'blog:edit_post' post.slug %}" 
+                       class="px-6 py-3 bg-purple-500/10 text-purple-400 rounded-xl 
+                              hover:bg-purple-500/20 transition-all flex items-center space-x-3 group
+                              border border-purple-500/10 hover:border-purple-500/30 hover:scale-105 transform">
+                        <i class="fas fa-edit text-lg group-hover:rotate-12 transition-transform"></i>
+                        <span class="group-hover:tracking-wider transition-all">Редактировать</span>
+                    </a>
+                    
+                    <button onclick="confirmDelete()" 
+                            class="px-6 py-3 bg-red-500/10 text-red-400 rounded-xl 
+                                   hover:bg-red-500/20 transition-all flex items-center space-x-3 group
+                                   border border-red-500/10 hover:border-red-500/30 hover:scale-105 transform">
+                        <i class="fas fa-trash text-lg group-hover:rotate-12 transition-transform"></i>
+                        <span class="group-hover:tracking-wider transition-all">Удалить</span>
+                    </button>
+                </div>
+
+                <!-- Форма удаления (скрытая) -->
+                <form id="deleteForm" action="{% url 'blog:delete_post' post.slug %}" method="post" class="hidden">
+                    {% csrf_token %}
+                </form>
+
+                <script>
+                function confirmDelete() {
+                    if (confirm('Вы уверены, что хотите удалить этот пост?')) {
+                        document.getElementById('deleteForm').submit();
+                    }
+                }
+                </script>
                 {% endif %}
             </div>
+        </article>
 
-            <!-- Заголовок -->
-            <h1 class="text-3xl font-bold text-white mb-4">{{ post.title }}</h1>
-
-            <!-- Теги -->
-            <div class="flex flex-wrap gap-2">
-                {% for tag in post.tags.all %}
-                <a href="{% url 'blog:tag_detail' slug=tag.slug %}" 
-                   class="text-sm px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors">
-                    #{{ tag.name }}
-                </a>
+        <!-- Похожие посты -->
+        {% if similar_posts %}
+        <div class="mt-16">
+            <h2 class="text-3xl font-bold text-white mb-8 flex items-center">
+                <i class="fas fa-layer-group text-purple-500 mr-4"></i>
+                Похожие посты
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {% for similar_post in similar_posts %}
+                <div class="glass-effect rounded-xl overflow-hidden hover:scale-105 transition-all duration-300 group
+                            border border-purple-500/10 hover:border-purple-500/30 transform hover:-translate-y-2">
+                    {% if similar_post.thumbnail %}
+                    <div class="relative aspect-video overflow-hidden">
+                        <img src="{{ similar_post.thumbnail.url }}" 
+                             alt="{{ similar_post.title }}" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition-all duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+                    </div>
+                    {% endif %}
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-white mb-4 group-hover:text-purple-400 transition-colors">
+                            <a href="{% url 'blog:post_detail' slug=similar_post.slug %}">{{ similar_post.title }}</a>
+                        </h3>
+                        <div class="flex items-center justify-between text-sm text-gray-400">
+                            <span class="flex items-center">
+                                <i class="fas fa-calendar mr-2 text-purple-500/70"></i>
+                                {{ similar_post.created_at|date:"d M Y" }}
+                            </span>
+                            <span class="flex items-center">
+                                <i class="fas fa-eye mr-2 text-purple-500/70"></i>
+                                {{ similar_post.views_count }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
-
-        <!-- Обложка поста -->
-        {% if post.thumbnail %}
-        <div class="relative max-h-[400px] overflow-hidden">
-            <img src="{{ post.thumbnail.url }}" 
-                 alt="{{ post.title }}" 
-                 class="w-full object-cover">
-        </div>
         {% endif %}
+    </div>
+</div>
 
-        <!-- Контент -->
-        <div class="p-6 prose prose-invert max-w-none">
-            {{ post.content|safe }}
+<style>
+/* Улучшенные стили для контента */
+.prose {
+    color: #E2E8F0;
+}
+
+.prose h2 {
+    color: white;
+    font-size: 2rem;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(139, 92, 246, 0.2);
+}
+
+.prose p {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+    font-size: 1.125rem;
+}
+
+.prose a {
+    color: #A78BFA;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    padding: 0.125rem 0.25rem;
+    margin: -0.125rem -0.25rem;
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.prose a:hover {
+    color: #8B5CF6;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.prose a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+.prose a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.prose blockquote {
+    border-left: 4px solid #8B5CF6;
+    padding-left: 1.5rem;
+    margin-left: 0;
+    color: #94A3B8;
+    font-style: italic;
+    font-size: 1.125rem;
+    position: relative;
+}
+
+.prose blockquote::before {
+    content: '"';
+    position: absolute;
+    top: -1rem;
+    left: -0.5rem;
+    font-size: 4rem;
+    color: rgba(139, 92, 246, 0.2);
+    font-family: serif;
+}
+
+.prose code {
+    background: rgba(139, 92, 246, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 0.375rem;
+    font-size: 0.875em;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.prose pre {
+    background: rgba(26, 22, 37, 0.6);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    overflow-x: auto;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    margin: 2rem 0;
+}
+
+.prose img {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.prose img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2);
+}
+
+/* Анимации для звезд */
+@keyframes twinkle {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+
+.stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: transparent url('/static/images/stars.png') repeat top center;
+    z-index: 0;
+}
+
+.twinkling {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: transparent url('/static/images/twinkling.png') repeat top center;
+    animation: twinkle 200s linear infinite;
+    z-index: 1;
+}
+
+/* Улучшенные анимации */
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-x {
+    animation: gradient 15s ease infinite;
+    background-size: 200% auto;
+}
+
+@keyframes pulse-slow {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Улучшенные эффекты карточек */
+.glass-effect {
+    background: rgba(26, 22, 37, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-effect:hover {
+    border-color: rgba(147, 51, 234, 0.2);
+    box-shadow: 
+        0 0 20px rgba(147, 51, 234, 0.1),
+        0 0 40px rgba(147, 51, 234, 0.05);
+}
+</style>
+
+{% if show_admin_info %}
+<div class="fixed right-4 bottom-4 z-50">
+    <button onclick="toggleAdminInfo()" 
+            class="bg-red-500/10 hover:bg-red-500/20 p-3 rounded-full transition-all shadow-lg">
+        <i class="fas fa-shield-alt text-red-400"></i>
+    </button>
+    
+    <div id="adminInfo" class="hidden fixed right-4 bottom-16 w-80 p-4 bg-surface/95 backdrop-blur-lg rounded-xl border border-red-500/20 shadow-xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-white font-bold">Админ информация</h3>
+            <button onclick="toggleAdminInfo()" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-
-        <!-- Футер поста -->
-        <div class="p-6 border-t border-purple-500/20">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-400">
-                        <i class="fas fa-eye mr-1"></i>
-                        {{ post.views_count }} просмотров
-                    </span>
-                    <span class="text-gray-400">
-                        <i class="fas fa-comments mr-1"></i>
-                        {{ post.comments.count }} комментариев
-                    </span>
-                </div>
-
-                {% if user == post.author or user.is_staff %}
-                <div class="flex items-center space-x-2">
-                    <a href="{% url 'blog:edit_post' slug=post.slug %}" 
-                       class="px-4 py-2 bg-purple-600/50 text-white rounded-lg hover:bg-purple-600 transition-all duration-300">
-                        <i class="fas fa-edit mr-1"></i>
-                        Редактировать
-                    </a>
-                    <form action="{% url 'blog:delete_post' slug=post.slug %}" 
-                          method="post" 
-                          class="inline-block" 
-                          onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');">
-                        {% csrf_token %}
-                        <button type="submit" 
-                                class="px-4 py-2 bg-red-600/50 text-white rounded-lg hover:bg-red-600 transition-all duration-300">
-                            <i class="fas fa-trash-alt mr-1"></i>
-                            Удалить
-                        </button>
-                    </form>
-                </div>
-                {% endif %}
+        
+        <div class="space-y-3">
+            <div class="p-2 bg-red-500/10 rounded-lg">
+                <p class="text-gray-400">ID: {{ post.id }}</p>
+                <p class="text-gray-400">Slug: {{ post.slug }}</p>
+                <p class="text-gray-400">Author: {{ post.author.username }}</p>
             </div>
-        </div>
-    </article>
-
-    <!-- Похожие посты -->
-    {% if similar_posts %}
-    <div class="mt-8">
-        <h2 class="text-2xl font-bold text-white mb-6">Похожие посты</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {% for similar_post in similar_posts %}
-            <div class="glass-effect rounded-xl overflow-hidden hover:scale-105 transition-all duration-300 group">
-                {% if similar_post.thumbnail %}
-                <img src="{{ similar_post.thumbnail.url }}" 
-                     alt="{{ similar_post.title }}" 
-                     class="w-full h-48 object-cover">
-                {% endif %}
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-purple-400 transition-colors">
-                        {{ similar_post.title }}
-                    </h3>
-                    <p class="text-gray-400 text-sm mb-4">
-                        {{ similar_post.created_at|date:"d M Y" }}
-                    </p>
-                    <a href="{% url 'blog:post_detail' slug=similar_post.slug %}" 
-                       class="text-purple-400 hover:text-purple-300 transition-colors flex items-center">
-                        Читать далее
-                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
-                    </a>
-                </div>
+            
+            <div class="p-2 bg-red-500/10 rounded-lg">
+                <h4 class="text-red-400 text-sm font-medium mb-1">Thumbnail:</h4>
+                <p class="text-gray-400 text-sm break-all">{{ post.thumbnail.url }}</p>
             </div>
-            {% endfor %}
         </div>
     </div>
-    {% endif %}
 </div>
+
+<script>
+function toggleAdminInfo() {
+    const adminInfo = document.getElementById('adminInfo');
+    adminInfo.classList.toggle('hidden');
+}
+</script>
+{% endif %}
 {% endblock %} 

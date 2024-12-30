@@ -1,1364 +1,767 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import UpdateView
-from django.urls import reverse_lazy
+from django.db.models import Count, Q, Sum
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from django.contrib.auth import login
+from django.views.generic.edit import UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse_lazy
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.models import User
-from django.db import models, transaction
-from django.db.models import Count, Sum, Max, F, Q
 from django.utils import timezone
+from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
+from .models import Category, Post, Profile, Tag, Comment, PostView, InviteCode, PageSettings, Title, TextTemplate
+from .forms import CustomUserCreationForm, ProfileForm, PostForm, CommentForm
+import json
+import os
+from .cloudinary_storage import CustomCloudinaryStorage
+from django.core.cache import cache
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse
-from django.core.cache import cache
 from django.views.decorators.http import require_POST
-from django.views.generic import CreateView
-from django.contrib.auth.forms import UserCreationForm
-from .models import (
-    Post, Category, Tag, InviteCode, Profile, 
-    Comment, PostView, PageSettings
-)
-from .forms import PostForm, CustomUserCreationForm, ProfileUpdateForm
-from django.utils.text import slugify
+from django.contrib import messages
 import random
 import string
-from django.contrib.admin.models import LogEntry
-from datetime import timedelta
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-import os
-from django.conf import settings
-from datetime import datetime
-import json
-import shutil
-from datetime import datetime
-import zipfile
 from django.db import connection
-from django.apps import apps
-import hashlib
-import time
+from django.core import serializers
+from django.core.files.storage import default_storage
+from datetime import datetime
+import psycopg2
+from psycopg2.extras import Json
+import shutil
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+import logging
+from django.views.generic import TemplateView
+import cloudinary
+from django.utils.text import slugify
+from PIL import Image
+from io import BytesIO
+from django.template.defaultfilters import register
+from django.views.decorators.csrf import csrf_exempt
+from functools import wraps
 
-def home(request):
-    """Представление главной страницы"""
-    context = {
-        'posts': Post.objects.filter(
-            is_published=True
-        ).select_related(
-            'author', 'category', 'author__profile'
-        ).prefetch_related(
-            'tags'
-        ).order_by('-created_at'),
-        'categories': Category.objects.annotate(
-            posts_count=Count('posts')
-        ).order_by('-posts_count')[:4],
-        'top_authors': User.objects.annotate(
-            posts_count=Count('posts', filter=Q(posts__is_published=True)),
-            total_views=Sum('posts__views_count', filter=Q(posts__is_published=True))
-        ).filter(
-            posts_count__gt=0
-        ).select_related(
-            'profile'
-        ).prefetch_related(
-            'posts'
-        ).order_by('-posts_count')[:4],
-        'trending_posts': Post.objects.filter(
-            is_published=True
-        ).annotate(
-            comments_count=Count('comments')
-        ).order_by('-views_count', '-comments_count')[:5],
-        'popular_tags': Tag.objects.annotate(
-            posts_count=Count('posts', filter=Q(posts__is_published=True))
-        ).filter(
-            posts_count__gt=0
-        ).order_by('-posts_count')[:12],
-        'total_posts': Post.objects.filter(is_published=True).count(),
-        'total_users': User.objects.filter(is_active=True).count(),
-        'total_comments': Comment.objects.count(),
-        'total_views': Post.objects.aggregate(total_views=Sum('views_count'))['total_views'] or 0,
-    }
-    return render(request, 'blog/home.html', context)
+# Настраиваем logger
+logger = logging.getLogger(__name__)
 
-class SignUpView(CreateView):
-    form_class = CustomUserCreationForm
-    success_url = reverse_lazy('login')
-    template_name = 'registration/signup.html'
+@register.filter
+def split(value, arg):
+    return value.split(arg)
+
+@register.filter
+def trim(value):
+    return value.strip()
+
+class HomeView(TemplateView):
+    template_name = 'blog/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Получаем актуальную статистику
+        context['total_posts'] = Post.objects.filter(is_published=True).count()
+        context['total_users'] = User.objects.filter(is_active=True).count()
+        context['total_views'] = PostView.objects.count()
+        context['total_comments'] = Comment.objects.count()
+        
+        # Получаем посты с их миниатюрами
+        posts = Post.objects.filter(is_published=True).order_by('-created_at')[:6]
+        
+        # Проверяем и создаем slug для постов, у которых его нет
+        for post in posts:
+            if not post.slug:
+                post.slug = slugify(post.title)
+                counter = 1
+                temp_slug = post.slug
+                while Post.objects.filter(slug=temp_slug).exists():
+                    temp_slug = f"{post.slug}-{counter}"
+                    counter += 1
+                post.slug = temp_slug
+                post.save()
+                
+        context['latest_posts'] = posts
+        
+        # Получаем категории с количеством постов
+        context['categories'] = Category.objects.annotate(
+            total_posts=Count('post', filter=Q(post__is_published=True))
+        ).order_by('-total_posts')
+        
+        # Получаем теги с количеством постов
+        context['tags'] = Tag.objects.annotate(
+            total_posts=Count('post', filter=Q(post__is_published=True))
+        ).order_by('-total_posts')[:10]
+        
+        # Добавляем флаг для отображения админ-информации
+        context['show_admin_info'] = self.request.user.is_authenticated and (
+            self.request.user.is_staff or self.request.user.is_superuser
+        )
+        
+        return context
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = 'blog/profile_edit.html'
+    success_url = reverse_lazy('blog:profile')
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile = self.get_object()
+        context['profile'] = profile
+        context['user'] = self.request.user
+        
+        # Добавляем отладочную информацию
+        context['debug'] = True
+        if profile.avatar and hasattr(profile.avatar, 'public_id'):
+            context['debug_avatar'] = {
+                'name': profile.avatar.public_id,
+                'url': profile.avatar.url if hasattr(profile.avatar, 'url') else None,
+                'resource_type': profile.avatar.resource_type if hasattr(profile.avatar, 'resource_type') else None,
+                'format': profile.avatar.format if hasattr(profile.avatar, 'format') else None
+            }
+        if profile.cover and hasattr(profile.cover, 'public_id'):
+            context['debug_cover'] = {
+                'name': profile.cover.public_id,
+                'url': profile.cover.url if hasattr(profile.cover, 'url') else None,
+                'resource_type': profile.cover.resource_type if hasattr(profile.cover, 'resource_type') else None,
+                'format': profile.cover.format if hasattr(profile.cover, 'format') else None
+            }
+        return context
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, 'Регистрация успешно завершена! Теперь вы можете войти.')
-        return response
+        try:
+            self.object = form.save(commit=False)
+            
+            def process_image(image_file, max_size=(1920, 1080)):
+                # Открываем изображение
+                img = Image.open(image_file)
+                
+                # Конвертируем в RGB если нужно
+                if img.mode in ('RGBA', 'P'):
+                    img = img.convert('RGB')
+                
+                # Изменяем размер, сохраняя пропорции
+                img.thumbnail(max_size, Image.Resampling.LANCZOS)
+                
+                # Сохраняем в буфер с оптимизацией
+                output = BytesIO()
+                img.save(output, format='JPEG', quality=85, optimize=True)
+                output.seek(0)
+                
+                return output
+            
+            # Проверяем размер файлов перед загрузкой
+            if 'cover' in self.request.FILES:
+                cover_file = self.request.FILES['cover']
+                if cover_file.size > 10 * 1024 * 1024:  # 10MB
+                    # Обрабатываем изображение
+                    processed_cover = process_image(cover_file, max_size=(1920, 1080))
+                    try:
+                        # Загружаем обработанное изображение
+                        upload_result = cloudinary.uploader.upload(
+                            processed_cover,
+                            folder='covers/',
+                            transformation={
+                                'quality': 'auto:good',
+                                'fetch_format': 'auto'
+                            }
+                        )
+                        self.object.cover = upload_result['public_id']
+                    except Exception as e:
+                        logger.error(f"Error uploading cover: {str(e)}")
+                        messages.error(self.request, 'Ошибка при загрузке оложки')
+                        return self.form_invalid(form)
+                else:
+                    self.object.cover = cover_file
+            
+            if 'avatar' in self.request.FILES:
+                avatar_file = self.request.FILES['avatar']
+                if avatar_file.size > 5 * 1024 * 1024:  # 5MB
+                    # Обрабатываем изображение
+                    processed_avatar = process_image(avatar_file, max_size=(800, 800))
+                    try:
+                        # Загружаем обаботанное изображение
+                        upload_result = cloudinary.uploader.upload(
+                            processed_avatar,
+                            folder='avatars/',
+                            transformation={
+                                'quality': 'auto:good',
+                                'fetch_format': 'auto'
+                            }
+                        )
+                        self.object.avatar = upload_result['public_id']
+                    except Exception as e:
+                        logger.error(f"Error uploading avatar: {str(e)}")
+                        messages.error(self.request, 'Ошибка при загрузке аватара')
+                        return self.form_invalid(form)
+                else:
+                    self.object.avatar = avatar_file
+            
+            self.object.save()
+            messages.success(self.request, 'Профиль успешно обновлен')
+            return super().form_valid(form)
+            
+        except Exception as e:
+            logger.error(f"Form validation error: {str(e)}")
+            messages.error(self.request, f'Ошибка при обновлении профиля: {str(e)}')
+            return self.form_invalid(form)
 
-    def form_invalid(self, form):
-        for field, errors in form.errors.items():
-            for error in errors:
-                messages.error(self.request, f'Ошибка в поле {field}: {error}')
-        return super().form_invalid(form)
+    def get(self, request, *args, **kwargs):
+        # Убираем сообщение о успешном обновлении при загрузке страницы
+        return super().get(request, *args, **kwargs)
 
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            try:
-                # Получаем и проверяем инвайт-код
-                invite_code = form.cleaned_data['invite_code']
-                invite = InviteCode.objects.get(code=invite_code, is_active=True)
-                
-                # Создаем пользователя
-                user = form.save()
-                
-                # Используем инвайт-код
-                invite.use(user)
-                
-                # Автоматически входим в систему
-                login(request, user)
-                
-                # Создаем профиль пользователя (если не создался автоматически)
-                Profile.objects.get_or_create(user=user)
-                
-                messages.success(request, 'Регистрация успешно завершена! Добро пожаловать!')
-                return redirect('blog:home')  # Перенаправляем на главную
-                
-            except InviteCode.DoesNotExist:
-                messages.error(request, 'Недействительный инвайт-код')
-            except Exception as e:
-                messages.error(request, f'Ошибка при регистрации: {str(e)}')
+            user = form.save()
+            messages.success(request, 'Регистрация успешно завершена!')
+            return redirect('login')
     else:
         form = CustomUserCreationForm()
-    
-    return render(request, 'registration/register.html', {
-        'form': form,
-        'title': 'Регистрация'
-    })
+    return render(request, 'registration/register.html', {'form': form})
 
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    model = Profile
-    form_class = ProfileUpdateForm
-    template_name = 'blog/profile_form.html'
-    success_url = reverse_lazy('blog:profile')
+def upload_image(request):
+    if request.method == 'POST' and request.FILES.get('upload'):
+        upload = request.FILES['upload']
+        # Сохраняем файл через CustomCloudinaryStorage
+        storage = CustomCloudinaryStorage()
+        filename = storage.save(f'posts/content/{upload.name}', upload)
+        url = storage.url(filename)
+        return JsonResponse({
+            'url': url,
+            'uploaded': '1',
+            'fileName': upload.name
+        })
+    return JsonResponse({'error': {'message': 'Ошибка загрузки файла'}}, status=400)
 
-    def get_object(self, queryset=None):
-        # Получаем или создаем профиль для текущего пользователя
-        profile, created = Profile.objects.get_or_create(user=self.request.user)
-        return profile
-
-    def form_valid(self, form):
-        profile = form.save(commit=False)
-        
-        # Обработка аватара
-        if 'avatar' in self.request.FILES:
-            if profile.avatar:
-                try:
-                    profile.avatar.delete(save=False)
-                except:
-                    pass
-            profile.avatar = self.request.FILES['avatar']
-        
-        # Обработка обложки
-        if 'cover' in self.request.FILES:
-            if profile.cover:
-                try:
-                    profile.cover.delete(save=False)
-                except:
-                    pass
-            profile.cover = self.request.FILES['cover']
-        
-        # Сохраняем изменения
-        try:
-            profile.save()
-            messages.success(self.request, 'Профиль успешно обновлен!')
-        except Exception as e:
-            messages.error(self.request, f'Ошибка при обновлении профиля: {str(e)}')
-            return self.form_invalid(form)
+def check_page_status(page_name):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            # Проверяем статус страницы
+            page_settings = PageSettings.objects.get_or_create(
+                page_name=page_name,
+                defaults={'is_active': True}
+            )[0]
             
-        return super().form_valid(form)
+            if not page_settings.is_active:
+                # Вместо редиректа рендерим страницу-заглушку
+                return render(request, 'blog/page_disabled.html')
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
-    def form_invalid(self, form):
-        messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
-        return super().form_invalid(form)
+@check_page_status('contacts')
+def contacts(request):
+    """Страница контактов"""
+    return render(request, 'blog/contacts.html')
 
+@check_page_status('about')
+def about(request):
+    """Страница 'О сайте'"""
+    return render(request, 'blog/about.html')
+
+@check_page_status('create_post')
 @login_required
 def create_post(request):
+    """Создание нового поста"""
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            
-            # Генерируем уникальный slug
-            base_slug = slugify(post.title)
-            if not base_slug:
-                base_slug = 'post'
-            unique_slug = base_slug
-            counter = 1
-            while Post.objects.filter(slug=unique_slug).exists():
-                unique_slug = f"{base_slug}-{counter}"
-                counter += 1
-            post.slug = unique_slug
-            
             try:
-                # Сздаем новое подключение для сохранения
-                with transaction.atomic():
-                    post.save()
-                    form.save_m2m()  # Сохраняем связи many-to-many (теги)
-                messages.success(request, 'Пост успешно создан!')
+                post = form.save(commit=False)
+                post.author = request.user
+                post.is_published = True
+                
+                # Создаем slug из заголовка
+                if not post.slug:
+                    post.slug = slugify(post.title)
+                    counter = 1
+                    temp_slug = post.slug
+                    while Post.objects.filter(slug=temp_slug).exists():
+                        temp_slug = f"{post.slug}-{counter}"
+                        counter += 1
+                    post.slug = temp_slug
+                
+                # Обработка миниатюры
+                if 'thumbnail' in request.FILES:
+                    try:
+                        thumbnail_file = request.FILES['thumbnail']
+                        
+                        # Загружаем изображение в Cloudinary
+                        upload_result = cloudinary.uploader.upload(
+                            thumbnail_file,
+                            folder='thumbnails/',
+                            resource_type='auto',
+                            allowed_formats=['jpg', 'jpeg', 'png', 'gif'],
+                            transformation={
+                                'quality': 'auto:good',
+                                'fetch_format': 'auto'
+                            }
+                        )
+                        post.thumbnail = upload_result['public_id']
+                        
+                    except cloudinary.exceptions.Error as e:
+                        logger.error(f"Cloudinary upload error: {str(e)}")
+                        messages.error(request, 'Ошибка при загрузке изображения в облако')
+                        return render(request, 'blog/post_form.html', {
+                            'form': form,
+                            'action': 'create',
+                            'categories': Category.objects.all().order_by('name'),
+                            'tags': Tag.objects.all().order_by('name')
+                        })
+                    except Exception as e:
+                        logger.error(f"Error processing thumbnail: {str(e)}")
+                        messages.error(request, 'Ошибка при обработке миниатюры')
+                        return render(request, 'blog/post_form.html', {
+                            'form': form,
+                            'action': 'create',
+                            'categories': Category.objects.all().order_by('name'),
+                            'tags': Tag.objects.all().order_by('name')
+                        })
+                
+                # Сохраняем пост
+                post.save()
+                form.save_m2m()  # Сохраняем теги
+                messages.success(request, 'Пост успешно создан и опубликован!')
                 return redirect('blog:post_detail', slug=post.slug)
+                
             except Exception as e:
-                print(f"Error saving post: {str(e)}")  # Для отладки
-                messages.error(request, f'Ошибка при создании поста: {str(e)}')
+                logger.error(f"Error saving post: {str(e)}")
+                messages.error(request, f'Ошибка при сохранении поста: {str(e)}')
+                return render(request, 'blog/post_form.html', {
+                    'form': form,
+                    'action': 'create',
+                    'categories': Category.objects.all().order_by('name'),
+                    'tags': Tag.objects.all().order_by('name')
+                })
         else:
-            print(f"Form errors: {form.errors}")  # Для отладки
+            # Если форма невалидна, показываем ошибки
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'Ошибка в поле {field}: {error}')
     else:
         form = PostForm()
     
-    # Проверяем, включена ли страница создания постов
-    try:
-        page_settings = PageSettings.objects.get(page_name=PageSettings.CREATE_POST_PAGE)
-        if not page_settings.is_active:
-            return render(request, 'blog/page_disabled.html', {
-                'message': page_settings.disabled_message
-            })
-    except PageSettings.DoesNotExist:
-        pass
-
-    # Получаем категории отдельным запросом
-    categories = Category.objects.only('id', 'name').order_by('name')
-    
     return render(request, 'blog/post_form.html', {
         'form': form,
-        'title': 'Создать пост',
-        'button_text': 'Опубликовать',
-        'categories': categories,
+        'action': 'create',
+        'categories': Category.objects.all().order_by('name'),
+        'tags': Tag.objects.all().order_by('name')
     })
 
+@login_required
 def post_detail(request, slug):
-    """Детальное представление поста"""
-    # Получаем пост или возвращаем 404
-    post = get_object_or_404(Post.objects.select_related('author', 'category'), slug=slug)
-    
-    # Увеличиваем счетчик просмотров только для уникальных пользователей
-    if request.user.is_authenticated:
-        # Для авторизованных пользователей используем их ID
-        post_view, created = PostView.objects.get_or_create(
-            post=post,
-            user=request.user,
-            defaults={'session_key': None}
-        )
-        if created:
-            post.views_count += 1
-            post.save()
-    else:
-        # Для анонимных пользователей используем сессию
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
-        
-        try:
-            # Пробуем найти просмотр по session_key
-            PostView.objects.get(post=post, session_key=session_key)
-        except PostView.DoesNotExist:
-            # Если просмотра нет, создаем новый
-            PostView.objects.create(
-                post=post,
-                user=None,
-                session_key=session_key
-            )
-            post.views_count += 1
-            post.save()
-    
-    # Получаем похожие посты
-    similar_posts = Post.objects.filter(
-        category=post.category,
-        is_published=True
-    ).exclude(
-        id=post.id
-    ).only(
-        'title', 'slug', 'created_at', 'views_count',
-        'author__username',
-        'category__name'
-    ).select_related(
-        'author', 'category'
-    )[:3]
-    
+    post = get_object_or_404(Post, slug=slug)
     context = {
         'post': post,
-        'similar_posts': similar_posts,
     }
     return render(request, 'blog/post_detail.html', context)
 
 @login_required
 def edit_post(request, slug):
+    logger.info(f"Trying to edit post with slug: {slug}")
+    logger.info(f"Current user: {request.user.username}")
+    
     post = get_object_or_404(Post, slug=slug)
+    
+    if post.author != request.user and not request.user.is_staff:
+        messages.error(request, 'У вас нет прав для редактирования этого поста')
+        return redirect('blog:post_detail', slug=slug)
     
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
             post = form.save(commit=False)
-            post.content = form.cleaned_data['content']
-            post.save()
             
+            if 'thumbnail' in request.FILES:
+                try:
+                    # Удаляем старую миниатюру если она есть
+                    if post.thumbnail and hasattr(post.thumbnail, 'public_id'):
+                        cloudinary.uploader.destroy(post.thumbnail.public_id)
+                    
+                    # Загружаем новую миниатюру
+                    thumbnail_file = request.FILES['thumbnail']
+                    upload_result = cloudinary.uploader.upload(
+                        thumbnail_file,
+                        folder='thumbnails/',
+                        resource_type='auto'
+                    )
+                    post.thumbnail = upload_result['public_id']
+                except Exception as e:
+                    logger.error(f"Error processing thumbnail: {str(e)}")
+                    messages.error(request, 'Ошибка при обработке миниатюры')
+                    return render(request, 'blog/post_form.html', {
+                        'form': form,
+                        'post': post,
+                        'action': 'edit',
+                        'categories': Category.objects.all().order_by('name'),
+                        'tags': Tag.objects.all().order_by('name')
+                    })
+            
+            post.save()
+            form.save_m2m()  # Сохраняем теги
             messages.success(request, 'Пост успешно обновлен!')
             return redirect('blog:post_detail', slug=post.slug)
-        else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
-        initial_data = {
-            'content': post.content,
-        }
-        form = PostForm(instance=post, initial=initial_data)
+        form = PostForm(instance=post)
     
     return render(request, 'blog/post_form.html', {
-        'form': form,
-        'post': post,
-        'title': 'Редактировать пост',
-        'button_text': 'Сохранить изменения',
-        'is_edit': True
+        'form': form, 
+        'post': post, 
+        'action': 'edit',
+        'categories': Category.objects.all().order_by('name'),
+        'tags': Tag.objects.all().order_by('name'),
+        'debug': True,
+        'debug_info': {
+            'post_id': post.id,
+            'post_slug': post.slug,
+            'author': post.author.username,
+            'current_user': request.user.username,
+            'category': post.category.name if post.category else None,
+            'tags': [tag.name for tag in post.tags.all()],
+            'thumbnail': {
+                'url': post.get_thumbnail_url() if post.thumbnail else None,
+                'public_id': post.thumbnail.public_id if hasattr(post.thumbnail, 'public_id') else None
+            }
+        }
     })
 
+@login_required
+def delete_post(request, slug):
+    post = get_object_or_404(Post, slug=slug, author=request.user)
+    
+    if request.method == 'POST':
+        try:
+            # Удаляем минитюру из Cloudinary если она есть
+            if post.thumbnail and hasattr(post.thumbnail, 'public_id'):
+                try:
+                    cloudinary.uploader.destroy(post.thumbnail.public_id)
+                except Exception as e:
+                    logger.error(f"Error deleting thumbnail: {str(e)}")
+            
+            # Удаляем пост
+            post.delete()
+            messages.success(request, 'Пост успешно удален!')
+            return redirect('blog:my_posts')
+        except Exception as e:
+            logger.error(f"Error deleting post: {str(e)}")
+            messages.error(request, f'Ошибка при удалении поста: {str(e)}')
+            return redirect('blog:post_detail', slug=slug)
+    
+    # Показываем страницу подтверждения
+    return render(request, 'blog/post_confirm_delete.html', {'post': post})
+
+@login_required
+def add_comment(request, slug):
+    post = get_object_or_404(Post, slug=slug)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            return redirect('blog:post_detail', slug=slug)
+    return redirect('blog:post_detail', slug=slug)
+
 def categories_list(request):
-    categories = Category.objects.exclude(slug__isnull=True).exclude(slug='')
+    # Изменим имя аннотации на total_posts вместо posts_count
+    categories = Category.objects.annotate(total_posts=Count('post'))
+    
     context = {
         'categories': categories,
+        'total_categories': categories.count(),
     }
     return render(request, 'blog/categories.html', context)
 
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
-    posts = Post.objects.filter(category=category, is_published=True).order_by('-created_at')
-    
-    context = {
-        'category': category,
-        'posts': posts,
-    }
-    return render(request, 'blog/category_detail.html', context)
+    posts = Post.objects.filter(category=category, is_published=True)
+    return render(request, 'blog/category_detail.html', {'category': category, 'posts': posts})
 
 def tag_detail(request, slug):
     tag = get_object_or_404(Tag, slug=slug)
-    posts = Post.objects.filter(tags=tag, is_published=True).order_by('-created_at')
-    
-    context = {
-        'tag': tag,
-        'posts': posts,
-    }
-    return render(request, 'blog/tag_detail.html', context)
-
-@login_required
-def about(request):
-    if not request.user.is_staff:
-        messages.error(request, "У вас нет прав для просмотра этой страницы")
-        return redirect('blog:home')
-    return render(request, 'blog/about.html')
-
-@login_required
-def my_posts(request):
-    user_posts = Post.objects.filter(author=request.user).order_by('-created_at')
-    
-    context = {
-        'posts': user_posts,
-        'title': 'Мои посты'
-    }
-    return render(request, 'blog/my_posts.html', context)
-
-def user_profile(request, username):
-    viewed_user = get_object_or_404(User, username=username)
-    
-    posts = Post.objects.filter(
-        author=viewed_user,
-        is_published=True
-    ).select_related(
-        'category'
-    ).prefetch_related(
-        'tags'
-    ).order_by('-created_at')
-    
-    total_posts = posts.count()
-    total_views = posts.aggregate(Sum('views_count'))['views_count__sum'] or 0
-    comments_count = Comment.objects.filter(post__author=viewed_user).count()
-    
-    streak_days = calculate_streak_days(viewed_user)
-    achievements_count = calculate_achievements(viewed_user)
-    
-    context = {
-        'viewed_user': viewed_user,
-        'profile': viewed_user.profile,
-        'posts': posts,
-        'total_posts': total_posts,
-        'total_views': total_views,
-        'comments_count': comments_count,
-        'streak_days': streak_days,
-        'achievements_count': achievements_count,
-    }
-    return render(request, 'blog/profile.html', context)
-
-@login_required
-def post_delete(request, slug):
-    post = get_object_or_404(Post, slug=slug)
-    
-    if request.method == 'POST':
-        post.delete()
-        messages.success(request, 'Пост успешно удален!')
-        return redirect('blog:home')
-    
-    return render(request, 'blog/post_confirm_delete.html', {'post': post})
-
-def contacts(request):
-    try:
-        page_settings = PageSettings.objects.get(page_name='contacts')
-        if not page_settings.is_active:
-            return render(request, 'blog/page_disabled.html', {
-                'message': page_settings.disabled_message
-            })
-    except PageSettings.DoesNotExist:
-        pass
-        
-    return render(request, 'blog/contacts.html')
-
-def search(request):
-    query = request.GET.get('q', '')
-    if query:
-        posts = Post.objects.filter(
-            Q(title__icontains=query) | 
-            Q(content__icontains=query),
-            is_published=True
-        ).order_by('-created_at')
-    else:
-        posts = Post.objects.none()
-    
-    context = {
-        'posts': posts,
-        'query': query,
-    }
-    return render(request, 'blog/search.html', context)
+    posts = Post.objects.filter(tags=tag, is_published=True)
+    return render(request, 'blog/tag_detail.html', {'tag': tag, 'posts': posts})
 
 @login_required
 def profile(request):
-    """Личный профиль пользователя"""
-    try:
-        profile = request.user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=request.user)
-    
-    posts = Post.objects.filter(
-        author=request.user
-    ).exclude(
-        slug=''
-    ).select_related(
-        'category'
-    ).prefetch_related(
-        'tags'
-    ).order_by('-created_at')
-    
-    total_posts = posts.count()
-    total_views = posts.aggregate(Sum('views_count'))['views_count__sum'] or 0
-    
-    # Добавляем новые данные
-    streak_days = calculate_streak_days(request.user)
-    last_activity = request.user.last_login or request.user.date_joined
-    achievements_count = calculate_achievements(request.user)
+    user = request.user
+    profile = user.profile
     
     context = {
         'profile': profile,
-        'viewed_user': request.user,
-        'posts': posts,
-        'total_posts': total_posts,
-        'total_views': total_views,
-        'streak_days': streak_days,
-        'last_activity': last_activity,
-        'achievements_count': achievements_count,
+        'viewed_user': user,
+        'posts': Post.objects.filter(author=user).order_by('-created_at'),
+        'total_posts': Post.objects.filter(author=user).count(),
+        'total_views': PostView.objects.filter(post__author=user).count(),
+        'total_comments': Comment.objects.filter(post__author=user).count(),
+        'debug': True,
+        'debug_info': {
+            'avatar': {
+                'name': profile.avatar if profile.avatar else None,
+                'url': profile.avatar if profile.avatar else None,
+            },
+            'cover': {
+                'name': profile.cover if profile.cover else None,
+                'url': profile.cover if profile.cover else None,
+            }
+        }
     }
+    
     return render(request, 'blog/profile.html', context)
 
-def calculate_streak_days(user):
-    """Подсчет дней подяд с публкацими"""
-    posts = Post.objects.filter(
-        author=user,
-        is_published=True
-    ).order_by('-created_at')
-    
-    if not posts:
-        return 0
-        
-    streak = 0
-    current_date = timezone.now().date()
-    last_post_date = None
-    
-    for post in posts:
-        post_date = post.created_at.date()
-        
-        if last_post_date is None:
-            last_post_date = post_date
-            streak = 1
-            continue
-            
-        # Если разница между постами больше 1 дня, прерываем подсчет
-        if (last_post_date - post_date).days > 1:
-            break
-            
-        streak += 1
-        last_post_date = post_date
-        
-    return streak
-
-def calculate_achievements(user):
-    """Подсчет достижений пользователя"""
-    achievements = 0
-    
-    # Достижение за первый пост
-    if Post.objects.filter(author=user, is_published=True).exists():
-        achievements += 1
-    
-    # Достижение за 10 постов
-    if Post.objects.filter(author=user, is_published=True).count() >= 10:
-        achievements += 1
-    
-    # Достижение за 100 просмотров
-    total_views = Post.objects.filter(author=user).aggregate(
-        total_views=models.Sum('views_count')
-    )['total_views'] or 0
-    if total_views >= 100:
-        achievements += 1
-    
-    # Достижение за серию публикаций (3 дня подряд)
-    if calculate_streak_days(user) >= 3:
-        achievements += 1
-    
-    return achievements
-
-def generate_invite_code():
-    """��енерация 8-символьного кода приглашения"""
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+def user_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    return render(request, 'blog/user_profile.html', {'profile_user': user})
 
 @login_required
-def create_invite(request):
-    if not request.user.is_staff:
-        messages.error(request, "У вас нет прав для создания приглашений")
-        return redirect('blog:home')
+def my_posts(request):
+    posts = Post.objects.filter(author=request.user).order_by('-created_at')
+    total_views = sum(post.views_count for post in posts)
     
-    code = generate_invite_code()
-    InviteCode.objects.create(code=code, created_by=request.user)
-    messages.success(request, f"Создан код приглашения: {code}")
-    return redirect('blog:invite_codes')
-
-@login_required
-def invite_codes(request):
-    codes = InviteCode.objects.filter(created_by=request.user).order_by('-created_at')
-    return render(request, 'blog/invite_codes.html', {'codes': codes})
+    context = {
+        'posts': posts,
+        'total_views': total_views,
+    }
+    return render(request, 'blog/my_posts.html', context)
 
 @staff_member_required
 def admin_panel(request):
-    # Добавляем определение thirty_days_ago
-    thirty_days_ago = timezone.now() - timedelta(days=30)
-    
-    # Получаем активные инвайт-коды
-    active_invites = InviteCode.objects.filter(is_active=True)
-    
-    # Получаем популярные категории с подсчетом постов через annotate
-    popular_categories = Category.objects.annotate(
-        total_posts=Count('posts')
-    ).order_by('-total_posts')[:5]
-    
-    # Добавляем получение настроек страниц
-    page_settings = {
-        'contacts': PageSettings.objects.get_or_create(
-            page_name=PageSettings.CONTACTS_PAGE,
-            defaults={'updated_by': request.user}
-        )[0],
-        'create_post': PageSettings.objects.get_or_create(
-            page_name=PageSettings.CREATE_POST_PAGE,
-            defaults={'updated_by': request.user}
-        )[0]
-    }
-    
-    database_config = {
-        'name': 'django_blog_7f9a',
-        'host': 'dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
-        'user': 'django_blog_7f9a_user',
-        'engine': 'PostgreSQL',
-        'version': get_database_info().get('version', 'Unknown')
-    }
-    
-    context = {
-        # Основная статистика
-        'users_count': User.objects.count(),
-        'posts_count': Post.objects.count(),
-        'categories_count': Category.objects.count(),
-        'comments_count': Comment.objects.count(),
-        
-        # Статистика активности
-        'new_users_month': User.objects.filter(date_joined__gte=thirty_days_ago).count(),
-        'new_posts_month': Post.objects.filter(created_at__gte=thirty_days_ago).count(),
-        'active_users_month': User.objects.filter(last_login__gte=thirty_days_ago).count(),
-        'total_views': Post.objects.aggregate(total_views=Sum('views_count'))['total_views'] or 0,
-        
-        # Списки для управления
-        'users': User.objects.all().order_by('-date_joined')[:10],
-        'recent_posts': Post.objects.select_related('author', 'category').order_by('-created_at')[:10],
-        'recent_comments': Comment.objects.select_related('author', 'post').order_by('-created_date')[:10],
-        'active_invites': active_invites,
-        'popular_categories': popular_categories,
-        
-        # Логи и активность
-        'recent_logs': LogEntry.objects.select_related('user', 'content_type')[:10],
-        'user_activity': get_user_activity_stats(),
-        'system_info': get_system_info(),
-        'page_settings': page_settings,
-        'database_info': get_database_info(),
-        'database_config': database_config
-    }
-    return render(request, 'blog/admin_panel.html', context)
-
-def get_user_activity_stats():
-    """Получение статистики активности пользователей"""
-    now = timezone.now()
-    periods = {
-        'today': now - timedelta(days=1),
-        'week': now - timedelta(weeks=1),
-        'month': now - timedelta(days=30),
-    }
-    
-    stats = {}
-    for period_name, period_start in periods.items():
-        stats[period_name] = {
-            'posts': Post.objects.filter(created_at__gte=period_start).count(),
-            'comments': Comment.objects.filter(created_date__gte=period_start).count(),
-            'users': User.objects.filter(date_joined__gte=period_start).count(),
-            'views': PostView.objects.filter(timestamp__gte=period_start).count(),
-        }
-    return stats
-
-def get_database_info():
-    """Получение базовой информации о базе данных"""
     try:
-        # Создаем прямое подключение к PostgreSQL
-        conn = psycopg2.connect(
-            dbname='django_blog_7f9a',
-            user='django_blog_7f9a_user',
-            password='qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE',
-            host='dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com',
-            port='5432',
-            sslmode='require'
-        )
-        
-        cursor = conn.cursor()
+        # Получаем информацию о БД
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT version();")
+            db_version = cursor.fetchone()[0]
+            
+            cursor.execute("""
+                SELECT pg_size_pretty(pg_database_size(current_database()))
+            """)
+            db_size = cursor.fetchone()[0]
+            
+            cursor.execute("""
+                SELECT count(*) FROM information_schema.tables 
+                WHERE table_schema = 'public'
+            """)
+            tables_count = cursor.fetchone()[0]
+            
+            cursor.execute("""
+                SELECT relname as table, n_live_tup as rows
+                FROM pg_stat_user_tables
+                ORDER BY n_live_tup DESC
+            """)
+            tables_stats = cursor.fetchall()
 
-        # Полуаем версию PostgreSQL
-        cursor.execute("SELECT version()")
-        version = cursor.fetchone()[0]
+        database_info = {
+            'connected': True,
+            'size': db_size,
+            'tables_count': tables_count,
+            'tables_stats': tables_stats,
+            'name': settings.DATABASES['default']['NAME'],
+            'host': settings.DATABASES['default']['HOST'],
+            'engine': 'PostgreSQL'
+        }
 
-        # Сначала получаем список существующих таблиц
-        cursor.execute("""
-            SELECT tablename 
-            FROM pg_tables 
-            WHERE schemaname = 'public'
-        """)
-        existing_tables = [table[0] for table in cursor.fetchall()]
+        # Получаем настройки страниц
+        page_settings = {
+            'create_post': PageSettings.objects.get_or_create(
+                page_name='create_post',
+                defaults={'is_active': True}
+            )[0],
+            'contacts': PageSettings.objects.get_or_create(
+                page_name='contacts',
+                defaults={'is_active': True}
+            )[0],
+            'about': PageSettings.objects.get_or_create(
+                page_name='about',
+                defaults={'is_active': True}
+            )[0]
+        }
 
-        # Получаем статистику записей
+        # Статистика
         stats = {
-            'users': 0,
-            'posts': 0,
-            'comments': 0,
-            'profiles': 0,
-            'categories': 0
-        }
-
-        # Подсчитываем записи только для существующих таблиц
-        if 'auth_user' in existing_tables:
-            cursor.execute("SELECT COUNT(*) FROM auth_user")
-            stats['users'] = cursor.fetchone()[0]
-
-        if 'blog_post' in existing_tables:
-            cursor.execute("SELECT COUNT(*) FROM blog_post")
-            stats['posts'] = cursor.fetchone()[0]
-
-        if 'blog_comment' in existing_tables:
-            cursor.execute("SELECT COUNT(*) FROM blog_comment")
-            stats['comments'] = cursor.fetchone()[0]
-
-        if 'blog_profile' in existing_tables:
-            cursor.execute("SELECT COUNT(*) FROM blog_profile")
-            stats['profiles'] = cursor.fetchone()[0]
-
-        if 'blog_category' in existing_tables:
-            cursor.execute("SELECT COUNT(*) FROM blog_category")
-            stats['categories'] = cursor.fetchone()[0]
-
-        # Получаем информацию о таблицах
-        tables_info = []
-        for table_name in existing_tables:
-            cursor.execute(f"""
-                SELECT 
-                    pg_size_pretty(pg_total_relation_size(quote_ident(%s))),
-                    pg_total_relation_size(quote_ident(%s)),
-                    (SELECT count(*) FROM information_schema.columns WHERE table_name = %s)
-                """, [table_name, table_name, table_name])
-            
-            table_info = cursor.fetchone()
-            tables_info.append({
-                'name': table_name,
-                'size': table_info[0],
-                'raw_size': table_info[1],
-                'columns': table_info[2]
-            })
-
-        # Получаем ощий размер базы данных
-        cursor.execute("SELECT pg_size_pretty(pg_database_size(current_database()))")
-        total_size = cursor.fetchone()[0]
-
-        # Получаем информацию о подключениях
-        cursor.execute("""
-            SELECT 
-                count(*) as total,
-                count(*) FILTER (WHERE state = 'active') as active,
-                count(*) FILTER (WHERE state = 'idle') as idle
-            FROM pg_stat_activity 
-            WHERE datname = current_database()
-        """)
-        connections = cursor.fetchone()
-
-        cursor.close()
-        conn.close()
-
-        return {
-            'connection_status': {
-                'is_connected': True,
-                'version': version,
-            },
-            'size': total_size,
-            'tables': tables_info,
-            'stats': stats,
-            'memory_usage': {
-                'total_connections': connections[0] if connections else 0,
-                'active_connections': connections[1] if connections else 0,
-                'idle_connections': connections[2] if connections else 0,
-                'total_size': total_size,
-                'table_count': len(existing_tables),
-                'total_rows': sum(stats.values())
-            }
-        }
-    except Exception as e:
-        print(f"Database info error: {str(e)}")  # Для отладки
-        return {
-            'error': str(e),
-            'connection_status': {
-                'is_connected': False,
-                'version': 'Unknown'
-            },
-            'size': 'N/A',
-            'tables': [],
-            'stats': {
-                'users': 0,
-                'posts': 0,
-                'comments': 0,
-                'profiles': 0,
-                'categories': 0
-            },
-            'memory_usage': {
-                'total_connections': 0,
-                'active_connections': 0,
-                'idle_connections': 0,
-                'total_size': 'N/A',
-                'table_count': 0,
-                'total_rows': 0
-            }
-        }
-
-def get_system_info():
-    """Получение информации о системе"""
-    return {
-        'total_storage': get_total_media_size(),
-        'database_size': get_database_size(),
-        'cache_status': cache.get_stats() if hasattr(cache, 'get_stats') else None,
-        'latest_backup': get_latest_backup_info(),
-    }
-
-@staff_member_required
-@require_POST
-def clear_cache(request):
-    try:
-        cache.clear()
-        return JsonResponse({'success': True})
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
-
-def get_total_media_size():
-    """Получение общего размера медиа файлов"""
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(settings.MEDIA_ROOT):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
-    return total_size
-
-def get_database_size():
-    """Получение размера базы данных"""
-    try:
-        db_path = settings.DATABASES['default']['NAME']
-        if os.path.exists(db_path):
-            return os.path.getsize(db_path)
-    except:
-        pass
-    return 0
-
-def get_latest_backup_info():
-    """Получение информации о последнем бэкапе"""
-    backup_dir = os.path.join(settings.BASE_DIR, 'backups')
-    try:
-        if os.path.exists(backup_dir):
-            files = os.listdir(backup_dir)
-            if files:
-                latest_file = max(files, key=lambda x: os.path.getctime(os.path.join(backup_dir, x)))
-                return {
-                    'name': latest_file,
-                    'size': os.path.getsize(os.path.join(backup_dir, latest_file)),
-                    'date': datetime.fromtimestamp(os.path.getctime(os.path.join(backup_dir, latest_file)))
-                }
-    except:
-        pass
-    return None
-
-@staff_member_required
-@require_POST
-def toggle_user_status(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
-        user.is_active = not user.is_active
-        user.save()
-        return JsonResponse({
-            'success': True,
-            'is_active': user.is_active,
-            'message': f'Пользователь {"активирован" if user.is_active else "деактивирован"}'
-        })
-    except User.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Пользователь не найден'
-        }, status=404)
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-@require_POST
-def update_activity(request):
-    """Обновление времени последней активности пользователя"""
-    if request.user.is_authenticated:
-        try:
-            profile = request.user.profile
-            profile.last_seen = timezone.now()
-            profile.save(update_fields=['last_seen'])
-            return JsonResponse({'status': 'ok'})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    return JsonResponse({'status': 'error', 'message': 'User not authenticated'}, status=401)
-
-@require_POST
-def set_offline(request):
-    """Установка статуса оффлайн для пользователя"""
-    if request.user.is_authenticated:
-        try:
-            profile = request.user.profile
-            profile.last_seen = timezone.now() - timezone.timedelta(minutes=6)
-            profile.save(update_fields=['last_seen'])
-            return JsonResponse({'status': 'ok'})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    return JsonResponse({'status': 'error', 'message': 'User not authenticated'}, status=401)
-
-@login_required
-@require_POST
-def add_comment(request, slug):
-    """Добавление комментария к посту"""
-    post = get_object_or_404(Post, slug=slug)
-    
-    try:
-        content = request.POST.get('content', '').strip()
-        if content:
-            comment = Comment.objects.create(
-                post=post,
-                author=request.user,
-                content=content
-            )
-            return JsonResponse({
-                'success': True,
-                'comment': {
-                    'id': comment.id,
-                    'content': comment.content,
-                    'author': comment.author.username,
-                    'created_date': comment.created_date.strftime('%d.%m.%Y %H:%M'),
-                    'author_avatar': comment.author.profile.avatar.url if comment.author.profile.avatar else None,
-                }
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'error': 'Комментарий не может быть пустым'
-            }, status=400)
-            
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-@staff_member_required
-def generate_backup(request):
-    """Создание резервной копии данных"""
-    try:
-        # Создаем директорию для бэкапов, если её нет
-        backup_dir = os.path.join(settings.BASE_DIR, 'backups')
-        os.makedirs(backup_dir, exist_ok=True)
-        
-        # Генерируем имя файла бэкапа
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        backup_filename = f'backup_{timestamp}.zip'
-        backup_path = os.path.join(backup_dir, backup_filename)
-        
-        # Создаем ZIP-архив
-        with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as backup_zip:
-            # Бэкап медиафайлов
-            if os.path.exists(settings.MEDIA_ROOT):
-                for root, dirs, files in os.walk(settings.MEDIA_ROOT):
-                    for file in files:
-                        file_path = os.path.join(root, file)
-                        arc_name = os.path.relpath(file_path, settings.BASE_DIR)
-                        backup_zip.write(file_path, arc_name)
-            
-            # Бэкап данных из базы
-            data = {
-                'users': list(User.objects.values()),
-                'profiles': list(Profile.objects.values()),
-                'categories': list(Category.objects.values()),
-                'tags': list(Tag.objects.values()),
-                'posts': list(Post.objects.values()),
-                'comments': list(Comment.objects.values()),
-                'page_settings': list(PageSettings.objects.values()),
-                'invite_codes': list(InviteCode.objects.values()),
-            }
-            
-            # Записываем данные в JSON-файл внутри архива
-            backup_zip.writestr('data.json', json.dumps(data, indent=2, default=str))
-        
-        # Формируем URL для скачивания
-        backup_url = os.path.join(settings.MEDIA_URL, 'backups', backup_filename)
-        
-        messages.success(request, f'Резервная копия успешно создана: {backup_filename}')
-        return JsonResponse({
-            'success': True,
-            'backup_url': backup_url,
-            'filename': backup_filename,
-            'size': os.path.getsize(backup_path)
-        })
-        
-    except Exception as e:
-        messages.error(request, f'Ошибка при создании резервной копии: {str(e)}')
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-@staff_member_required
-def reset_user_password(request, user_id):
-    """Сброс пароля пользователя администратором"""
-    try:
-        user = User.objects.get(id=user_id)
-        # Генерируем новый пароль
-        new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-        user.set_password(new_password)
-        user.save()
-        
-        messages.success(request, f'Пароль пользователя {user.username} успешно сброшен. Новый пароль: {new_password}')
-        return JsonResponse({
-            'success': True,
-            'message': f'Новый пароль: {new_password}'
-        })
-    except User.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Пользователь не найден'
-        }, status=404)
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-
-@staff_member_required
-def bulk_user_action(request):
-    """Массовые действия с пользователями"""
-    if request.method == 'POST':
-        try:
-            action = request.POST.get('action')
-            user_ids = request.POST.getlist('user_ids[]')
-            users = User.objects.filter(id__in=user_ids)
-            
-            if action == 'activate':
-                users.update(is_active=True)
-                message = 'Пользователи активированы'
-            elif action == 'deactivate':
-                users.update(is_active=False)
-                message = 'Пользователи деактивированы'
-            elif action == 'delete':
-                users.delete()
-                message = 'Пользователи удалены'
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Неизвестное действие'
-                }, status=400)
-            
-            return JsonResponse({
-                'success': True,
-                'message': message
-            })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-    return JsonResponse({
-        'success': False,
-        'error': 'Метод не поддерживается'
-    }, status=405)
-
-@staff_member_required
-def bulk_post_action(request):
-    """Массовые действия с постами"""
-    if request.method == 'POST':
-        try:
-            action = request.POST.get('action')
-            post_ids = request.POST.getlist('post_ids[]')
-            posts = Post.objects.filter(id__in=post_ids)
-            
-            if action == 'publish':
-                posts.update(is_published=True)
-                message = 'Посты опубликованы'
-            elif action == 'unpublish':
-                posts.update(is_published=False)
-                message = 'Посты сняты с публикации'
-            elif action == 'delete':
-                posts.delete()
-                message = 'Посты удалены'
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Неизвестно действие'
-                }, status=400)
-            
-            return JsonResponse({
-                'success': True,
-                'message': message
-            })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-    return JsonResponse({
-        'success': False,
-        'error': 'Метод не поддерживается'
-    }, status=405)
-
-@staff_member_required
-def generate_report(request):
-    """Генерация отчета о состоянии сайта"""
-    try:
-        report_data = {
             'users': {
                 'total': User.objects.count(),
                 'active': User.objects.filter(is_active=True).count(),
-                'staff': User.objects.filter(is_staff=True).count(),
-                'new_this_month': User.objects.filter(
-                    date_joined__gte=timezone.now() - timedelta(days=30)
-                ).count()
+                'new': User.objects.filter(date_joined__gte=timezone.now() - timezone.timedelta(days=30)).count()
             },
             'posts': {
                 'total': Post.objects.count(),
                 'published': Post.objects.filter(is_published=True).count(),
-                'draft': Post.objects.filter(is_published=False).count(),
-                'total_views': Post.objects.aggregate(Sum('views_count'))['views_count__sum'] or 0
-            },
-            'categories': {
-                'total': Category.objects.count(),
-                'most_popular': list(Category.objects.annotate(
-                    posts_count=Count('posts')
-                ).order_by('-posts_count').values('name', 'posts_count')[:5])
-            },
-            'comments': {
-                'total': Comment.objects.count(),
-                'this_month': Comment.objects.filter(
-                    created_date__gte=timezone.now() - timedelta(days=30)
-                ).count()
-            },
-            'system': get_system_info(),
-            'database': get_database_info()
+                'draft': Post.objects.filter(is_published=False).count()
+            }
         }
-        
-        return JsonResponse({
-            'success': True,
-            'report': report_data
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
 
-@staff_member_required
-def clean_database(request):
-    """Очистка базы данных от неиспользуемых данных"""
-    try:
-        # Удаляем неиспользуемые теги
-        unused_tags = Tag.objects.annotate(
-            posts_count=Count('posts')
-        ).filter(posts_count=0)
-        deleted_tags = unused_tags.count()
-        unused_tags.delete()
-        
-        # Удаляем старые просмотры
-        old_views = PostView.objects.filter(
-            timestamp__lt=timezone.now() - timedelta(days=90)
-        )
-        deleted_views = old_views.count()
-        old_views.delete()
-        
-        # Очищаем кэш
-        cache.clear()
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'Удалено {deleted_tags} тегов и {deleted_views} старых просмотров'
-        })
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        # Последняя активность
+        recent_activity = {
+            'posts': Post.objects.select_related('author').order_by('-created_at')[:5],
+            'users': User.objects.order_by('-date_joined')[:5],
+            'comments': Comment.objects.select_related('post', 'author').order_by('-created_date')[:5]
+        }
 
-@staff_member_required
-def restore_database(request):
-    """Восстановление базы данных из резервной копии"""
-    if request.method == 'POST' and request.FILES.get('backup_file'):
-        try:
-            backup_file = request.FILES['backup_file']
-            
-            # Создаем временную директорию для распаковки
-            temp_dir = os.path.join(settings.BASE_DIR, 'temp_restore')
-            os.makedirs(temp_dir, exist_ok=True)
-            
-            # Распаковываем архив
-            with zipfile.ZipFile(backup_file, 'r') as zip_ref:
-                zip_ref.extractall(temp_dir)
-            
-            # Загружаем данные из JSON
-            with open(os.path.join(temp_dir, 'data.json'), 'r') as f:
-                data = json.load(f)
-            
-            # Восстанавливаем данные
-            with transaction.atomic():
-                # Очищаем существующие данные
-                Post.objects.all().delete()
-                Category.objects.all().delete()
-                Tag.objects.all().delete()
-                Comment.objects.all().delete()
-                
-                # Восстанавливаем данные
-                for model_name, items in data.items():
-                    model = apps.get_model('blog', model_name)
-                    for item in items:
-                        model.objects.create(**item)
-            
-            # Очищаем временную директорию
-            shutil.rmtree(temp_dir)
-            
-            messages.success(request, 'База данных успешно восстановлена')
-            return JsonResponse({'success': True})
-            
-        except Exception as e:
-            messages.error(request, f'Ошибка при восстановлении: {str(e)}')
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-            
-    return JsonResponse({
-        'success': False,
-        'error': 'Файл резервной копии не предоставлен'
-    }, status=400)
+        # Добавляем инвайт-коды в контекст
+        invite_codes = InviteCode.objects.select_related('created_by', 'used_by').order_by('-created_at')
 
-@staff_member_required
-def toggle_page_status(request, page_name):
-    """Включение/выключение страницы"""
-    try:
-        page_settings = PageSettings.objects.get(page_name=page_name)
-        page_settings.is_active = not page_settings.is_active
-        page_settings.updated_by = request.user
-        page_settings.save()
-        
-        return JsonResponse({
-            'success': True,
-            'is_active': page_settings.is_active
-        })
-    except PageSettings.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Настройки страницы не найдены'
-        }, status=404)
+        context = {
+            'database': database_info,
+            'stats': stats,
+            'page_settings': page_settings,
+            'recent_activity': recent_activity,
+            'text_templates': TextTemplate.objects.all()[:3],
+            'invite_codes': invite_codes  # Добавляем в контекст
+        }
+
+        return render(request, 'blog/admin_panel.html', context)
+
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        messages.error(request, f'Ошибка при загрузке админ панели: {str(e)}')
+        return render(request, 'blog/admin_panel.html', {
+            'database': {'connected': False, 'error': str(e)}
+        })
 
 @login_required
-def update_profile_avatar(request):
-    """Обновление аватара профиля"""
-    if request.method == 'POST' and request.FILES.get('avatar'):
-        try:
-            profile = request.user.profile
-            
-            # Удаляем старый аватар если он существует
-            if profile.avatar:
-                try:
-                    old_path = profile.avatar.path
-                    if os.path.exists(old_path):
-                        os.remove(old_path)
-                except Exception as e:
-                    print(f"Error removing old avatar: {e}")
-            
-            # Сохраняем новый аватар
-            new_avatar = request.FILES['avatar']
-            # Генерируем уникальное имя файла
-            ext = new_avatar.name.split('.')[-1]
-            new_name = f"{hashlib.md5(str(time.time()).encode()).hexdigest()}.{ext}"
-            # Устанавливаем новое имя файла
-            new_avatar.name = new_name
-            
-            profile.avatar = new_avatar
-            profile.save()
-            
-            # Проверяем что файл сохранился
-            if profile.avatar and os.path.exists(profile.avatar.path):
-                return JsonResponse({
-                    'success': True,
-                    'avatar_url': profile.avatar.url
-                })
-            
-            return JsonResponse({
-                'success': False,
-                'error': 'File not saved correctly'
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            })
-            
-    return JsonResponse({
-        'success': False,
-        'error': 'No file uploaded'
-    })
-
-@login_required
+@require_POST
 def update_profile_cover(request):
     """Обновление обложки профиля"""
-    if request.method == 'POST' and request.FILES.get('cover'):
-        try:
+    try:
+        if 'cover' in request.FILES:
             profile = request.user.profile
-            # Сохраняем старую обложку для удаления
-            old_cover = profile.cover.path if profile.cover else None
             
-            # Получаем новый файл
-            new_cover = request.FILES['cover']
+            # Удаляем старую обложку если она есть
+            if profile.cover:
+                try:
+                    cloudinary.uploader.destroy(profile.cover.public_id)
+                    logger.info(f"Old cover deleted: {profile.cover.public_id}")
+                except Exception as e:
+                    logger.error(f"Error deleting old cover: {str(e)}")
             
             # Сохраняем новую обложку
-            profile.cover = new_cover
-            profile.save()
-            
-            # Удаляем старую обложку если она существует
-            if old_cover and os.path.exists(old_cover):
-                try:
-                    os.remove(old_cover)
-                except Exception as e:
-                    print(f"Error removing old cover: {e}")
-            
-            # Убеждаемся что файл сохранился и возвращаем правильный URL
-            if profile.cover and os.path.exists(profile.cover.path):
+            try:
+                profile.cover = request.FILES['cover']
+                profile.save()
+                logger.info(f"New cover uploaded: {profile.cover.public_id}")
+                
                 return JsonResponse({
                     'success': True,
-                    'cover_url': profile.cover.url,
-                    'message': 'Cover updated successfully'
+                    'url': profile.cover.url,
+                    'debug': {
+                        'public_id': profile.cover.public_id,
+                        'url': profile.cover.url,
+                        'resource_type': profile.cover.resource_type
+                    }
                 })
-            else:
+            except Exception as e:
+                logger.error(f"Error uploading new cover: {str(e)}")
                 return JsonResponse({
                     'success': False,
-                    'error': 'Cover file not saved correctly'
-                }, status=500)
-                
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-            
-    return JsonResponse({
-        'success': False,
-        'error': 'No file uploaded'
-    }, status=400)
-
-@login_required
-def remove_profile_cover(request):
-    """Удаление обложки профиля"""
-    try:
-        profile = request.user.profile
-        if profile.cover:
-            profile.cover.delete()
-            profile.save()
-        return JsonResponse({'success': True})
+                    'error': f'Ошибка при загрузке обложки: {str(e)}'
+                })
+        
+        return JsonResponse({
+            'success': False,
+            'error': 'Файл не был загружен'
+        })
     except Exception as e:
+        logger.error(f"Error updating cover: {str(e)}")
         return JsonResponse({
             'success': False,
             'error': str(e)
-        }, status=500)
+        })
 
-@staff_member_required
-def create_custom_invite(request):
-    """Создание пользовательского инвайт-кода"""
-    if request.method == 'POST':
-        try:
-            code = request.POST.get('code', '').strip().upper()
-            if not code:
-                code = generate_invite_code()
-            elif InviteCode.objects.filter(code=code).exists():
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Такой код уже существует'
-                }, status=400)
+@login_required
+@require_POST
+def update_profile_avatar(request):
+    """Обновление аватара профиля"""
+    try:
+        if 'avatar' in request.FILES:
+            profile = request.user.profile
             
-            invite = InviteCode.objects.create(
-                code=code,
-                created_by=request.user
-            )
+            # Удаляем старый аватар если он есть
+            if profile.avatar:
+                storage = CustomCloudinaryStorage()
+                storage.delete(profile.avatar.name)
+            
+            # Сохраняем новый аватар
+            profile.avatar = request.FILES['avatar']
+            profile.save()
             
             return JsonResponse({
                 'success': True,
-                'code': invite.code
+                'url': profile.avatar.url
             })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
-    return JsonResponse({
-        'success': False,
-        'error': 'Метод не поддерживается'
-    }, status=405)
+        return JsonResponse({
+            'success': False,
+            'error': 'Файл не был загружен'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@login_required
+@require_POST
+def remove_profile_cover(request):
+    """даление обложки профиля"""
+    try:
+        profile = request.user.profile
+        if profile.cover:
+            storage = CustomCloudinaryStorage()
+            storage.delete(profile.cover.name)
+            profile.cover = None
+            profile.save()
+            
+        return JsonResponse({
+            'success': True
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+@staff_member_required
+def clear_cache(request):
+    """Очистк кэша"""
+    try:
+        cache.clear()
+        messages.success(request, 'Кэш успешно очищен')
+    except Exception as e:
+        messages.error(request, f'Ошибка при очистке кэша: {str(e)}')
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def toggle_user_status(request, user_id):
+    """Блокировка/разблокиока пользователя"""
+    try:
+        user = User.objects.get(id=user_id)
+        user.is_active = not user.is_active
+        user.save()
+        status = 'раболокирован' if user.is_active else 'заблокирован'
+        messages.success(request, f'Пользователь {user.username} {status}')
+    except User.DoesNotExist:
+        messages.error(request, 'Пользователь не найден')
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def create_invite(request):
+    """Создание инвайт-кода"""
+    try:
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        invite = InviteCode.objects.create(
+            code=code,
+            created_by=request.user
+        )
+        messages.success(request, f'Создан инвайт-код: {code}')
+    except Exception as e:
+        messages.error(request, f'Ошибка при создании инвайт-кода: {str(e)}')
+    return redirect('blog:admin_panel')
 
 @staff_member_required
 def deactivate_invite(request, code):
@@ -1367,133 +770,547 @@ def deactivate_invite(request, code):
         invite = InviteCode.objects.get(code=code)
         invite.is_active = False
         invite.save()
-        return JsonResponse({'success': True})
+        messages.success(request, f'Инвайт-код {code} деактивирован')
     except InviteCode.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Инвайт-код не найден'
-        }, status=404)
+        messages.error(request, 'Инвайт-код не найден')
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        messages.error(request, f'Ошибка при деактивации кода: {str(e)}')
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+@require_POST
+@csrf_exempt
+def toggle_page_status(request, page_name):
+    """Включение/отключение страницы"""
+    try:
+        page_settings = PageSettings.objects.get_or_create(
+            page_name=page_name,
+            defaults={
+                'is_active': True,
+                'updated_by': request.user
+            }
+        )[0]
+        
+        page_settings.is_active = not page_settings.is_active
+        page_settings.updated_by = request.user
+        page_settings.save()
+        
+        messages.success(request, f'Страница {page_settings.get_page_name_display()} {"включена" if page_settings.is_active else "отключена"}')
+    except Exception as e:
+        messages.error(request, f'Ошибка при изменении статуса страницы: {str(e)}')
+    
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def invite_codes(request):
+    """Список инвайт-кодов"""
+    codes = InviteCode.objects.all().order_by('-created_at')
+    return render(request, 'blog/invite_codes.html', {'codes': codes})
+
+@staff_member_required
+def create_custom_invite(request):
+    """Создание кастомного инвайт-кода"""
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        try:
+            InviteCode.objects.create(code=code, created_by=request.user)
+            messages.success(request, f'Создан инвайт-код: {code}')
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании инвай-коа: {str(e)}')
+    return redirect('blog:invite_codes')
+
+@staff_member_required
+def update_activity(request):
+    """Обновление времени последней активности"""
+    if request.method == 'POST':
+        request.user.profile.last_seen = timezone.now()
+        request.user.profile.save()
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def set_offline(request):
+    """Установка статуса оффлайн"""
+    if request.method == 'POST':
+        request.user.profile.last_seen = timezone.now() - timezone.timedelta(minutes=5)
+        request.user.profile.save()
+        return JsonResponse({'status': 'ok'})
+    return JsonResponse({'status': 'error'}, status=400)
 
 def health_check(request):
-    """Проверка состояния системы"""
+    """Проверка здоровья приложения"""
     try:
-        # Проверяем подключение к базе данных
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-        
+        # Проверяем подключение к БД
+        connection.ensure_connection()
         # Проверяем работу кэша
-        cache_key = 'health_check'
-        cache.set(cache_key, 'ok', 10)
-        cache_status = cache.get(cache_key) == 'ok'
+        cache.set('health_check', 'ok', 10)
+        cache.get('health_check')
+        return JsonResponse({'status': 'healthy'})
+    except Exception as e:
+        return JsonResponse({'status': 'unhealthy', 'error': str(e)}, status=500)
+
+@staff_member_required
+def generate_backup(request):
+    """Создание резервной копии данных"""
+    try:
+        # Словарь для хранения всех данных
+        data = {
+            'users': [],
+            'profiles': [],
+            'categories': [],
+            'tags': [],
+            'posts': [],
+            'comments': [],
+            'post_views': [],
+            'invite_codes': [],
+            'page_settings': [],
+            'titles': [],
+            'text_templates': []
+        }
+
+        # Экспортируем пользоватеей
+        users = User.objects.all()
+        data['users'] = json.loads(serializers.serialize('json', users))
+
+        # Экспортируем профили
+        profiles = Profile.objects.all()
+        data['profiles'] = json.loads(serializers.serialize('json', profiles))
+
+        # Экспортируем категории
+        categories = Category.objects.all()
+        data['categories'] = json.loads(serializers.serialize('json', categories))
+
+        # Экспортируем теги
+        tags = Tag.objects.all()
+        data['tags'] = json.loads(serializers.serialize('json', tags))
+
+        # Экспртруем посты
+        posts = Post.objects.all()
+        data['posts'] = json.loads(serializers.serialize('json', posts))
+
+        # Экпортируем коментари
+        comments = Comment.objects.all()
+        data['comments'] = json.loads(serializers.serialize('json', comments))
+
+        # Экспортируем просмотры
+        post_views = PostView.objects.all()
+        data['post_views'] = json.loads(serializers.serialize('json', post_views))
+
+        # Экспортируем инвайт-коды
+        invite_codes = InviteCode.objects.all()
+        data['invite_codes'] = json.loads(serializers.serialize('json', invite_codes))
+
+        # Экспортируем настойки страниц
+        page_settings = PageSettings.objects.all()
+        data['page_settings'] = json.loads(serializers.serialize('json', page_settings))
+
+        # Экспортируем титулы
+        titles = Title.objects.all()
+        data['titles'] = json.loads(serializers.serialize('json', titles))
+
+        # Экспортируем шаблоны тексто
+        text_templates = TextTemplate.objects.all()
+        data['text_templates'] = json.loads(serializers.serialize('json', text_templates))
+
+        # Сздаем имя файла с текущей датой
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'backup_{timestamp}.json'
+
+        # Сохраняе в файл
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+        messages.success(request, f'Резервная копия успешно создана: {filename}')
+    except Exception as e:
+        messages.error(request, f'Ошибка при создании резерной копии: {str(e)}')
+
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def restore_database(request):
+    """Восстановление базы данных из резервной копии"""
+    if request.method == 'POST' and request.FILES.get('backup_file'):
+        try:
+            backup_file = request.FILES['backup_file']
+            data = json.load(backup_file)
+
+            # чищаем существующие данные
+            PostView.objects.all().delete()
+            Comment.objects.all().delete()
+            Post.objects.all().delete()
+            Tag.objects.all().delete()
+            Category.objects.all().delete()
+            Profile.objects.all().delete()
+            User.objects.filter(is_superuser=False).delete()
+
+            # Восстанавливаем данные
+            for model_name, items in data.items():
+                if model_name == 'users':
+                    for item in items:
+                        if not User.objects.filter(username=item['fields']['username']).exists():
+                            User.objects.create(**item['fields'])
+                elif model_name == 'profiles':
+                    for item in items:
+                        Profile.objects.create(**item['fields'])
+                # ... и та далее для каждой модели
+
+            messages.success(request, 'База данных успешно восстановлена')
+        except Exception as e:
+            messages.error(request, f'Оибка при восстановлении базы данных: {str(e)}')
         
-        # Проверяем доступ к медиа-директории
-        media_writable = os.access(settings.MEDIA_ROOT, os.W_OK)
+        return redirect('blog:admin_panel')
+    
+    return render(request, 'blog/restore_database.html')
+
+@staff_member_required
+def restore_media(request):
+    """Восстановление медиа-файлов из бэкапа"""
+    try:
+        # Восстанавливаем файлы и бэкапа
+        for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
+            backup_path = os.path.join(settings.MEDIA_BACKUP_ROOT, dir_name)
+            media_path = os.path.join(settings.MEDIA_ROOT, dir_name)
+            
+            # Сздаем директорию если её нет
+            os.makedirs(media_path, exist_ok=True)
+            
+            # Копируем файлы
+            for filename in os.listdir(backup_path):
+                src = os.path.join(backup_path, filename)
+                dst = os.path.join(media_path, filename)
+                if not os.path.exists(dst):
+                    shutil.copy2(src, dst)
         
-        status = {
-            'database': True,
-            'cache': cache_status,
-            'media_storage': media_writable,
-            'timestamp': timezone.now().isoformat()
+        messages.success(request, 'Медиа-файлы успешно восстановлены')
+    except Exception as e:
+        messages.error(request, f'Ошибка при восстанвлении медиа-файлов: {str(e)}')
+    
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def reset_user_password(request, user_id):
+    """Сброс пароля пользователя"""
+    try:
+        user = User.objects.get(id=user_id)
+        # Генерируем новы случайный пароль
+        new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+        user.password = make_password(new_password)
+        user.save()
+        
+        messages.success(
+            request, 
+            f'Пароль пользователя {user.username} сброшен. Новый пароль: {new_password}'
+        )
+    except User.DoesNotExist:
+        messages.error(request, 'Пользователь не найден')
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def bulk_user_action(request):
+    """Массовые дйствия с пользователями"""
+    if request.method == 'POST':
+        user_ids = request.POST.getlist('users')
+        action = request.POST.get('action')
+        
+        try:
+            users = User.objects.filter(id__in=user_ids)
+            if action == 'activate':
+                users.update(is_active=True)
+                messages.success(request, 'Выбранные пользователи акивированы')
+            elif action == 'deactivate':
+                users.update(is_active=False)
+                messages.success(request, 'Выбранные ользователи деактивированы')
+            elif action == 'delete':
+                users.delete()
+                messages.success(request, 'Выбранные пользователи удалены')
+        except Exception as e:
+            messages.error(request, f'Ошибка при выполнении действия: {str(e)}')
+    
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def bulk_post_action(request):
+    """Массовые действия с постами"""
+    if request.method == 'POST':
+        post_ids = request.POST.getlist('posts')
+        action = request.POST.get('action')
+        
+        try:
+            posts = Post.objects.filter(id__in=post_ids)
+            if action == 'publish':
+                posts.update(is_published=True)
+                messages.success(request, 'Выбраные посты опубликованы')
+            elif action == 'unpublish':
+                posts.update(is_published=False)
+                messages.success(request, 'Выбранные посты сняты с публикации')
+            elif action == 'delete':
+                posts.delete()
+                messages.success(request, 'Выбранные посты удалены')
+        except Exception as e:
+            messages.error(request, f'Ошибка при выполнении действия: {str(e)}')
+    
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def generate_report(request):
+    """Генерация отчета о состоянии сайта"""
+    try:
+        report = {
+            'users': {
+                'total': User.objects.count(),
+                'active': User.objects.filter(is_active=True).count(),
+                'inactive': User.objects.filter(is_active=False).count()
+            },
+            'posts': {
+                'total': Post.objects.count(),
+                'published': Post.objects.filter(is_published=True).count(),
+                'drafts': Post.objects.filter(is_published=False).count()
+            },
+            'comments': Comment.objects.count(),
+            'categories': Category.objects.count(),
+            'tags': Tag.objects.count()
         }
         
-        return JsonResponse(status)
+        return JsonResponse(report)
     except Exception as e:
-        return JsonResponse({
-            'error': str(e),
-            'timestamp': timezone.now().isoformat()
-        }, status=500)
+        return JsonResponse({'error': str(e)}, status=500)
 
-def clear_database(request):
-    """Очистка базы данных"""
-    if not request.user.is_superuser:
-        return JsonResponse({
-            'success': False,
-            'error': 'Недостаточно прав'
-        }, status=403)
-        
+@staff_member_required
+def clean_database(request):
+    """Очистка азы днных от неиспоьземых данных"""
     try:
-        # Очищаем таблицы
-        Post.objects.all().delete()
-        Category.objects.all().delete()
-        Tag.objects.all().delete()
-        Comment.objects.all().delete()
-        PostView.objects.all().delete()
+        # Удаляем неиспользуемые теги
+        Tag.objects.filter(post=None).delete()
         
-        # Очищаем кэш
-        cache.clear()
+        # Удаляем старые просмотры
+        old_views = PostView.objects.filter(
+            timestamp__lt=timezone.now() - timezone.timedelta(days=30)
+        )
+        old_views.delete()
         
-        return JsonResponse({
-            'success': True,
-            'message': 'База данных успешно очищена'
-        })
+        # Удаляем неактивные инвайт-коды
+        InviteCode.objects.filter(
+            is_active=False, 
+            created_at__lt=timezone.now() - timezone.timedelta(days=30)
+        ).delete()
+        
+        messages.success(request, 'База данных успешно очищена')
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        messages.error(request, f'Ошибка при очистке базы данных: {str(e)}')
+    
+    return redirect('blog:admin_panel')
+
+@staff_member_required
+def manage_titles(request):
+    """Управление титулами"""
+    titles = Title.objects.all().order_by('name')
+    return render(request, 'blog/admin/manage_titles.html', {'titles': titles})
+
+@staff_member_required
+def create_title(request):
+    """Создание нового титула"""
+    if request.method == 'POST':
+        try:
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            color = request.POST.get('color', '#8B5CF6')
+            icon = request.POST.get('icon', 'fas fa-award')
+            
+            Title.objects.create(
+                name=name,
+                description=description,
+                color=color,
+                icon=icon
+            )
+            messages.success(request, 'Титул успешно создан')
+        except Exception as e:
+            messages.error(request, f'Ошибка пи создании титула: {str(e)}')
+    return redirect('blog:manage_titles')
+
+@staff_member_required
+def edit_title(request, title_id):
+    """Редактирование титула"""
+    title = get_object_or_404(Title, id=title_id)
+    if request.method == 'POST':
+        try:
+            title.name = request.POST.get('name')
+            title.description = request.POST.get('description')
+            title.color = request.POST.get('color')
+            title.icon = request.POST.get('icon')
+            title.save()
+            messages.success(request, 'Титул успешно обновлен')
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлени титула: {str(e)}')
+        return redirect('blog:manage_titles')
+    return render(request, 'blog/admin/edit_title.html', {'title': title})
+
+@staff_member_required
+def delete_title(request, title_id):
+    """Удаление титула"""
+    try:
+        title = Title.objects.get(id=title_id)
+        title.delete()
+        messages.success(request, 'Титул успешно удален')
+    except Title.DoesNotExist:
+        messages.error(request, 'Титул не найден')
+    except Exception as e:
+        messages.error(request, f'Ошибка при удалении титула: {str(e)}')
+    return redirect('blog:manage_titles')
+
+@staff_member_required
+def manage_user_titles(request, user_id):
+    """Управление титулами пользователя"""
+    user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        try:
+            title_ids = request.POST.getlist('titles')
+            user.profile.titles.clear()
+            user.profile.titles.add(*title_ids)
+            messages.success(request, f'Титулы пользователя {user.username} обновлены')
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлении титулов: {str(e)}')
+        return redirect('blog:admin_panel')
+    
+    available_titles = Title.objects.all()
+    return render(request, 'blog/admin/manage_user_titles.html', {
+        'user': user,
+        'available_titles': available_titles
+    })
+
+@staff_member_required
+def text_templates(request):
+    """Список шаблонов текстов"""
+    templates = TextTemplate.objects.filter(created_by=request.user).order_by('category', 'title')
+    return render(request, 'blog/admin/text_templates.html', {'templates': templates})
+
+@staff_member_required
+def edit_template(request, template_id):
+    """Редактирование шаблона текста"""
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=request.user)
+    
+    if request.method == 'POST':
+        try:
+            template.title = request.POST.get('title')
+            template.content = request.POST.get('content')
+            template.category = request.POST.get('category')
+            template.save()
+            messages.success(request, 'Шаблон успешно обновлен')
+            return redirect('blog:text_templates')
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлении шаблона: {str(e)}')
+    
+    return render(request, 'blog/admin/edit_template.html', {
+        'template': template,
+        'title': 'Редактирование шаблона'
+    })
+
+@staff_member_required
+def delete_template(request, template_id):
+    """Удаление шаблона"""
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=request.user)
+    
+    if request.method == 'POST':
+        try:
+            template.delete()
+            messages.success(request, 'Шаблон успешно удален')
+        except Exception as e:
+            messages.error(request, f'Ошибка при удалении шаблона: {str(e)}')
+    
+    return redirect('blog:text_templates')
+
+@staff_member_required
+def create_template(request):
+    """Создание нового шаблона"""
+    if request.method == 'POST':
+        try:
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            category = request.POST.get('category')
+            
+            TextTemplate.objects.create(
+                title=title,
+                content=content,
+                category=category,
+                created_by=request.user  # Явно указываем текущего пользователя
+            )
+            messages.success(request, 'Шаблон успешно создан')
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании шаблона: {str(e)}')
+    return redirect('blog:text_templates')
+
+def search(request):
+    """Поиск по сайту"""
+    query = request.GET.get('q', '')
+    results = Post.objects.filter(
+        Q(title__icontains=query) | Q(content__icontains=query),
+        is_published=True
+    ) if query else Post.objects.none()
+    return render(request, 'blog/search.html', {'results': results, 'query': query})
 
 def post_list(request):
-    """Список всех опубликованных постов"""
-    posts = Post.objects.filter(
-        is_published=True
-    ).select_related(
-        'author', 
-        'category',
-        'author__profile'
-    ).prefetch_related(
-        'tags'
-    ).order_by('-created_at')
+    """Список всех постов"""
+    posts = Post.objects.filter(is_published=True)
+    return render(request, 'blog/post_list.html', {'posts': posts})
+
+def public_templates(request):
+    """Публичная страница шаблонов (без авторизации)"""
+    if request.method == 'POST':
+        try:
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            category = request.POST.get('category', 'general')
+            
+            # Создаем публичный шаблон (без автора)
+            TextTemplate.objects.create(
+                title=title,
+                content=content,
+                category=category,
+                created_by=None  # Явно указываем, что это публичный шаблон
+            )
+            messages.success(request, 'Шаблон успешно создан')
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании шаблона: {str(e)}')
     
-    # Фильтрация по категории
-    category_slug = request.GET.get('category')
-    if category_slug:
-        posts = posts.filter(category__slug=category_slug)
+    # Получаем только публичные шаблоны (без автора)
+    templates = TextTemplate.objects.filter(created_by=None).order_by('-created_at')
+    return render(request, 'blog/public_templates.html', {
+        'templates': templates,
+        'categories': TextTemplate.objects.filter(created_by=None).values_list('category', flat=True).distinct()
+    })
+
+def edit_public_template(request, template_id):
+    """Редактирование публичного шаблона"""
+    # Получаем только публичный шаблон
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None)
     
-    # Фильтрация по тегу
-    tag_slug = request.GET.get('tag')
-    if tag_slug:
-        posts = posts.filter(tags__slug=tag_slug)
+    if request.method == 'POST':
+        try:
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            category = request.POST.get('category', 'general')
+            
+            template.title = title
+            template.content = content
+            template.category = category
+            template.save()
+            
+            messages.success(request, 'Шаблон успешно обновлен')
+            return redirect('blog:public_templates')
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлении шаблона: {str(e)}')
     
-    # Фильтрация по автору
-    author_username = request.GET.get('author')
-    if author_username:
-        posts = posts.filter(author__username=author_username)
+    return render(request, 'blog/edit_public_template.html', {'template': template})
+
+def delete_public_template(request, template_id):
+    """Удаление публичного шаблона"""
+    # Получаем только публичный шаблон
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None)
     
-    # Поиск по заголовку и содержимому
-    query = request.GET.get('q')
-    if query:
-        posts = posts.filter(
-            Q(title__icontains=query) | 
-            Q(content__icontains=query)
-        )
+    if request.method == 'POST':
+        try:
+            template.delete()
+            messages.success(request, 'Шаблон успешно удален')
+        except Exception as e:
+            messages.error(request, f'Ошибка при удалении шаблона: {str(e)}')
     
-    # Сортировка
-    sort_by = request.GET.get('sort', '-created_at')
-    valid_sort_fields = {
-        'created_at': 'created_at',
-        '-created_at': '-created_at',
-        'views': '-views_count',
-        'title': 'title',
-        '-title': '-title'
-    }
-    if sort_by in valid_sort_fields:
-        posts = posts.order_by(valid_sort_fields[sort_by])
-    
-    context = {
-        'posts': posts,
-        'categories': Category.objects.all(),
-        'popular_tags': Tag.objects.annotate(
-            posts_count=Count('posts')
-        ).order_by('-posts_count')[:10],
-        'query': query,
-        'current_category': category_slug,
-        'current_tag': tag_slug,
-        'current_author': author_username,
-        'current_sort': sort_by
-    }
-    return render(request, 'blog/post_list.html', context)
+    return redirect('blog:public_templates')

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-surface-800/50 backdrop-blur rounded-xl p-6 border border-white/10">
+        <h2 class="text-xl font-bold text-white mb-4">Управление титулами</h2>
+        
+        <!-- Список существующих титулов -->
+        <div class="space-y-4 mb-6">
+            {% for title in titles %}
+            <div class="flex items-center justify-between bg-surface-700/50 p-4 rounded-lg">
+                <div class="flex items-center space-x-3">
+                    <div class="title-icon" data-color="{{ title.color }}">
+                        <i class="{{ title.icon }}"></i>
+                    </div>
+                    <span class="font-medium text-white">{{ title.name }}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="editTitle('{{ title.id }}')"
+                            class="p-2 hover:bg-purple-500/10 rounded-lg transition-all">
+                        <i class="fas fa-edit text-purple-400"></i>
+                    </button>
+                    <button onclick="deleteTitle('{{ title.id }}')"
+                            class="p-2 hover:bg-red-500/10 rounded-lg transition-all">
+                        <i class="fas fa-trash text-red-400"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background-color: rgba(var(--title-color), 0.1);
+}
+
+.title-icon i {
+    color: rgb(var(--title-color));
+}
+</style>
+
+<script>
+document.querySelectorAll('.title-icon').forEach(icon => {
+    const color = icon.dataset.color.replace('#', '');
+    const r = parseInt(color.substr(0,2), 16);
+    const g = parseInt(color.substr(2,2), 16);
+    const b = parseInt(color.substr(4,2), 16);
+    icon.style.setProperty('--title-color', `${r}, ${g}, ${b}`);
+});
+
+function editTitle(titleId) {
+    fetch(`/panel/titles/${titleId}/edit/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.querySelector('input[name="name"]').value = data.title.name;
+            document.querySelector('textarea[name="description"]').value = data.title.description;
+            document.querySelector('input[name="color"]').value = data.title.color;
+            document.querySelector('input[name="icon"]').value = data.title.icon.replace('fas fa-', '');
+            
+            const form = document.querySelector('form');
+            form.action = `/panel/titles/${titleId}/edit/`;
+            form.querySelector('button[type="submit"]').textContent = 'Сохранить изменения';
+        }
+    });
+}
+
+function deleteTitle(titleId) {
+    if (confirm('Вы уверены, что хотите удалить этот титул?')) {
+        fetch(`/panel/titles/${titleId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

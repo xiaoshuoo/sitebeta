@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-[#0F0A1F] relative">
+    <!-- Анимированный фоновый градиент -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10"></div>
+        <div class="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="relative z-10 max-w-4xl mx-auto px-4 py-12">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-white animate-gradient">
+                Создание нового поста
+            </h1>
+            <p class="text-gray-400 mt-2">Поделитесь своими мыслями и идеями</p>
+        </div>
+
+        <!-- Форма создания поста -->
+        <div class="glass-card p-8 rounded-xl">
+            <form method="post" enctype="multipart/form-data" class="space-y-6" id="postForm">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
+                    <ul class="text-red-400 list-disc list-inside">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Заголовок -->
+                <div class="space-y-2">
+                    <label class="block text-white font-medium">Заголовок</label>
+                    {{ form.title }}
+                </div>
+
+                <!-- Миниатюра -->
+                <div class="space-y-2">
+                    <label class="block text-white font-medium">Миниатюра</label>
+                    <div class="relative group">
+                        <input type="file" 
+                               name="thumbnail" 
+                               id="id_thumbnail"
+                               class="hidden"
+                               accept="image/jpeg,image/png,image/gif,image/webp"
+                               onchange="previewImage(this)">
+                        
+                        <label for="id_thumbnail" 
+                               class="flex flex-col items-center justify-center w-full h-48 
+                                      border-2 border-dashed border-purple-500/20 rounded-xl 
+                                      bg-surface-800/40 hover:bg-surface-800/60 
+                                      transition-all duration-300 cursor-pointer
+                                      group-hover:border-purple-500/40">
+                            
+                            <div id="upload-placeholder" class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-purple-400 mb-3"></i>
+                                <p class="mb-2 text-sm text-white">
+                                    <span class="font-semibold">Нажмите для загрузки</span> или перетащите файл
+                                </p>
+                                <p class="text-xs text-gray-400">JPG, PNG, GIF, WEBP (до 10MB)</p>
+                            </div>
+
+                            <div id="preview-container" class="hidden w-full h-full">
+                                <img id="imagePreview" src="#" alt="Preview" 
+                                     class="w-full h-full object-cover rounded-xl">
+                            </div>
+                        </label>
+
+                        <button type="button" 
+                                onclick="removeImage()" 
+                                id="remove-image"
+                                class="hidden absolute top-2 right-2 p-2 bg-red-500/20 text-red-400 
+                                       rounded-lg hover:bg-red-500/30 transition-all">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Категория -->
+                <div class="space-y-2">
+                    <label class="block text-white font-medium">Категория</label>
+                    {{ form.category }}
+                </div>
+
+                <!-- Теги -->
+                <div class="space-y-2">
+                    <label class="block text-white font-medium">Теги</label>
+                    {{ form.tags }}
+                </div>
+
+                <!-- Содержание -->
+                <div class="space-y-2">
+                    <label class="block text-white font-medium">Содержание</label>
+                    {{ form.content }}
+                </div>
+
+                <!-- Публикация -->
+                <div class="flex items-center space-x-2">
+                    {{ form.is_published }}
+                    <label for="{{ form.is_published.id_for_label }}" class="text-white">
+                        Опубликовать сразу
+                    </label>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="flex justify-end space-x-4 mt-6">
+                    <a href="{% url 'blog:home' %}" 
+                       class="px-6 py-3 bg-surface/50 text-white rounded-xl hover:bg-surface/70 transition-all">
+                        Отмена
+                    </a>
+                    <button type="submit"
+                            class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl 
+                                   hover:shadow-lg hover:shadow-purple-500/25 transition-all">
+                        Опубликовать
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    const placeholder = document.getElementById('upload-placeholder');
+    const container = document.getElementById('preview-container');
+    const preview = document.getElementById('imagePreview');
+    const removeButton = document.getElementById('remove-image');
+    const file = input.files[0];
+
+    if (file) {
+        // Проверка размера
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Размер файла превышает 10MB');
+            input.value = '';
+            return;
+        }
+
+        // Проверка типа файла
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Поддерживаются только форматы: JPG, PNG, GIF, WEBP');
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            placeholder.classList.add('hidden');
+            container.classList.remove('hidden');
+            removeButton.classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeImage() {
+    const input = document.getElementById('id_thumbnail');
+    const placeholder = document.getElementById('upload-placeholder');
+    const container = document.getElementById('preview-container');
+    const removeButton = document.getElementById('remove-image');
+    
+    input.value = '';
+    preview.src = '';
+    container.classList.add('hidden');
+    removeButton.classList.add('hidden');
+    placeholder.classList.remove('hidden');
+}
+
+// Предотвращаем отправку формы при нажатии Enter
+document.getElementById('postForm').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+    }
+});
+</script>
+
+{% endblock %} 

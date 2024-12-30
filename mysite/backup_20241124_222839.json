@@ -1,0 +1,125 @@
+{
+  "auth_user": [
+    {
+      "id": 1,
+      "password": "pbkdf2_sha256$600000$fWQxJJ7UoRKBjH5DuRpIRI$LiqQZqFtLTo8ZEuqy/0erkABbru8vhUJNLMm52iWZYQ=",
+      "last_login": "2024-11-19T16:54:52.964998+00:00",
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "email": "admin@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-11-17T16:32:39.826743+00:00"
+    },
+    {
+      "id": 3,
+      "password": "pbkdf2_sha256$600000$9z97BydkuQ0vd9ULI4GHkt$37OF2CIaV20terxlRZY/nrUQpqDgF8s7PSJq3w79L8o=",
+      "last_login": "2024-11-19T16:56:11+00:00",
+      "is_superuser": true,
+      "username": "Annette",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-11-19T16:56:09+00:00"
+    },
+    {
+      "id": 4,
+      "password": "pbkdf2_sha256$600000$mu1Dg86VLNBy0EYbOtc6Ub$CTIaBdrMdZZLfFSjfX+ly6JgH5C43j08/EtjtYPuwb0=",
+      "last_login": "2024-11-19T20:05:35.655422+00:00",
+      "is_superuser": false,
+      "username": "Мучной",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-11-19T20:05:33.904832+00:00"
+    },
+    {
+      "id": 2,
+      "password": "pbkdf2_sha256$600000$l4erdLQ6YPurXXSOmfMIRB$iHDCal5ANIl+7zVhPoREkIzy89cRcDtxCCG/BRHo7kg=",
+      "last_login": "2024-11-20T08:20:22.109536+00:00",
+      "is_superuser": true,
+      "username": "Odinochka",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-11-18T16:11:32.488571+00:00"
+    }
+  ],
+  "blog_profile": [
+    {
+      "id": 1,
+      "avatar": "6f8dcf97cd1a65d653277a002f28c26e.gif",
+      "cover": "ed2f9d7922469f92b3e54efb805a1678.gif",
+      "bio": "",
+      "location": "",
+      "website": "",
+      "occupation": "",
+      "last_seen": "2024-11-24T19:12:48.352463+00:00",
+      "role": "user",
+      "user_id": 2
+    }
+  ],
+  "blog_category": [
+    {
+      "id": 1,
+      "name": "1",
+      "slug": "1",
+      "description": "",
+      "icon": "fa-folder",
+      "created_at": "2024-11-24T19:13:31.850714+00:00",
+      "updated_at": "2024-11-24T19:13:31.850714+00:00",
+      "posts_count": 0
+    }
+  ],
+  "blog_tag": [
+    {
+      "id": 1,
+      "name": "1",
+      "slug": "1"
+    }
+  ],
+  "blog_post": [
+    {
+      "id": 1,
+      "title": "1",
+      "slug": "1",
+      "content": "<p>1</p>",
+      "created_at": "2024-11-24T19:13:55.680608+00:00",
+      "updated_at": "2024-11-24T19:13:58.121247+00:00",
+      "thumbnail": "eb8c025652e0ae7a563575980a200f0a.gif",
+      "is_published": true,
+      "views_count": 1,
+      "author_id": 2,
+      "category_id": 1
+    }
+  ],
+  "blog_comment": [],
+  "blog_postview": [
+    {
+      "id": 1,
+      "session_key": null,
+      "timestamp": "2024-11-24T19:13:57.516101+00:00",
+      "post_id": 1,
+      "user_id": 2
+    }
+  ],
+  "blog_invitecode": [],
+  "blog_title": [
+    {
+      "id": 1,
+      "name": "Programmings",
+      "description": "",
+      "color": "#8B5CF6",
+      "icon": "fas fa-award",
+      "created_at": "2024-11-24T19:13:17.733547+00:00"
+    }
+  ]
+}

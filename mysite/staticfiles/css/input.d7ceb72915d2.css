@@ -1,0 +1,40 @@
+/* Локальные импорты */
+@import url("./components.1144fbe19fdc.css");
+@import url("./utilities.38cf6210f271.css");
+@import url("./mixins.bb772edf33bf.css");
+
+/* Базовые стили */
+:root {
+    --primary-color: #8B5CF6;
+    --primary-dark: #7C3AED;
+    --secondary-color: #EC4899;
+    --background: #0F0A1F;
+    --surface: #1A1625;
+    --text-primary: #E2E8F0;
+    --text-secondary: #94A3B8;
+}
+
+/* Утилиты */
+.bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* Анимации */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Поддержка line-clamp */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

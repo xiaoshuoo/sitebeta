@@ -1,717 +1,669 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Заголовок -->
-    <div class="mb-8 text-center">
-        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x">
-            Панель администратора
-        </h1>
-    </div>
+{% csrf_token %}
 
-    <!-- Основная статистика -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <!-- Пользователи -->
-        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-gray-400">Пользователи</h3>
-                <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                    <i class="fas fa-users text-purple-400 text-xl"></i>
-                </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold text-white">{{ users_count }}</p>
-                    <p class="text-sm text-green-400">+{{ new_users_month }} за месяц</p>
-                </div>
-                <div class="text-sm text-gray-400">
-                    {{ active_users_month }} активных
-                </div>
-            </div>
-        </div>
-
-        <!-- Посты -->
-        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-gray-400">Посты</h3>
-                <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                    <i class="fas fa-file-alt text-blue-400 text-xl"></i>
-                </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold text-white">{{ posts_count }}</p>
-                    <p class="text-sm text-green-400">+{{ new_posts_month }} за месяц</p>
-                </div>
-                <div class="text-sm text-gray-400">
-                    {{ total_views }} просмотров
-                </div>
-            </div>
-        </div>
-
-        <!-- Категории -->
-        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-gray-400">Категории</h3>
-                <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                    <i class="fas fa-folder text-green-400 text-xl"></i>
-                </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold text-white">{{ categories_count }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Комментарии -->
-        <div class="glass-effect p-6 rounded-xl hover:scale-105 transition-all duration-300 group">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-gray-400">Комментарии</h3>
-                <div class="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center">
-                    <i class="fas fa-comments text-pink-400 text-xl"></i>
-                </div>
-            </div>
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-2xl font-bold text-white">{{ comments_count }}</p>
-                </div>
-            </div>
-        </div>
+<div class="min-h-screen bg-[#1a1625] relative overflow-hidden">
+    <!-- Анимированный фон -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+        <div class="clouds"></div>
+        
+        <!-- Декоративные элементы -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
     </div>
 
     <!-- Основной контент -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Левая колонка -->
-        <div class="space-y-8">
-            <!-- Последние пользователи -->
-            <div class="glass-effect rounded-xl overflow-hidden">
-                <div class="p-4 border-b border-white/5 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-white">Новые пользователи</h3>
-                    <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-                        {{ users|length }}
-                    </span>
-                </div>
-                <div class="p-4">
-                    <div class="space-y-4">
-                        {% for user in users %}
-                        <div class="flex items-center justify-between p-3 bg-surface-700/30 rounded-lg hover:bg-purple-500/10 transition-all group">
-                            <div class="flex items-center space-x-3">
-                                {% if user.profile.avatar %}
-                                    <img src="{{ user.profile.avatar.url }}" 
-                                         alt="{{ user.username }}" 
-                                         class="w-10 h-10 rounded-full object-cover">
-                                {% else %}
-                                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                                        <i class="fas fa-user text-purple-400"></i>
-                                    </div>
-                                {% endif %}
-                                <div>
-                                    <p class="text-white font-medium">{{ user.username }}</p>
-                                    <p class="text-sm text-gray-400">{{ user.date_joined|date:"d.m.Y" }}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <button data-user-id="{{ user.id }}" 
-                                        class="p-2 rounded-lg {% if user.is_active %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %} hover:scale-110 transition-all toggle-user-status">
-                                    <i class="fas {% if user.is_active %}fa-check{% else %}fa-ban{% endif %}"></i>
-                                </button>
-                                <button data-user-id="{{ user.id }}" 
-                                        class="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:scale-110 transition-all reset-user-password">
-                                    <i class="fas fa-key"></i>
-                                </button>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+    <div class="relative z-10 max-w-7xl mx-auto px-4 py-8">
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 relative">
+                <span class="absolute inset-0 animate-pulse opacity-50 blur-xl bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 bg-clip-text">
+                    Админ Панель
+                </span>
+                <span class="relative text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400">
+                    Админ Панель
+                </span>
+            </h1>
+            <p class="text-gray-400 text-lg">Управление сайтом</p>
+        </div>
 
-            <!-- Системная информация -->
-            <div class="glass-effect rounded-xl overflow-hidden">
-                <div class="p-4 border-b border-white/5">
-                    <h3 class="text-lg font-semibold text-white">Системная информация</h3>
-                </div>
-                <div class="p-4 space-y-4">
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                                <i class="fas fa-hdd text-purple-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Хранилище</p>
-                                <p class="text-sm text-gray-400">{{ system_info.total_storage|filesizeformat }}</p>
+        <!-- Статистика -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Пользователи -->
+            <div class="glass-card hover:scale-105 transition-all duration-300">
+                <div class="relative p-6 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-purple-500/10 animate-gradient-shift"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-white">Пользователи</h3>
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                                <i class="fas fa-users text-purple-400"></i>
                             </div>
                         </div>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                <i class="fas fa-database text-blue-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">База данных</p>
-                                <p class="text-sm text-gray-400">{{ system_info.database_size|filesizeformat }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Информация о базе данных -->
-            <div class="glass-effect rounded-xl overflow-hidden">
-                <div class="p-4 border-b border-white/5">
-                    <h3 class="text-lg font-semibold text-white">
-                        <i class="fas fa-database mr-2"></i>Информация о базе данных
-                    </h3>
-                </div>
-                <div class="p-4 space-y-4">
-                    <!-- Основная информация -->
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                                <i class="fas fa-database text-purple-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">База данных</p>
-                                <p class="text-sm text-gray-400">{{ database_config.name }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                <i class="fas fa-server text-blue-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Хост</p>
-                                <p class="text-sm text-gray-400">{{ database_config.host }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                                <i class="fas fa-user text-green-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Пользователь</p>
-                                <p class="text-sm text-gray-400">{{ database_config.user }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
-                                <i class="fas fa-cogs text-pink-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Движок</p>
-                                <p class="text-sm text-gray-400">{{ database_config.engine }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                                <i class="fas fa-memory text-yellow-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Размер базы данных</p>
-                                <p class="text-sm text-gray-400">{{ database_info.size }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                                <i class="fas fa-microchip text-green-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Использование памяти</p>
-                                <div class="text-sm text-gray-400">
-                                    <p>Кэш: {{ database_info.memory_usage.cache_hit_size }}</p>
-                                    <p>Чтение с диска: {{ database_info.memory_usage.disk_read_size }}</p>
-                                    <p>Подключений: {{ database_info.memory_usage.connections }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg {% if database_info.connection_status.is_connected %}bg-green-500/20{% else %}bg-red-500/20{% endif %} flex items-center justify-center">
-                                <i class="fas fa-plug {% if database_info.connection_status.is_connected %}text-green-400{% else %}text-red-400{% endif %}"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Статус подключения</p>
-                                <p class="text-sm {% if database_info.connection_status.is_connected %}text-green-400{% else %}text-red-400{% endif %}">
-                                    {{ database_info.connection_status.is_connected|yesno:"Подключено,Отключено" }}
-                                </p>
-                                {% if database_info.connection_status.is_connected %}
-                                    <p class="text-xs text-gray-400">Версия: {{ database_info.connection_status.version }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                <i class="fas fa-chart-bar text-blue-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Статистика использования</p>
-                                <div class="text-sm text-gray-400">
-                                    <p>Всего таблиц: {{ database_info.memory_usage.table_count }}</p>
-                                    <p>Всего записей: {{ database_info.memory_usage.total_rows }}</p>
-                                    <p>Активных подключений: {{ database_info.memory_usage.active_connections }}</p>
-                                    <p>Простаивающих подключений: {{ database_info.memory_usage.idle_connections }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center p-3 bg-surface-700/30 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                <i class="fas fa-table text-blue-400"></i>
-                            </div>
-                            <div>
-                                <p class="text-white">Содержимое базы данных</p>
-                                <div class="text-sm text-gray-400">
-                                    <p>Пользователей: {{ database_info.stats.users }}</p>
-                                    <p>Постов: {{ database_info.stats.posts }}</p>
-                                    <p>Комментариев: {{ database_info.stats.comments }}</p>
-                                    <p>Профилей: {{ database_info.stats.profiles }}</p>
-                                    <p>Категорий: {{ database_info.stats.categories }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Таблицы базы данных -->
-                    <div class="mt-4">
-                        <h4 class="text-white mb-3">Таблицы базы данных</h4>
                         <div class="space-y-2">
-                            {% for table in database_info.tables %}
-                            <div class="p-3 bg-surface-700/30 rounded-lg">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <p class="text-white">{{ table.name }}</p>
-                                        <p class="text-sm text-gray-400">
-                                            Колонок: {{ table.columns }} | 
-                                            Записей: {{ table.records }} | 
-                                            Размер: {{ table.size }}
-                                        </p>
-                                    </div>
-                                </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Всего:</span>
+                                <span class="text-white">{{ stats.users.total }}</span>
                             </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    {% if database_info.error %}
-                    <div class="p-3 bg-red-500/20 rounded-lg">
-                        <p class="text-red-400">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            {{ database_info.error }}
-                        </p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Центральная колонка -->
-        <div class="space-y-8">
-            <!-- Последние посты -->
-            <div class="glass-effect rounded-xl overflow-hidden">
-                <div class="p-4 border-b border-white/5 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-white">Последние посты</h3>
-                    <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                        {{ recent_posts|length }}
-                    </span>
-                </div>
-                <div class="p-4">
-                    <div class="space-y-4">
-                        {% for post in recent_posts %}
-                        <div class="p-3 bg-surface-700/30 rounded-lg hover:bg-purple-500/10 transition-all group">
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="text-white font-medium">{{ post.title }}</h4>
-                                <div class="flex items-center space-x-2">
-                                    <button data-post-id="{{ post.id }}" 
-                                            class="p-2 rounded-lg {% if post.is_published %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %} hover:scale-110 transition-all toggle-post-status">
-                                        <i class="fas {% if post.is_published %}fa-eye{% else %}fa-eye-slash{% endif %}"></i>
-                                    </button>
-                                    <button data-post-id="{{ post.id }}" 
-                                            class="p-2 rounded-lg bg-red-500/20 text-red-400 hover:scale-110 transition-all delete-post">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Активных:</span>
+                                <span class="text-green-400">{{ stats.users.active }}</span>
                             </div>
-                            <div class="flex items-center justify-between text-sm">
-                                <div class="flex items-center space-x-2 text-gray-400">
-                                    <span>{{ post.author.username }}</span>
-                                    <span>•</span>
-                                    <span>{{ post.created_at|date:"d.m.Y" }}</span>
-                                </div>
-                                <div class="flex items-center space-x-4 text-gray-400">
-                                    <span><i class="fas fa-eye mr-1"></i>{{ post.views_count }}</span>
-                                    <span><i class="fas fa-comment mr-1"></i>{{ post.comments.count }}</span>
-                                </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Новых:</span>
+                                <span class="text-purple-400">{{ stats.users.new }}</span>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
 
-            <!-- Активность -->
-            <div class="glass-effect rounded-xl overflow-hidden">
-                <div class="p-4 border-b border-white/5">
-                    <h3 class="text-lg font-semibold text-white">Активность за период</h3>
-                </div>
-                <div class="p-4">
-                    <div class="grid grid-cols-3 gap-4">
-                        {% for period, stats in user_activity.items %}
-                        <div class="p-4 bg-surface-700/30 rounded-lg">
-                            <h4 class="text-white font-medium mb-2">
-                                {% if period == 'today' %}Сегодня
-                                {% elif period == 'week' %}Неделя
-                                {% else %}Месяц{% endif %}
-                            </h4>
-                            <div class="space-y-2 text-sm">
-                                <p class="text-gray-400">Посты: <span class="text-white">{{ stats.posts }}</span></p>
-                                <p class="text-gray-400">Комментарии: <span class="text-white">{{ stats.comments }}</span></p>
-                                <p class="text-gray-400">Просмотры  : <span class="text-white">{{ stats.views }}</span></p>
+            <!-- Посты -->
+            <div class="glass-card hover:scale-105 transition-all duration-300">
+                <div class="relative p-6 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-pink-500/10 animate-gradient-shift delay-100"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-white">Посты</h3>
+                            <div class="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center">
+                                <i class="fas fa-file-alt text-pink-400"></i>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Правая колонка -->
-        <div class="space-y-8">
-            <!-- Популярные категории -->
-            <div class="glass-effect rounded-xl overflow-hidden">
-                <div class="p-4 border-b border-white/5">
-                    <h3 class="text-lg font-semibold text-white">Популярные категории</h3>
-                </div>
-                <div class="p-4">
-                    <div class="space-y-4">
-                        {% for category in popular_categories %}
-                        <div class="p-3 bg-surface-700/30 rounded-lg hover:bg-purple-500/10 transition-all">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                                        <i class="{{ category.icon }} text-purple-400"></i>
-                                    </div>
-                                    <span class="text-white font-medium">{{ category.name }}</span>
-                                </div>
-                                <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
-                                    {{ category.total_posts }}
-                                </span>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Всего:</span>
+                                <span class="text-white">{{ stats.posts.total }}</span>
                             </div>
-                            <div class="flex items-center justify-between text-sm text-gray-400">
-                                <span><i class="fas fa-eye mr-1"></i>{{ category.total_views|default:"0" }}</span>
-                                <span><i class="fas fa-comment mr-1"></i>{{ category.comments_count }}</span>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Опубликовано:</span>
+                                <span class="text-green-400">{{ stats.posts.published }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Черновиков:</span>
+                                <span class="text-yellow-400">{{ stats.posts.draft }}</span>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
 
             <!-- Действия -->
-            <div class="glass-effect rounded-xl overflow-hidden">
-                <div class="p-4 border-b border-white/5">
-                    <h3 class="text-lg font-semibold text-white">Действия с базой данных</h3>
-                </div>
-                <div class="p-4 space-y-4">
-                    <a href="{% url 'blog:generate_backup' %}"
-                       class="w-full p-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all flex items-center justify-center space-x-2">
-                        <i class="fas fa-download"></i>
-                        <span>Созать бэкап</span>
-                    </a>
-                    <a href="{% url 'blog:restore_database' %}"
-                       class="w-full p-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all flex items-center justify-center space-x-2">
-                        <i class="fas fa-database"></i>
-                        <span>Восстановить из бэкапа</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Добавьте новую секцию в админ-панель -->
-<div class="glass-effect rounded-2xl p-6 mb-6">
-    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-        <i class="fas fa-globe text-purple-400 mr-2"></i>
-        Управление страницами
-    </h2>
-    
-    <div class="space-y-4">
-        <!-- Контакты -->
-        <div class="flex items-center justify-between p-4 bg-surface/30 rounded-xl">
-            <div>
-                <h3 class="text-white font-medium">Страница "Связь со мной"</h3>
-                <p class="text-sm text-gray-400">Управление доступностью страницы контактов</p>
-            </div>
-            <div class="flex items-center space-x-4">
-                {% with page_settings=page_settings.contacts %}
-                <span class="px-3 py-1 rounded-full {% if page_settings.is_active %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %}">
-                    {{ page_settings.is_active|yesno:"Активна,Отключена" }}
-                </span>
-                <form method="post" action="{% url 'blog:toggle_page_status' page_name='contacts' %}" class="inline">
-                    {% csrf_token %}
-                    <button type="submit"
-                            class="px-4 py-2 bg-purple-500/20 text-white rounded-lg hover:bg-purple-500/30 transition-all">
-                        <i class="fas {% if page_settings.is_active %}fa-lock{% else %}fa-lock-open{% endif %} mr-2"></i>
-                        {{ page_settings.is_active|yesno:"Отключить,Включить" }}
-                    </button>
-                </form>
-                {% endwith %}
-            </div>
-        </div>
-
-        <!-- Создание постов -->
-        <div class="flex items-center justify-between p-4 bg-surface/30 rounded-xl">
-            <div>
-                <h3 class="text-white font-medium">Создание постов</h3>
-                <p class="text-sm text-gray-400">Управление возможностью создания новых постов</p>
-            </div>
-            <div class="flex items-center space-x-4">
-                {% with page_settings=page_settings.create_post %}
-                <span class="px-3 py-1 rounded-full {% if page_settings.is_active %}bg-green-500/20 text-green-400{% else %}bg-red-500/20 text-red-400{% endif %}">
-                    {{ page_settings.is_active|yesno:"Разрешено,Запрещено" }}
-                </span>
-                <form method="post" action="{% url 'blog:toggle_page_status' page_name='create_post' %}" class="inline">
-                    {% csrf_token %}
-                    <button type="submit"
-                            class="px-4 py-2 bg-purple-500/20 text-white rounded-lg hover:bg-purple-500/30 transition-all">
-                        <i class="fas {% if page_settings.is_active %}fa-lock{% else %}fa-lock-open{% endif %} mr-2"></i>
-                        {{ page_settings.is_active|yesno:"Отключить,Включить" }}
-                    </button>
-                </form>
-                {% endwith %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Добавьте новую секцию для управления инвайт-кодами -->
-<div class="glass-effect rounded-2xl p-6 mb-6">
-    <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-        <i class="fas fa-ticket-alt text-purple-400 mr-2"></i>
-        Управление инвайт-кодами
-    </h2>
-    
-    <!-- Форма создания инвайт-кода -->
-    <div class="mb-6 p-4 bg-surface/30 rounded-xl">
-        <form method="post" action="{% url 'blog:create_custom_invite' %}" class="flex items-end space-x-4">
-            {% csrf_token %}
-            <div class="flex-1">
-                <label class="block text-gray-400 text-sm mb-2">Код приглашения</label>
-                <input type="text" name="custom_code" 
-                       class="w-full px-4 py-2 bg-surface-700/30 border border-purple-500/20 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all"
-                       placeholder="Введите код (например: WELCOME2024)"
-                       pattern="[A-Za-z0-9]{3,16}"
-                       title="От 3 до 16 символов, только буквы и цифры"
-                       required>
-            </div>
-            <button type="submit" 
-                    class="px-6 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all flex items-center space-x-2">
-                <i class="fas fa-plus"></i>
-                <span>Создать</span>
-            </button>
-        </form>
-    </div>
-
-    <!-- Список активных инвайт-кодов -->
-    <div class="space-y-4">
-        <h3 class="text-lg text-white mb-2">Активные инвайт-коды</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {% for invite in active_invites %}
-                {% if invite.code %}  <!-- Добавляем проверку на существование кода -->
-                <div class="p-4 bg-surface/30 rounded-xl flex items-center justify-between group hover:bg-purple-500/10 transition-all">
-                    <div>
-                        <div class="text-white font-medium">{{ invite.code }}</div>
-                        <div class="text-sm text-gray-400">Создан: {{ invite.created_at|date:"d.m.Y H:i" }}</div>
+            <div class="glass-card col-span-2 hover:scale-105 transition-all duration-300">
+                <div class="relative p-6 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-blue-500/10 animate-gradient-shift delay-200"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-bold text-white mb-4">Быстрые действия</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="clearCache()" 
+                                    class="action-button bg-purple-500/20 hover:bg-purple-500/30">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                Очистить кэш
+                            </button>
+                            <button onclick="backupDatabase()" 
+                                    class="action-button bg-blue-500/20 hover:bg-blue-500/30">
+                                <i class="fas fa-database mr-2"></i>
+                                Бэкап БД
+                            </button>
+                            <button onclick="cleanDatabase()" 
+                                    class="action-button bg-pink-500/20 hover:bg-pink-500/30">
+                                <i class="fas fa-broom mr-2"></i>
+                                Очистить БД
+                            </button>
+                            <button onclick="restoreMedia()" 
+                                    class="action-button bg-green-500/20 hover:bg-green-500/30">
+                                <i class="fas fa-images mr-2"></i>
+                                Восстановить медиа
+                            </button>
+                        </div>
                     </div>
-                    <form method="post" action="{% url 'blog:deactivate_invite' code=invite.code %}" class="inline">
-                        {% csrf_token %}
-                        <button type="submit" 
-                                class="p-2 text-red-400 rounded-lg hover:bg-red-500/10 transition-all">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </form>
                 </div>
-                {% endif %}
-            {% empty %}
-                <div class="col-span-2 text-center py-8 text-gray-400">
-                    <i class="fas fa-ticket-alt text-3xl mb-2"></i>
-                    <p>Нет активных инвайт-кодов</p>
+            </div>
+        </div>
+
+        <!-- Последняя активность -->
+        <div class="glass-card mb-8">
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                    <i class="fas fa-clock text-purple-400 mr-2"></i>
+                    Последняя активность
+                </h3>
+                <div class="space-y-4">
+                    {% for activity in recent_activity.posts %}
+                    <div class="activity-item">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                                <i class="fas fa-file-alt text-purple-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-white">{{ activity.title }}</p>
+                                <p class="text-sm text-gray-400">
+                                    {{ activity.author.username }} • {{ activity.created_at|timesince }} назад
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+            </div>
+        </div>
+
+        <!-- Управление страницами -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Состояние БД -->
+            <div class="glass-card hover:scale-105 transition-all duration-300">
+                <div class="relative p-6">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-blue-500/10 to-indigo-500/10 animate-gradient-shift"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-database text-indigo-400 mr-2"></i>
+                            База данных
+                            {% if database.connected %}
+                            <span class="ml-2 px-2 py-1 bg-green-500/20 text-green-400 text-sm rounded-full flex items-center">
+                                <i class="fas fa-circle text-xs mr-2 animate-pulse"></i>
+                                Подключено
+                            </span>
+                            {% else %}
+                            <span class="ml-2 px-2 py-1 bg-red-500/20 text-red-400 text-sm rounded-full flex items-center">
+                                <i class="fas fa-circle text-xs mr-2 animate-pulse"></i>
+                                Отключено
+                            </span>
+                            {% endif %}
+                        </h3>
+
+                        {% if database.connected %}
+                        <div class="space-y-3">
+                            <!-- Основная информация -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="p-3 bg-surface/30 rounded-xl">
+                                    <div class="text-sm text-gray-400 mb-1">Движок</div>
+                                    <div class="text-white font-medium">{{ database.engine }}</div>
+                                </div>
+                                <div class="p-3 bg-surface/30 rounded-xl">
+                                    <div class="text-sm text-gray-400 mb-1">Размер</div>
+                                    <div class="text-white font-medium">{{ database.size }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Статистика таблиц -->
+                            <div class="p-3 bg-surface/30 rounded-xl">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-400">Таблицы</span>
+                                    <span class="text-white font-medium">{{ database.tables_count }}</span>
+                                </div>
+                                <div class="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+                                    {% for table in database.tables_stats %}
+                                    <div class="flex justify-between items-center text-sm">
+                                        <span class="text-gray-400">{{ table.0 }}</span>
+                                        <span class="text-white">{{ table.1 }} записей</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="p-4 bg-red-500/10 rounded-xl">
+                            <p class="text-red-400">{{ database.error }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Управление страницами -->
+            <div class="glass-card hover:scale-105 transition-all duration-300">
+                <div class="relative p-6">
+                    <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-pink-500/10 animate-gradient-shift"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-toggle-on text-pink-400 mr-2"></i>
+                            Управление страницами
+                        </h3>
+                        <div class="space-y-3">
+                            <!-- Создание постов -->
+                            <div class="flex items-center justify-between p-3 bg-surface/30 rounded-xl">
+                                <div>
+                                    <p class="text-white font-medium">Создание постов</p>
+                                    <p class="text-sm text-gray-400">{{ page_settings.create_post.is_active|yesno:"Включено,Отключено" }}</p>
+                                </div>
+                                <form method="POST" action="{% url 'blog:toggle_page_status' page_name='create_post' %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="px-4 py-2 rounded-lg {% if page_settings.create_post.is_active %}bg-red-500/20 text-red-400{% else %}bg-green-500/20 text-green-400{% endif %} hover:bg-opacity-30 transition-all">
+                                        <i class="fas {% if page_settings.create_post.is_active %}fa-toggle-on{% else %}fa-toggle-off{% endif %} mr-2"></i>
+                                        {{ page_settings.create_post.is_active|yesno:"Отключить,Включить" }}
+                                    </button>
+                                </form>
+                            </div>
+                            <!-- Связь со мной -->
+                            <div class="flex items-center justify-between p-3 bg-surface/30 rounded-xl">
+                                <div>
+                                    <p class="text-white font-medium">Страница "Связь со мной"</p>
+                                    <p class="text-sm text-gray-400">{{ page_settings.contacts.is_active|yesno:"Включено,Отключено" }}</p>
+                                </div>
+                                <form method="POST" action="{% url 'blog:toggle_page_status' page_name='contacts' %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="px-4 py-2 rounded-lg {% if page_settings.contacts.is_active %}bg-red-500/20 text-red-400{% else %}bg-green-500/20 text-green-400{% endif %} hover:bg-opacity-30 transition-all">
+                                        <i class="fas {% if page_settings.contacts.is_active %}fa-toggle-on{% else %}fa-toggle-off{% endif %} mr-2"></i>
+                                        {{ page_settings.contacts.is_active|yesno:"Отключить,Включить" }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Шаблоны текста -->
+        <div class="glass-card hover:scale-105 transition-all duration-300 mb-8">
+            <div class="relative p-6">
+                <div class="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-violet-500/10 animate-gradient-shift"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white flex items-center">
+                            <i class="fas fa-file-alt text-violet-400 mr-2"></i>
+                            Шаблоны текста
+                        </h3>
+                        <a href="{% url 'blog:text_templates' %}" 
+                           class="px-4 py-2 bg-violet-500/20 text-violet-400 rounded-lg hover:bg-violet-500/30 transition-all flex items-center group">
+                            <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform"></i>
+                            Управление шаблонами
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {% for template in text_templates|slice:":3" %}
+                        <div class="p-4 bg-surface/30 rounded-xl hover:bg-surface/40 transition-all">
+                            <h4 class="text-white font-medium mb-1">{{ template.title }}</h4>
+                            <p class="text-sm text-gray-400">{{ template.category }}</p>
+                        </div>
+                        {% empty %}
+                        <div class="col-span-3 text-center py-6 text-gray-400">
+                            <i class="fas fa-file-alt text-4xl mb-2"></i>
+                            <p>Нет доступных шаблонов</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- После блока управления страницами -->
+        <div class="glass-card hover:scale-105 transition-all duration-300 mb-8">
+            <div class="relative p-6">
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/10 animate-gradient-shift"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-white">Инвайт-коды</h3>
+                        <form method="POST" action="{% url 'blog:create_invite' %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all">
+                                <i class="fas fa-plus mr-2"></i>
+                                Создать код
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        {% for code in invite_codes %}
+                        <div class="p-4 bg-surface/30 rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="text-white font-mono">{{ code.code }}</span>
+                                <div class="text-sm text-gray-400">
+                                    {% if code.used_by %}
+                                        Использован {{ code.used_at|timesince }} назад
+                                        пользователем {{ code.used_by.username }}
+                                    {% else %}
+                                        Создан {{ code.created_at|timesince }} назад
+                                        пользователем {{ code.created_by.username }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if code.is_active %}
+                            <form method="POST" action="{% url 'blog:deactivate_invite' code=code.code %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all">
+                                    <i class="fas fa-ban mr-2"></i>
+                                    Деактивировать
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="px-4 py-2 bg-gray-500/20 text-gray-400 rounded-lg">
+                                <i class="fas fa-times mr-2"></i>
+                                Неактивен
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-8 text-gray-400">
+                            <i class="fas fa-ticket-alt text-4xl mb-4"></i>
+                            <p>Нет доступных инвайт-кодов</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Анимированный фон */
+@keyframes twinkle {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+
+@keyframes gradient-shift {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(10px, 10px); }
+    100% { transform: translate(0, 0); }
+}
+
+.stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('/static/images/stars.png') repeat top center;
+    z-index: 0;
+}
+
+.twinkling {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('/static/images/twinkling.png') repeat top center;
+    z-index: 1;
+    animation: twinkle 4s linear infinite;
+}
+
+.clouds {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('/static/images/clouds.png') repeat-x;
+    background-size: 2000px 100%;
+    animation: clouds 60s linear infinite;
+}
+
+/* Карточки */
+.glass-card {
+    background: rgba(26, 22, 37, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+/* Кнопки действий */
+.action-button {
+    @apply px-4 py-3 rounded-xl text-white flex items-center justify-center transition-all;
+}
+
+/* Элементы активности */
+.activity-item {
+    @apply p-4 bg-surface/30 rounded-xl hover:bg-surface/40 transition-all;
+}
+
+/* Анимации для элементов */
+.animate-gradient-shift {
+    animation: gradient-shift 3s ease-in-out infinite;
+}
+
+.delay-100 {
+    animation-delay: 100ms;
+}
+
+.delay-200 {
+    animation-delay: 200ms;
+}
+
+/* Добавим стили для скроллбара */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.5);
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.7);
+}
+
+/* Добавим анимацию для карточек */
+.glass-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.glass-card:hover::after {
+    left: 100%;
+}
+
+/* Аниме-силь градиенты */
+@keyframes anime-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Аниме-стиль свечение */
+@keyframes anime-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); }
+}
+
+/* Аниме-стиль пульсация */
+@keyframes anime-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Применяем стили к карточкам */
+.glass-card {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.02)
+    );
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    animation: anime-glow 2s infinite;
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-5px);
+}
+
+/* Аниме-стиль кнопки */
+.action-button {
+    background: linear-gradient(
+        45deg,
+        rgba(139, 92, 246, 0.2),
+        rgba(236, 72, 153, 0.2)
+    );
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    transition: all 0.3s ease;
+}
+
+.action-button:hover {
+    animation: anime-pulse 1s infinite;
+    background: linear-gradient(
+        45deg,
+        rgba(139, 92, 246, 0.3),
+        rgba(236, 72, 153, 0.3)
+    );
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* Аниме-стиль иконки */
+.icon-anime {
+    transition: all 0.3s ease;
+}
+
+.icon-anime:hover {
+    animation: anime-pulse 1s infinite;
+    color: rgba(139, 92, 246, 0.8);
+}
+</style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработчики для кнопок управления пользователями
-    document.querySelectorAll('.toggle-user-status').forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.dataset.userId;
-            toggleUserStatus(userId);
-        });
-    });
-
-    document.querySelectorAll('.reset-user-password').forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.dataset.userId;
-            resetUserPassword(userId);
-        });
-    });
-
-    // Обработчики для кнопок управления постами
-    document.querySelectorAll('.toggle-post-status').forEach(button => {
-        button.addEventListener('click', function() {
-            const postId = this.dataset.postId;
-            togglePostStatus(postId);
-        });
-    });
-
-    document.querySelectorAll('.delete-post').forEach(button => {
-        button.addEventListener('click', function() {
-            const postId = this.dataset.postId;
-            deletePost(postId);
-        });
-    });
-});
-
-// Функции для работы с пользователями
-function toggleUserStatus(userId) {
-    fetch(`/admin/toggle-user-status/${userId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        }
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              location.reload();
-          }
-      });
-}
-
-function resetUserPassword(userId) {
-    if (confirm('Сбросить пароль пользователя?')) {
-        fetch(`/admin/reset-user-password/${userId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        }).then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  alert('Пароль успешно сброшен и отправлен пользователю');
-              }
-          });
-    }
-}
-
-// Функции для работы с постами
-function togglePostStatus(postId) {
-    fetch(`/admin/toggle-post-status/${postId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        }
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              location.reload();
-          }
-      });
-}
-
-function deletePost(postId) {
-    if (confirm('Удалить пост?')) {
-        fetch(`/admin/delete-post/${postId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        }).then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  location.reload();
-              }
-          });
-    }
-}
-
-// Системные функции
-function generateBackup() {
-    window.location.href = '/admin/generate-backup/';
-}
-
 function clearCache() {
-    fetch('/admin/clear-cache/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
+    Swal.fire({
+        title: 'Очистка кэша',
+        text: 'Вы уверены?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Да, очистить',
+        cancelButtonText: 'Отмена',
+        background: '#1a1625',
+        color: '#fff',
+        confirmButtonColor: '#8B5CF6'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{% url 'blog:clear_cache' %}";
         }
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              alert('Кэш успешно очищен');
-          }
-      });
+    });
 }
 
-function cleanDatabase() {
-    if (confirm('Очистить базу данных от неиспользуемых данных?')) {
-        fetch('/admin/clean-database/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        }).then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  alert('База данных успешно очищена');
-                  location.reload();
-              }
-          });
-    }
+function togglePage(pageName) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    Swal.fire({
+        title: 'Изменение статуса страницы',
+        text: 'Вы уверены?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Да, изменить',
+        cancelButtonText: 'Отмена',
+        background: '#1a1625',
+        color: '#fff',
+        confirmButtonColor: '#8B5CF6'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/panel/toggle-page/${pageName}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Готово!',
+                        text: data.message,
+                        icon: 'success',
+                        background: '#1a1625',
+                        color: '#fff'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Ошибка!',
+                        text: data.error || 'Что-то пошло не так',
+                        icon: 'error',
+                        background: '#1a1625',
+                        color: '#fff'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Ошибка!',
+                    text: 'Произошла ошибка при выполнении запроса',
+                    icon: 'error',
+                    background: '#1a1625',
+                    color: '#fff'
+                });
+            });
+        }
+    });
 }
 
-// Вспомогательная функция для получения CSRF-токена
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+function createInvite() {
+    Swal.fire({
+        title: 'Создание инвайт-кода',
+        text: 'Создать новый инвайт-код?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Да, создать',
+        cancelButtonText: 'Отмена',
+        background: '#1a1625',
+        color: '#fff',
+        confirmButtonColor: '#8B5CF6'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('{% url "blog:create_invite" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            }).then(() => {
+                location.reload();
+            });
         }
-    }
-    return cookieValue;
+    });
+}
+
+function deactivateInvite(code) {
+    Swal.fire({
+        title: 'Деактивация инвайт-кода',
+        text: 'Деактивировать этот инвайт-код?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Да, деактивировать',
+        cancelButtonText: 'Отмена',
+        background: '#1a1625',
+        color: '#fff',
+        confirmButtonColor: '#8B5CF6'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/panel/deactivate-invite/${code}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            }).then(() => {
+                location.reload();
+            });
+        }
+    });
 }
 </script>
 {% endblock %} 

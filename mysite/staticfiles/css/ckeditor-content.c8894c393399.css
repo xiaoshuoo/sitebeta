@@ -1,0 +1,254 @@
+/* Основные стили редактора */
+body {
+    background: #2D2A3D !important;
+    color: #E2E8F0 !important;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    padding: 1rem;
+}
+
+/* Стили для панели инструментов */
+.cke_top {
+    background: #1A1625 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 8px !important;
+}
+
+.cke_bottom {
+    background: #1A1625 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Стили для кнопок */
+.cke_button {
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    transition: all 0.2s !important;
+}
+
+.cke_button:hover {
+    background: rgba(139, 92, 246, 0.2) !important;
+}
+
+.cke_button_on {
+    background: rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Стили для выпадающих списков */
+.cke_combo_button {
+    background: #1A1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+}
+
+.cke_combo_button:hover {
+    background: rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Стили для контента */
+.cke_editable {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    min-height: 400px;
+}
+
+/* Стили для разделителей */
+.cke_toolbar_separator {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    margin: 0 8px !important;
+}
+
+/* Стили для диалоговых окон */
+.cke_dialog_background_cover {
+    background-color: rgba(26, 22, 37, 0.9) !important;
+}
+
+.cke_dialog_body {
+    background: #2D2A3D !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+}
+
+.cke_dialog_title {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.cke_dialog_footer {
+    background: #1A1625 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0 0 12px 12px !important;
+}
+
+/* Стили для иконок */
+.cke_button_icon {
+    opacity: 0.8 !important;
+}
+
+.cke_button:hover .cke_button_icon {
+    opacity: 1 !important;
+}
+
+/* Стили для текстовых полей */
+.cke_dialog_ui_input_text,
+.cke_dialog_ui_input_textarea {
+    background: #1A1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #E2E8F0 !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+}
+
+/* Стили для кнопок в диалогах */
+.cke_dialog_ui_button {
+    background: #8B5CF6 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    transition: all 0.2s !important;
+}
+
+.cke_dialog_ui_button:hover {
+    background: #7C3AED !important;
+    transform: translateY(-1px);
+}
+
+/* Стили для вкладок */
+.cke_dialog_tab {
+    background: #1A1625 !important;
+    color: #E2E8F0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px 6px 0 0 !important;
+    padding: 8px 16px !important;
+}
+
+.cke_dialog_tab_selected {
+    background: #8B5CF6 !important;
+    border-color: #8B5CF6 !important;
+}
+
+/* Стили для заголовков */
+h1, h2, h3, h4, h5, h6 {
+    color: #E2E8F0 !important;
+    font-weight: 600;
+    margin: 1rem 0;
+}
+
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.875rem; }
+h3 { font-size: 1.5rem; }
+
+/* Стили для параграфов */
+p {
+    margin: 1rem 0;
+    color: #E2E8F0 !important;
+}
+
+/* Стили для ссылок */
+a {
+    color: #8B5CF6 !important;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+a:hover {
+    color: #7C3AED !important;
+    text-decoration: underline;
+}
+
+/* Стили для изображений */
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+    margin: 1rem 0;
+    transition: transform 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.02);
+}
+
+/* Стили для блоков кода */
+pre {
+    background: #2D2A3D !important;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin: 1rem 0;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    overflow-x: auto;
+}
+
+/* Стили для цитат */
+blockquote {
+    border-left: 4px solid #8B5CF6;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #2D2A3D;
+    border-radius: 0 0.75rem 0.75rem 0;
+    color: #94A3B8 !important;
+}
+
+/* Стили для списков */
+ul, ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    color: #E2E8F0 !important;
+}
+
+li {
+    margin: 0.5rem 0;
+    color: #E2E8F0 !important;
+}
+
+/* Стили для таблиц */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    background: #2D2A3D;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+th, td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem;
+    color: #E2E8F0 !important;
+}
+
+th {
+    background: rgba(139, 92, 246, 0.1);
+    font-weight: 600;
+}
+
+/* Стили для кастомных блоков */
+.note-block {
+    background: #2D2A3D;
+    border-left: 4px solid #8B5CF6;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0 0.75rem 0.75rem 0;
+}
+
+.warning-block {
+    background: #2D2A3D;
+    border-left: 4px solid #EF4444;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0 0.75rem 0.75rem 0;
+}
+
+/* Стили для выделения текста */
+::selection {
+    background: rgba(139, 92, 246, 0.3);
+    color: #E2E8F0;
+} 

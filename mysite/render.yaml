@@ -1,34 +1,18 @@
 services:
   - type: web
-    name: sity-lvo8
+    name: django-blog
     env: python
-    buildCommand: sh build.sh
-    startCommand: gunicorn config.wsgi:application
-    plan: starter
-    disk:
-      name: blog_data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --workers=4"
     envVars:
-      - key: DATABASE_URL
-        value: postgresql://django_blog_7f9a_user:qNKOalXZlLxzA7rlrYmbkN96ZJ6oHbbE@dpg-csrl8f1u0jms7392hlrg-a.oregon-postgres.render.com/django_blog_7f9a
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: DJANGO_SETTINGS_MODULE
-        value: config.settings
-      - key: SECRET_KEY
-        generateValue: true
       - key: MEDIA_ROOT
-        value: /opt/render/project/src/data/media
-      - key: STATIC_ROOT
-        value: /opt/render/project/src/data/static
-    routes:
-      - type: rewrite
-        source: /media/*
-        destination: /opt/render/project/src/data/media/*
-      - type: rewrite
-        source: /static/*
-        destination: /opt/render/project/src/data/static/*
+        value: /opt/render/project/src/media
+    disk:
+      name: media
+      mountPath: /opt/render/project/src/media
+      sizeGB: 1
 
 databases:
   - name: django-blog-db

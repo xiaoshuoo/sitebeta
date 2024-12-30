@@ -29,6 +29,7 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
+media_backup/
 
 # Backups
 backups/
@@ -59,3 +60,7 @@ ENV/
 # Удалены строки, игнорирующие static
 # /static
 # mysite/static
+
+# Persistent storage
+/persistent/
+/opt/render/project/src/persistent/

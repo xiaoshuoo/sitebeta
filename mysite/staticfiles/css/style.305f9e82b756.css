@@ -1,0 +1,1346 @@
+:root {
+    --primary-color: #8B5CF6;
+    --primary-dark: #7C3AED;
+    --secondary-color: #EC4899;
+    --background: #0F0A1F;
+    --surface: #1A1625;
+    --text-primary: #E2E8F0;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --glass-bg: rgba(26, 22, 37, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --hover-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --gradient-primary: linear-gradient(135deg, #8B5CF6, #6D28D9);
+    --gradient-secondary: linear-gradient(135deg, #EC4899, #BE185D);
+    --gradient-accent: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+    --glow-primary: 0 0 15px rgba(139, 92, 246, 0.5);
+    --glow-secondary: 0 0 15px rgba(236, 72, 153, 0.5);
+    --glow-accent: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+body {
+    background: linear-gradient(
+        135deg,
+        #13111C 0%,
+        #171422 25%,
+        #1A1625 50%,
+        #171422 75%,
+        #13111C 100%
+    );
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.5;
+}
+
+.star {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: starTwinkle 3s ease-in-out infinite;
+}
+
+@for $i from 1 through 50 {
+    .star:nth-child(#{$i}) {
+        left: #{random(100)}vw;
+        top: #{random(100)}vh;
+        animation-delay: #{random(5000)}ms;
+        opacity: #{random(100) / 100};
+    }
+}
+
+.neon-glow {
+    box-shadow: 
+        0 0 5px rgba(139, 92, 246, 0.2),
+        0 0 20px rgba(139, 92, 246, 0.1),
+        0 0 40px rgba(139, 92, 246, 0.05);
+}
+
+.glass-effect {
+    background: rgba(26, 22, 37, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        inset 0 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.gradient-button {
+    background: linear-gradient(
+        45deg,
+        rgba(139, 92, 246, 0.8),
+        rgba(236, 72, 153, 0.8)
+    );
+    background-size: 200% 200%;
+    animation: gradientBG 5s ease infinite;
+    transition: all 0.3s ease;
+}
+
+.gradient-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 10px 20px rgba(139, 92, 246, 0.2),
+        0 6px 6px rgba(139, 92, 246, 0.1);
+}
+
+.hover-glow {
+    transition: all 0.3s ease;
+}
+
+.hover-glow:hover {
+    box-shadow: 
+        0 0 10px rgba(139, 92, 246, 0.3),
+        0 0 20px rgba(139, 92, 246, 0.2),
+        0 0 30px rgba(139, 92, 246, 0.1);
+}
+
+@keyframes particleFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.particle {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFloat 10s ease-in-out infinite;
+}
+
+@for $i from 1 through 20 {
+    .particle:nth-child(#{$i}) {
+        left: #{random(100)}vw;
+        top: #{random(100)}vh;
+        animation-delay: #{random(10000)}ms;
+        opacity: #{random(50) / 100};
+    }
+}
+
+.glass-effect-sm {
+    background: rgba(26, 22, 37, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.glass-effect-lg {
+    background: rgba(26, 22, 37, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-effect:hover {
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+    transform: translateY(-5px);
+}
+
+.neon-text {
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color),
+                 0 0 10px var(--primary-color),
+                 0 0 20px var(--primary-color);
+}
+
+.neon-border {
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color),
+                inset 0 0 5px var(--primary-color);
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.gradient-border {
+    position: relative;
+    border: double 1px transparent;
+    border-radius: 0.75rem;
+    background-image: linear-gradient(var(--surface), var(--surface)), 
+                      linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+.animated-bg {
+    position: relative;
+    overflow: hidden;
+}
+
+.animated-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle at center,
+        rgba(139, 92, 246, 0.1) 0%,
+        transparent 70%
+    );
+    animation: rotateBg 20s linear infinite;
+}
+
+.btn {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: var(--hover-transition);
+    overflow: hidden;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    bottom: -5px;
+    left: -5px;
+    border-radius: inherit;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--gradient-secondary);
+    color: white;
+}
+
+.btn-accent {
+    background: var(--gradient-accent);
+    color: white;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.card {
+    position: relative;
+    background: var(--glass-bg);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: var(--hover-transition);
+}
+
+.card-hover {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-hover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.card-hover:hover::before {
+    left: 100%;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: var(--hover-transition);
+}
+
+.card:hover::after {
+    opacity: 1;
+}
+
+.form-input {
+    background: rgba(15, 10, 31, 0.8);
+    border: 2px solid transparent;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    transition: var(--hover-transition);
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+    transform: translateY(-1px);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.float {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.pulse {
+    animation: pulse 3s ease-in-out infinite;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gradient-primary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gradient-secondary);
+}
+
+.hover-lift {
+    transition: var(--hover-transition);
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.hover-glow:hover {
+    box-shadow: var(--glow-primary);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.tag {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    transition: var(--hover-transition);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.tag:hover {
+    background: rgba(139, 92, 246, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+.glow {
+    position: relative;
+}
+
+.glow::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+    opacity: 0;
+    transition: var(--hover-transition);
+}
+
+.glow:hover::after {
+    opacity: 1;
+}
+
+.img-hover {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+}
+
+.img-hover img {
+    transition: var(--hover-transition);
+}
+
+.img-hover:hover img {
+    transform: scale(1.05);
+}
+
+.img-hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    opacity: 0;
+    transition: var(--hover-transition);
+}
+
+.img-hover:hover::after {
+    opacity: 1;
+}
+
+.decorative-line {
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--primary-color),
+        transparent
+    );
+}
+
+.decorative-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    filter: blur(50px);
+    opacity: 0.1;
+    z-index: -1;
+}
+
+.text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.border-gradient {
+    border: double 1px transparent;
+    background-image: linear-gradient(var(--surface), var(--surface)), 
+                     var(--gradient-primary);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+.shadow-glow {
+    box-shadow: var(--glow-primary);
+}
+
+.shadow-glow-secondary {
+    box-shadow: var(--glow-secondary);
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-primary {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--primary-color);
+}
+
+.badge-secondary {
+    background: rgba(236, 72, 153, 0.2);
+    color: var(--secondary-color);
+}
+
+/* Улучшенная навигация */
+.nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-primary);
+    border-radius: 0.75rem;
+    transition: var(--hover-transition);
+    cursor: pointer;
+    z-index: 1;
+    text-decoration: none;
+    isolation: isolate;
+    margin: 0 0.25rem;
+}
+
+.nav-link:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--primary-color);
+}
+
+/* Выпадающее меню */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--glass-border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 50;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown-menu:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    border-radius: 0.5rem;
+    transition: var(--hover-transition);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--primary-color);
+}
+
+/* Улучшенная область клика */
+.nav-link,
+.dropdown-toggle,
+.dropdown-item {
+    position: relative;
+    isolation: isolate;
+}
+
+.nav-link::before,
+.dropdown-toggle::before,
+.dropdown-item::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: inherit;
+    z-index: -1;
+}
+
+/* Индикатор активного состояния */
+.nav-link.active {
+    color: var(--primary-color);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0.75rem;
+    right: 0.75rem;
+    height: 2px;
+    background: var(--primary-color);
+    border-radius: 1px;
+}
+
+/* Анимация для иконок в навигации */
+.nav-icon {
+    transition: transform 0.3s ease;
+}
+
+.nav-link:hover .nav-icon,
+.dropdown-toggle:hover .nav-icon {
+    transform: scale(1.1);
+}
+
+/* Улучшенное мобильное меню */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        position: static;
+        width: 100%;
+        margin-top: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1rem 0.5rem 2rem;
+    }
+
+    .nav-link::before,
+    .dropdown-toggle::before,
+    .dropdown-item::before {
+        inset: -10px;
+    }
+}
+
+/* Улучшенная область нажатия для кнопок */
+.btn {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: var(--hover-transition);
+    cursor: pointer;
+    /* Увеличиваем область нажатия */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Добавляем невидимую область вокруг кнопки для лучшего нажатия */
+.btn::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    bottom: -5px;
+    left: -5px;
+    border-radius: inherit;
+}
+
+/* Стили для ссылок-кнопок */
+a.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    /* Минимальная высота для удобного нажати на мобильных */
+    min-height: 44px;
+    /* Миниальная ширина */
+    min-width: 44px;
+}
+
+/* Стили для иконок внутри кнопок */
+.btn i {
+    pointer-events: none; /* Предотвращаем проблемы с кликом по иконке */
+}
+
+/* Улучшенное состояние при нажатии */
+.btn:active {
+    transform: translateY(1px);
+}
+
+/* Стили для отключенного состояния */
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Улучшенная обратная связь при наведении */
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+
+/* Стили для кнопок в мобильном виде */
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.875rem 1.75rem; /* Увеличиваем padding для мобильных */
+        min-height: 48px; /* Увеличиваем минимальную высоту */
+    }
+
+    /* Увеличиваем область нажатия для мобильных */
+    .btn::before {
+        top: -8px;
+        right: -8px;
+        bottom: -8px;
+        left: -8px;
+    }
+}
+
+/* Стили для основной навигации */
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 10; /* Убедимся, что навигация всегда поверх */
+}
+
+/* Улучшенные стили для навигационных ссылок */
+.nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem; /* Увеличиваем область нажатия */
+    color: var(--text-primary);
+    border-radius: 0.75rem;
+    transition: var(--hover-transition);
+    cursor: pointer;
+    z-index: 1;
+    text-decoration: none; /* Убираем подчеркивание */
+    /* Убираем перекрытие */
+    isolation: isolate;
+    margin: 0 0.25rem; /* Добавляем отступы между ссылками */
+}
+
+/* Увеличиваем область нажатия для ссылок */
+.nav-link::before {
+    content: '';
+    position: absolute;
+    inset: -8px; /* Увеличиваем область нажатия во все стороны */
+    border-radius: inherit;
+    z-index: -1;
+}
+
+/* Стили при наведении */
+.nav-link:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--primary-color);
+}
+
+/* Активное состояние */
+.nav-link.active {
+    color: var(--primary-color);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+/* Убираем перекрытие для всех интерактивных элементов */
+.nav-link, 
+.btn, 
+.dropdown-toggle {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Стили для отейнер навигации */
+.nav-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    z-index: 10;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    .nav-link {
+        padding: 1rem 1.5rem; /* Еще больше увеличиваем область нажатия на мобильных */
+    }
+    
+    .nav-link::before {
+        inset: -10px; /* Увеличиваем область нажатия на мобильных */
+    }
+}
+
+/* Стили для навигационных кнопок */
+.nav-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    color: #E2E8F0;
+    background: transparent;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.nav-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(139 92 246 / 0.1);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.nav-button:hover::before,
+.nav-button.active::before {
+    opacity: 1;
+}
+
+.nav-button:hover {
+    color: white;
+}
+
+.nav-button.active {
+    color: white;
+}
+
+/* Улучшенные стили для карточек постов */
+.post-card {
+    position: relative;
+    background: rgba(26, 22, 37, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+}
+
+.post-thumbnail {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 */
+    overflow: hidden;
+}
+
+.post-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.post-card:hover .post-thumbnail img {
+    transform: scale(1.05);
+}
+
+.dropzone {
+    transition: all 0.3s ease;
+}
+
+.dropzone:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(147, 51, 234, 0.1);
+}
+
+.tox-tinymce {
+    border-radius: 0.75rem !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(147, 51, 234, 0.2) !important;
+    background-color: #1a1625 !important;
+}
+
+.tox .tox-edit-area__iframe {
+    background-color: #1a1625 !important;
+}
+
+.tox .tox-toolbar,
+.tox .tox-toolbar__primary {
+    background: #2d2a3d !important;
+    border-bottom: 1px solid rgba(147, 51, 234, 0.2) !important;
+}
+
+.tox .tox-tbtn {
+    color: white !important;
+}
+
+.tox .tox-tbtn:hover {
+    background: rgba(147, 51, 234, 0.2) !important;
+}
+
+/* Стили для Select2 */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    background-color: #1a1625 !important;
+    border: 1px solid rgba(147, 51, 234, 0.2) !important;
+    border-radius: 0.75rem !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: white !important;
+}
+
+.select2-dropdown {
+    background-color: #1a1625 !important;
+    border: 1px solid rgba(147, 51, 234, 0.2) !important;
+}
+
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: rgba(147, 51, 234, 0.2) !important;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: rgba(147, 51, 234, 0.4) !important;
+    color: white !important;
+}
+
+/* Стили для текстовых полей */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+    background-color: #1a1625 !important;
+    color: white !important;
+    border: 1px solid rgba(147, 51, 234, 0.2) !important;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Анимированные частицы */
+.particle-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 50%;
+    animation: particleFloat 15s infinite linear;
+}
+
+@keyframes particleFloat {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Улучшенный фоновый градиент */
+.enhanced-bg {
+    background: 
+        radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.15) 0%, transparent 50%);
+    background-attachment: fixed;
+}
+
+/* Анимированная сетка */
+.grid-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: gridMove 15s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes gridMove {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(30px);
+    }
+}
+
+/* Улучшенные стили для форм с обработкой ошибок */
+.form-group.error input,
+.form-group.error textarea,
+.form-group.error select {
+    border-color: rgba(239, 68, 68, 0.5);
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    color: rgb(239, 68, 68);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Улучшенные эффекты наведения */
+.hover-glow {
+    transition: all 0.3s ease;
+}
+
+.hover-glow:hover {
+    box-shadow: 
+        0 0 10px rgba(139, 92, 246, 0.3),
+        0 0 20px rgba(139, 92, 246, 0.2),
+        0 0 30px rgba(139, 92, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Добавьте эти стили для выпадающего меню */
+.dropdown-menu {
+    background: rgba(26, 22, 37, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.dropdown-item {
+    position: relative;
+    z-index: 50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+/* Убедимся, что все интерактивные элементы имеют правильный z-index */
+.nav-link,
+.btn,
+.dropdown-toggle,
+.dropdown-menu,
+.dropdown-item {
+    position: relative;
+    z-index: 50;
+}
+
+/* Стили для фиксированного позиционирования выпадающего меню */
+.dropdown-menu-fixed {
+    position: fixed;
+    top: auto;
+    right: auto;
+    transform: none;
+}
+
+/* Улучшенные стили для кнопок в выпадаю��ем меню */
+.dropdown-menu button,
+.dropdown-menu a {
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 51;
+}
+
+.dropdown-menu button:hover,
+.dropdown-menu a:hover {
+    background: rgba(139, 92, 246, 0.1);
+    color: white;
+}
+
+/* Добавляем эффект при наведении */
+.dropdown-menu button::before,
+.dropdown-menu a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: rgba(139, 92, 246, 0.1);
+    transition: width 0.2s ease;
+    z-index: -1;
+}
+
+.dropdown-menu button:hover::before,
+.dropdown-menu a:hover::before {
+    width: 100%;
+}
+
+/* Стили для иконок в выпадающем меню */
+.dropdown-menu i {
+    width: 1.5rem;
+    text-align: center;
+    margin-right: 0.5rem;
+    color: rgba(139, 92, 246, 0.8);
+    transition: transform 0.2s ease;
+}
+
+.dropdown-menu button:hover i,
+.dropdown-menu a:hover i {
+    transform: scale(1.1);
+}
+
+/* Добавьте в конец файла */
+.dropdown-menu {
+    position: absolute;
+    z-index: 9999;
+    background-color: #1a1625 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+    position: relative;
+    z-index: 10000;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+    background-color: rgba(139, 92, 246, 0.1);
+}
+
+/* Убедимся, что все интерактивные элементы имеют правильный z-index */
+.nav-link,
+.btn,
+.dropdown-toggle,
+[x-data],
+[x-show] {
+    position: relative;
+    z-index: 9999;
+}
+
+/* Стили для фона выпадающего меню */
+.dropdown-bg {
+    background-color: rgba(26, 22, 37, 0.95) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Анимация для выпадающего меню */
+.dropdown-enter-active,
+.dropdown-leave-active {
+    transition: all 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Стили для выпадающего меню */
+.dropdown-menu {
+    position: absolute !important;
+    z-index: 9999 !important;
+    background-color: #1a1625 !important;
+    border: 1px solid rgba(147, 51, 234, 0.2) !important;
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.3),
+        0 0 15px rgba(147, 51, 234, 0.1) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Эффекты при наведении для пунктов меню */
+.dropdown-menu a,
+.dropdown-menu button {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.dropdown-menu a::after,
+.dropdown-menu button::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, transparent, rgba(147, 51, 234, 0.5), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.dropdown-menu a:hover::after,
+.dropdown-menu button:hover::after {
+    transform: translateX(0);
+}
+
+/* Анимация иконок */
+.dropdown-menu i {
+    transition: all 0.3s ease;
+}
+
+.dropdown-menu a:hover i,
+.dropdown-menu button:hover i {
+    transform: scale(1.2);
+}
+
+/* Улучшенные стили для разделителей */
+.dropdown-menu .border-t,
+.dropdown-menu .border-b {
+    border-color: rgba(147, 51, 234, 0.2);
+}
+
+/* Стили для информации о пользователе */
+.dropdown-menu .user-info {
+    background: rgba(147, 51, 234, 0.05);
+}
+
+/* Эффект свечения при наведении */
+.dropdown-menu:hover {
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(147, 51, 234, 0.2) !important;
+}
+
+/* Стили для кнопки выхода */
+.dropdown-menu .logout-button:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: rgb(239, 68, 68) !important;
+}
+
+/* Анимация появления меню */
+@keyframes menuAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu[x-show] {
+    animation: menuAppear 0.2s ease-out;
+}
+
+/* Префиксы для background-clip */
+.bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* Кросс-браузерные анимации */
+@-webkit-keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Поддержка для старых браузеров */
+@supports not (line-clamp: 2) {
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}

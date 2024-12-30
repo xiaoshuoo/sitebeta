@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Мой блог{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
     <!-- jQuery (добавить перед Select2 и TinyMCE) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Select2 -->
@@ -22,7 +23,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    {% block extra_head %}{% endblock %}
+    <!-- Добавляем явное указание кодировки -->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <body class="bg-background min-h-screen flex flex-col">
     <div class="relative min-h-screen flex flex-col" style="z-index: 0;">
@@ -107,6 +109,26 @@
                                 <i class="fas fa-envelope mr-2"></i>
                                 Связь со мной
                             </a>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'blog:create_post' %}" 
+                               class="px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 
+                                      text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 
+                                      transition-all duration-300 flex items-center group relative 
+                                      overflow-hidden transform hover:-translate-y-1">
+                                <!-- Анимированный фон -->
+                                <div class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 
+                                            opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <!-- Блики -->
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300
+                                            bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.4),transparent_80%)]"></div>
+                                <!-- Контент -->
+                                <div class="relative flex items-center">
+                                    <i class="fas fa-pen-fancy mr-2 group-hover:scale-110 group-hover:rotate-12 
+                                             transition-all duration-300"></i>
+                                    <span class="group-hover:tracking-wider transition-all duration-300">Создать пост</span>
+                                </div>
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
 

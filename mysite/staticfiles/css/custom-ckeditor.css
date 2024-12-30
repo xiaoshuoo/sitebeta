@@ -1,56 +1,165 @@
 /* Основные стили для редактора */
-.cke_chrome {
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 0.75rem !important;
-    background: rgba(45, 42, 61, 0.5) !important;
-    backdrop-filter: blur(10px);
+.ck-editor__editable {
+    background: linear-gradient(to bottom right, rgba(26, 22, 37, 0.95), rgba(45, 42, 61, 0.95)) !important;
+    color: #E2E8F0 !important;
+    min-height: 500px !important;
+    border-radius: 0 0 12px 12px !important;
+    box-shadow: 
+        inset 0 0 30px rgba(139, 92, 246, 0.1),
+        0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    padding: 2rem !important;
+    transition: all 0.3s ease !important;
 }
 
-.cke_top {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    background: rgba(45, 42, 61, 0.8) !important;
+.ck-editor__editable:focus {
+    box-shadow: 
+        inset 0 0 40px rgba(139, 92, 246, 0.15),
+        0 8px 30px rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Стилизация тулбара */
+.ck-toolbar {
+    background: linear-gradient(to right, rgba(26, 22, 37, 0.98), rgba(45, 42, 61, 0.98)) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 12px 12px 0 0 !important;
+    backdrop-filter: blur(10px) !important;
     padding: 8px !important;
-    border-radius: 0.75rem 0.75rem 0 0 !important;
 }
 
-.cke_bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-    background: rgba(45, 42, 61, 0.8) !important;
-    padding: 8px !important;
-    border-radius: 0 0 0.75rem 0.75rem !important;
+/* Кнопки тулбара */
+.ck-button {
+    color: #E2E8F0 !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid transparent !important;
 }
 
-/* Стили для кнопок */
-.cke_button {
-    padding: 4px 8px !important;
-    border-radius: 0.5rem !important;
-    transition: all 0.2s !important;
-}
-
-.cke_button:hover {
+.ck-button:hover {
     background: rgba(139, 92, 246, 0.2) !important;
+    border-color: rgba(139, 92, 246, 0.3) !important;
+    transform: translateY(-1px) !important;
 }
 
-.cke_button_on {
+.ck-button.ck-on {
     background: rgba(139, 92, 246, 0.3) !important;
+    border-color: rgba(139, 92, 246, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Стили для выпадающих меню */
+.ck-dropdown__panel {
+    background: rgba(26, 22, 37, 0.98) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(10px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Стили для контента */
-.cke_editable {
-    padding: 20px !important;
+.ck-content h1, .ck-content h2, .ck-content h3 {
+    color: #fff !important;
+    border-bottom: 2px solid rgba(139, 92, 246, 0.2) !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.ck-content p {
     color: #E2E8F0 !important;
-    font-family: 'Inter', sans-serif !important;
-    line-height: 1.6 !important;
+    line-height: 1.8 !important;
+    margin-bottom: 1rem !important;
 }
 
-/* Стили для диалоговых окон */
-.cke_dialog_background_cover {
+/* Стили для изображений */
+.ck-content img {
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+.ck-content img:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Стили для блоков кода */
+.ck-content pre {
     background: rgba(26, 22, 37, 0.8) !important;
-    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+    font-family: 'Fira Code', monospace !important;
 }
 
-.cke_dialog {
-    border-radius: 1rem !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    background: rgba(45, 42, 61, 0.95) !important;
+/* Стили для цитат */
+.ck-content blockquote {
+    border-left: 4px solid rgba(139, 92, 246, 0.5) !important;
+    background: rgba(139, 92, 246, 0.1) !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+    border-radius: 0 8px 8px 0 !important;
+    font-style: italic !important;
+}
+
+/* Стили для таблиц */
+.ck-content table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1rem 0 !important;
+    background: rgba(26, 22, 37, 0.6) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.ck-content th {
+    background: rgba(139, 92, 246, 0.1) !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+
+.ck-content td, .ck-content th {
+    padding: 12px !important;
+    border: 1px solid rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Анимации при фокусе */
+.ck-focused {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px rgba(139, 92, 246, 0.2),
+                   0 0 10px rgba(139, 92, 246, 0.2),
+                   0 0 15px rgba(139, 92, 246, 0.2);
+    }
+    to {
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.3),
+                   0 0 20px rgba(139, 92, 246, 0.3),
+                   0 0 30px rgba(139, 92, 246, 0.3);
+    }
+}
+
+/* Стили для списков */
+.ck-content ul, .ck-content ol {
+    padding-left: 1.5rem !important;
+    margin: 1rem 0 !important;
+}
+
+.ck-content li {
+    margin: 0.5rem 0 !important;
+    color: #E2E8F0 !important;
+}
+
+/* Стили для ссылок */
+.ck-content a {
+    color: #8B5CF6 !important;
+    text-decoration: none !important;
+    border-bottom: 1px dashed rgba(139, 92, 246, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+.ck-content a:hover {
+    color: #9F7AEA !important;
+    border-bottom-style: solid !important;
 } 

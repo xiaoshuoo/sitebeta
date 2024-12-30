@@ -251,4 +251,68 @@ th {
 ::selection {
     background: rgba(139, 92, 246, 0.3);
     color: #E2E8F0;
+}
+
+/* Стили для изображений в редакторе */
+.ck-content .image {
+    margin: 1rem 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.ck-content .image:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2);
+}
+
+.ck-content .image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+}
+
+.ck-content .image-style-side {
+    float: right;
+    margin-left: 1.5rem;
+    max-width: 50%;
+}
+
+.ck-content .image-style-align-left {
+    float: left;
+    margin-right: 1.5rem;
+}
+
+.ck-content .image-style-align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Подпись к изображению */
+.ck-content .image figcaption {
+    background: rgba(26, 22, 37, 0.95);
+    color: #E2E8F0;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    text-align: center;
+    border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* Загрузка изображения */
+.ck-content .image.ck-widget_selected {
+    outline: 2px solid #8B5CF6;
+}
+
+/* Прогресс загрузки */
+.ck-content .image .ck-progress-bar {
+    height: 2px;
+    width: 0;
+    background: #8B5CF6;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: width 0.3s ease;
 } 

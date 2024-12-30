@@ -3,79 +3,102 @@
 {% block title %}{{ post.title }} | {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="container">
-        <h1 class="display-4">{{ post.title }}</h1>
-        <p class="lead text-white">
-            <i class="fas fa-user me-1"></i>{{ post.author.username }}
-            <span class="mx-2">|</span>
-            <i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"d.m.Y H:i" }}
-            {% if post.category %}
-            <span class="mx-2">|</span>
-            <i class="fas {{ post.category.icon }} me-1"></i>{{ post.category.name }}
+<div class="min-h-screen bg-[#0F0A1F] relative">
+    <!-- Фоновый градиент -->
+    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-pink-500/5 to-blue-500/5 pointer-events-none"></div>
+
+    <!-- Основной контент -->
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <div class="bg-surface-800/40 backdrop-blur-sm rounded-2xl p-8 border border-white/10
+                    hover:border-purple-500/20 transition-all duration-300">
+            <!-- Заголовок поста -->
+            <div class="mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-center mb-6 
+                           bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-white
+                           drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                    {{ post.title }}
+                </h1>
+
+                <!-- Мета-информация -->
+                <div class="flex flex-wrap items-center justify-center gap-6 text-white/70">
+                    <a href="{% url 'blog:profile' post.author.username %}" 
+                       class="flex items-center hover:text-purple-400 transition-colors">
+                        {% if post.author.profile.avatar %}
+                            <img src="{{ post.author.profile.avatar.url }}" 
+                                 alt="{{ post.author.username }}"
+                                 class="w-8 h-8 rounded-full mr-2 object-cover ring-2 ring-purple-500/20">
+                        {% else %}
+                            <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center mr-2">
+                                <i class="fas fa-user text-purple-400"></i>
+                            </div>
+                        {% endif %}
+                        <span>{{ post.author.username }}</span>
+                    </a>
+                    <div class="flex items-center">
+                        <i class="fas fa-calendar mr-2 text-purple-400"></i>
+                        <span>{{ post.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-eye mr-2 text-purple-400"></i>
+                        <span>{{ post.views_count }} просмотров</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Контент поста -->
+            <article class="prose prose-invert max-w-none
+                           prose-headings:text-white/90 prose-headings:font-bold
+                           prose-p:text-white/80 prose-p:leading-relaxed
+                           prose-a:text-purple-400 prose-a:no-underline hover:prose-a:text-purple-300
+                           prose-strong:text-white/90 prose-strong:font-bold
+                           prose-code:text-pink-400 prose-code:bg-pink-500/10 prose-code:rounded prose-code:px-1
+                           prose-blockquote:border-l-4 prose-blockquote:border-purple-500 
+                           prose-blockquote:bg-purple-500/5 prose-blockquote:rounded-r-lg
+                           prose-img:rounded-xl prose-img:shadow-lg
+                           prose-hr:border-white/10">
+                {{ post.content|safe }}
+            </article>
+
+            <!-- Кнопки управления (только для автора или админа) -->
+            {% if user == post.author or user.is_staff %}
+            <div class="mt-8 pt-8 border-t border-white/10 flex justify-end gap-4">
+                <a href="{% url 'blog:edit_post' pk=post.pk %}" 
+                   class="inline-flex items-center px-6 py-3 bg-purple-500/20 text-purple-400 
+                          rounded-xl hover:bg-purple-500/30 transition-all group border border-purple-500/20 
+                          hover:border-purple-500/40 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/20">
+                    <i class="fas fa-edit mr-2 group-hover:rotate-12 transition-transform"></i>
+                    <span>Редактировать</span>
+                </a>
+                <button onclick="deletePost('{{ post.pk }}')"
+                        class="inline-flex items-center px-6 py-3 bg-red-500/20 text-red-400 
+                               rounded-xl hover:bg-red-500/30 transition-all group border border-red-500/20 
+                               hover:border-red-500/40 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-red-500/20">
+                    <i class="fas fa-trash mr-2 group-hover:rotate-12 transition-transform"></i>
+                    <span>Удалить</span>
+                </button>
+            </div>
             {% endif %}
-        </p>
+        </div>
     </div>
 </div>
 
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-body">
-                    <article class="blog-post">
-                        <div class="content">
-                            {{ post.content|safe }}
-                        </div>
-                        {% if user == post.author %}
-                        <div class="mt-4 pt-3 border-top">
-                            <a href="{% url 'blog:edit_post' pk=post.pk %}" class="btn btn-primary">
-                                <i class="fas fa-edit me-1"></i>Редактировать
-                            </a>
-                        </div>
-                        {% endif %}
-                    </article>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-user me-2"></i>Об авторе
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <h6>{{ post.author.username }}</h6>
-                    <p class="text-muted">
-                        На сайте с {{ post.author.date_joined|date:"d.m.Y" }}
-                    </p>
-                    <p class="mb-0">
-                        Публикаций: {{ post.author.posts.count }}
-                    </p>
-                </div>
-            </div>
-            {% if post.category %}
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-folder me-2"></i>Другие посты в категории
-                    </h5>
-                </div>
-                <div class="card-body">
-                    {% for related_post in post.category.posts.all|slice:":5" %}
-                    {% if related_post != post and related_post.is_published %}
-                    <a href="{% url 'blog:post_detail' pk=related_post.pk %}" class="d-block mb-2">
-                        {{ related_post.title }}
-                    </a>
-                    {% endif %}
-                    {% empty %}
-                    <p class="text-muted mb-0">Нет других постов в этой категории</p>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+<script>
+function deletePost(postId) {
+    if (confirm('Вы уверены, что хотите удалить этот пост?')) {
+        fetch(`/posts/${postId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/';
+            }
+        });
+    }
+}
+</script>
 {% endblock %} 

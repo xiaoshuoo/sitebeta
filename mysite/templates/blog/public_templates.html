@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-background cosmic-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Улучшенный заголовок -->
+        <div class="flex items-center justify-between mb-12">
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center transform rotate-6 transition-transform group-hover:rotate-12">
+                        <i class="fas fa-file-alt text-3xl text-white"></i>
+                    </div>
+                    <div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                        <i class="fas fa-code text-white text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient">
+                        Шаблоны текстов
+                    </h1>
+                    <p class="text-gray-400 mt-1">Управление текстовыми шаблонами</p>
+                </div>
+            </div>
+            <button onclick="showCreateForm()" 
+                    class="group px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl 
+                           hover:shadow-lg hover:shadow-purple-500/25 transition-all relative overflow-hidden">
+                <span class="relative z-10 flex items-center">
+                    <i class="fas fa-plus mr-2 group-hover:rotate-180 transition-transform duration-500"></i>
+                    Добавить шаблон
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
+        </div>
+
+        <!-- Форма создания шаблона -->
+        <div id="createFormModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div class="bg-[#1a1625] rounded-2xl p-8 max-w-2xl w-full mx-4 border border-purple-500/10 shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Создать новый шаблон</h2>
+                    <button onclick="hideCreateForm()" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Название</label>
+                        <input type="text" name="title" required
+                               class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                      text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Категория</label>
+                        <input type="text" name="category" required
+                               class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                      text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Содержание</label>
+                        <textarea name="content" rows="6" required
+                                  class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                         text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4 pt-4">
+                        <button type="button" onclick="hideCreateForm()"
+                                class="px-6 py-3 bg-gray-500/10 text-gray-400 rounded-xl hover:bg-gray-500/20 transition-all">
+                            Отмена
+                        </button>
+                        <button type="submit"
+                                class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl 
+                                       hover:shadow-lg hover:shadow-purple-500/25 transition-all">
+                            Создать шаблон
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Список шаблонов по категориям -->
+        {% regroup templates by category as category_list %}
+        {% for category in category_list %}
+        <div class="mb-8 transform hover:scale-[1.01] transition-transform duration-300">
+            <div class="glass-card rounded-2xl overflow-hidden border border-white/5 shadow-xl">
+                <!-- Заголовок категории -->
+                <div class="bg-gradient-to-r from-purple-500/5 via-pink-500/3 to-blue-500/5 p-6 border-b border-white/5">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/5 flex items-center justify-center mr-4 transform rotate-3
+                                    hover:rotate-6 transition-all duration-300 group">
+                            <i class="fas fa-folder text-2xl text-purple-400/80 group-hover:text-purple-400 transition-colors"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white">
+                            {{ category.grouper }}
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- Шаблоны в категории -->
+                <div class="divide-y divide-white/5">
+                    {% for template in category.list %}
+                    <div class="p-6 hover:bg-purple-500/5 transition-all duration-300">
+                        <!-- Заголовок и действия -->
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center space-x-4 cursor-pointer" onclick="toggleTemplate('template-{{ template.id }}')">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-purple-400 font-bold">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <h3 class="text-xl font-bold text-white">{{ template.title }}</h3>
+                                    <i class="fas fa-chevron-down text-purple-400 transition-transform duration-300" id="icon-template-{{ template.id }}"></i>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button onclick="copyTemplate('{{ template.id }}')"
+                                        class="btn-action p-3 bg-blue-500/5 text-blue-400/90 rounded-xl 
+                                               hover:bg-blue-500/10 hover:text-blue-400 transition-all transform hover:scale-105
+                                               border border-blue-500/10">
+                                    <i class="fas fa-copy icon-animate"></i>
+                                </button>
+                                <a href="{% url 'blog:edit_public_template' template_id=template.id %}"
+                                   class="btn-action p-3 bg-purple-500/5 text-purple-400/90 rounded-xl 
+                                          hover:bg-purple-500/10 hover:text-purple-400 transition-all transform hover:scale-105
+                                          border border-purple-500/10">
+                                    <i class="fas fa-edit icon-animate"></i>
+                                </a>
+                                <button onclick="deleteTemplate('{{ template.id }}')"
+                                        class="btn-action p-3 bg-red-500/5 text-red-400/90 rounded-xl 
+                                               hover:bg-red-500/10 hover:text-red-400 transition-all transform hover:scale-105
+                                               border border-red-500/10">
+                                    <i class="fas fa-trash-alt icon-animate"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Контент шаблона (сворачиваемый) -->
+                        <div id="template-{{ template.id }}" class="hidden">
+                            <!-- Контент с построчным копированием -->
+                            <div class="content-area rounded-xl p-4 space-y-2 shadow-inner">
+                                {% with lines=template.content|safe|linebreaksbr|split:"<br>" %}
+                                    {% for line in lines %}
+                                        {% if line|striptags|trim != "" %}
+                                        <div class="relative group line-hover p-3 rounded-xl cursor-pointer transition-all select-none
+                                                    hover:shadow-lg hover:shadow-purple-500/5"
+                                             onclick="copyToClipboard('{{ line|striptags }}')"
+                                             data-content="{{ line|striptags }}">
+                                            <div class="flex items-center space-x-3">
+                                                <span class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-500/3 
+                                                             text-purple-400/60 text-sm font-mono border border-purple-500/10">
+                                                    {{ forloop.counter }}
+                                                </span>
+                                                <span class="text-gray-300">{{ line|safe }}</span>
+                                                <span class="copy-success hidden absolute right-2 text-green-400">
+                                                    <i class="fas fa-check"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                            <!-- Метаданные шаблона -->
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <div class="flex items-center space-x-6 text-gray-400">
+                                    <span class="flex items-center">
+                                        <i class="far fa-clock mr-2 text-purple-400/50"></i>
+                                        {{ template.updated_at|timesince }} назад
+                                    </span>
+                                    <span class="flex items-center">
+                                        <i class="fas fa-grip-lines mr-2 text-pink-400/50"></i>
+                                        {{ template.content|linebreaks|length }} строк
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="glass-card p-16 text-center rounded-2xl">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl transform rotate-6"></div>
+                <div class="absolute inset-0 bg-[#1a1625] rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-file-alt text-4xl text-purple-400"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">Нет шаблонов</h3>
+            <p class="text-gray-400">Создайте свой первый шаблон прямо сейчас</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.cosmic-bg {
+    background: 
+        radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 60%);
+    background-attachment: fixed;
+}
+
+.glass-card {
+    background: rgba(26, 22, 37, 0.25);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.content-area {
+    background: rgba(26, 22, 37, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.line-hover {
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.line-hover:hover {
+    background: rgba(139, 92, 246, 0.05);
+    border-color: rgba(139, 92, 246, 0.1);
+    transform: translateX(4px);
+}
+
+/* Стилизация скроллбара */
+.content-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.content-area::-webkit-scrollbar-track {
+    background: rgba(26, 22, 37, 0.1);
+    border-radius: 4px;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 4px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.3);
+}
+
+/* Улучшенные эффекты для кнопок */
+.btn-action {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.btn-action:hover::after {
+    transform: translateX(100%);
+}
+
+/* Анимация для иконок */
+.icon-animate {
+    transition: all 0.3s ease;
+}
+
+.icon-animate:hover {
+    transform: scale(1.1) rotate(5deg);
+    filter: brightness(1.2);
+}
+
+/* Улучшенная анимация разворачивания */
+@keyframes expand {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animate-expand {
+    animation: expand 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Находим элемент, по которому кликнули
+        const element = event.currentTarget;
+        const successIndicator = element.querySelector('.copy-success');
+        
+        // Показываем индикатор
+        successIndicator.classList.remove('hidden');
+        
+        // Скрываем через 2 секунды
+        setTimeout(() => {
+            successIndicator.classList.add('hidden');
+        }, 2000);
+    });
+}
+
+function copyTemplate(templateId) {
+    const content = document.getElementById(`template-${templateId}`).querySelector('.content-area').innerText;
+    navigator.clipboard.writeText(content).then(() => {
+        // Показываем уведомление
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        notification.textContent = 'Шаблон скопирован!';
+        document.body.appendChild(notification);
+        
+        // Удаляем уведомление через 2 секунды
+        setTimeout(() => {
+            notification.remove();
+        }, 2000);
+    });
+}
+
+document.querySelectorAll('[data-content]').forEach(element => {
+    element.setAttribute('title', 'Нажмите, чтобы скопировать строку');
+});
+
+// Функция для переключения видимости шаблона
+function toggleTemplate(templateId) {
+    const content = document.getElementById(templateId);
+    const icon = document.getElementById('icon-' + templateId);
+    
+    if (content.classList.contains('hidden')) {
+        // Разворачиваем
+        content.classList.remove('hidden');
+        content.classList.add('animate-expand');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        // Сворачиваем
+        content.classList.add('hidden');
+        content.classList.remove('animate-expand');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Добавляем анимацию при открытии
+document.addEventListener('DOMContentLoaded', function() {
+    // Разворачиваем первый шаблон по умолчанию
+    const firstTemplate = document.querySelector('[id^="template-"]');
+    if (firstTemplate) {
+        firstTemplate.classList.remove('hidden');
+        const firstIcon = document.querySelector('[id^="icon-template-"]');
+        if (firstIcon) {
+            firstIcon.style.transform = 'rotate(180deg)';
+        }
+    }
+});
+
+function showCreateForm() {
+    const modal = document.getElementById('createFormModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function hideCreateForm() {
+    const modal = document.getElementById('createFormModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Закрытие модального окна при клике вне его
+document.getElementById('createFormModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideCreateForm();
+    }
+});
+
+function deleteTemplate(templateId) {
+    if (confirm('Вы уверены, что хотите удалить этот шаблон?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/templates/litvininkov/${templateId}/delete/`;
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

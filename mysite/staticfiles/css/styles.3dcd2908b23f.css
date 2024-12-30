@@ -1,0 +1,45 @@
+/* Базовые стили */
+@layer base {
+    body {
+        @apply bg-background text-white min-h-screen flex flex-col;
+    }
+}
+
+/* Компоненты */
+@layer components {
+    .btn-primary {
+        @apply inline-flex items-center px-6 py-3 bg-primary-500 text-white rounded-xl
+               hover:bg-primary-600 transition-all duration-300;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center px-6 py-3 bg-surface/50 text-white rounded-xl
+               hover:bg-surface/70 border border-white/5 hover:border-primary-500/20
+               transition-all duration-300;
+    }
+
+    .tag-item {
+        @apply inline-flex items-center px-3 py-1 rounded-lg bg-surface/50
+               text-gray-400 hover:text-white hover:bg-surface/70
+               transition-colors duration-300;
+    }
+
+    .form-input {
+        @apply bg-surface/50 border border-white/5 text-white rounded-xl px-4 py-3
+               focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-transparent
+               transition-all placeholder-gray-500;
+    }
+}
+
+/* Утилиты */
+@layer utilities {
+    .animate-gradient {
+        animation: gradient 15s linear infinite;
+        background-size: 200% 200%;
+    }
+
+    @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
+    }
+} 

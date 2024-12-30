@@ -1,13 +1,49 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center">
-    <div class="max-w-md w-full p-8 glass-effect rounded-2xl text-center">
-        <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-500/20 flex items-center justify-center">
-            <i class="fas fa-lock text-3xl text-purple-400"></i>
+<div class="min-h-screen bg-[#0F0A1F] flex items-center justify-center px-4">
+    <div class="max-w-2xl w-full">
+        <!-- Карточка с сообщением -->
+        <div class="glass-card p-8 rounded-2xl text-center relative overflow-hidden">
+            <!-- Декоративный фон -->
+            <div class="absolute inset-0">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+                <div class="absolute bottom-0 left-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            </div>
+
+            <!-- Иконка -->
+            <div class="relative">
+                <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-purple-500/10 flex items-center justify-center">
+                    <i class="fas fa-clock text-4xl text-purple-400 animate-pulse"></i>
+                </div>
+
+                <!-- Заголовок -->
+                <h1 class="text-3xl font-bold text-white mb-4">
+                    Страница временно недоступна
+                </h1>
+
+                <!-- Описание -->
+                <p class="text-gray-400 mb-8">
+                    В данный момент эта страница отключена администратором. Пожалуйста, попробуйте зайти позже.
+                </p>
+
+                <!-- Кнопка возврата -->
+                <a href="{% url 'blog:home' %}" 
+                   class="inline-flex items-center px-6 py-3 rounded-xl bg-purple-500/20 text-purple-400 
+                          hover:bg-purple-500/30 transition-all group">
+                    <i class="fas fa-home mr-2 group-hover:scale-110 transition-transform"></i>
+                    Вернуться на главную
+                </a>
+            </div>
         </div>
-        <h1 class="text-2xl font-bold text-white mb-4">Страница недоступна</h1>
-        <p class="text-gray-400">{{ message }}</p>
     </div>
 </div>
+
+<style>
+.glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+</style>
 {% endblock %} 

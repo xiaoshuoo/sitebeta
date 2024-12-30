@@ -1,81 +1,117 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-2xl mx-auto">
-        <!-- Заголовок -->
-        <div class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white animate-gradient-x mb-2">
+<div class="min-h-screen bg-background py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Форма редактирования -->
+        <div class="bg-surface/30 backdrop-blur-sm rounded-2xl p-8 border border-white/5">
+            <h1 class="text-2xl font-bold text-white mb-6 flex items-center">
+                <i class="fas fa-user-edit text-purple-400 mr-3"></i>
                 Редактирование профиля
             </h1>
-            <p class="text-gray-400">Настройте свой профиль</p>
-        </div>
 
-        <!-- Форма -->
-        <div class="bg-surface/30 backdrop-blur-sm rounded-2xl p-8 border border-white/5">
-            <form method="post" enctype="multipart/form-data" class="space-y-6">
+            <form method="post" enctype="multipart/form-data" class="space-y-8">
                 {% csrf_token %}
-                
+
                 <!-- Аватар -->
                 <div class="space-y-4">
-                    <label class="block text-sm font-medium text-gray-400">
-                        Аватар
-                    </label>
+                    <label class="block text-lg font-medium text-white">Аватар</label>
                     <div class="flex items-center space-x-6">
-                        <div class="relative">
-                            {% if form.instance.avatar %}
-                                <img src="{{ form.instance.avatar.url }}" 
-                                     alt="Current avatar" 
-                                     class="w-24 h-24 rounded-full object-cover ring-2 ring-purple-500/20">
+                        <div class="relative group">
+                            {% if profile.avatar %}
+                                <div class="w-32 h-32 rounded-full overflow-hidden ring-2 ring-purple-500/30">
+                                    <img src="{{ profile.get_avatar_url }}" 
+                                         alt="{{ user.username }}" 
+                                         class="w-full h-full object-cover">
+                                </div>
                             {% else %}
-                                <div class="w-24 h-24 rounded-full bg-purple-500/10 flex items-center justify-center ring-2 ring-purple-500/20">
-                                    <i class="fas fa-user text-3xl text-purple-500/50"></i>
+                                <div class="w-32 h-32 rounded-full bg-purple-500/10 flex items-center justify-center">
+                                    <i class="fas fa-user text-3xl text-purple-400"></i>
                                 </div>
                             {% endif %}
+                            
+                            <!-- Кнопка загрузки -->
+                            <label class="absolute bottom-0 right-0 w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-purple-600 transition-colors">
+                                <i class="fas fa-camera text-white"></i>
+                                <input type="file" name="avatar" class="hidden" accept="image/*">
+                            </label>
                         </div>
                         
                         <div class="flex-1">
-                            <input type="file" 
-                                   name="avatar" 
-                                   id="avatar"
-                                   class="hidden"
-                                   accept="image/*">
-                            <label for="avatar" 
-                                   class="btn-secondary cursor-pointer inline-flex items-center">
-                                <i class="fas fa-upload mr-2"></i>
-                                Загрузить новый аватар
-                            </label>
-                            <p class="mt-2 text-sm text-gray-500">
-                                PNG, JPG до 5MB
-                            </p>
+                            <p class="text-sm text-gray-400">Загрузите аватар профиля. Рекомендуемый размер: 500x500px</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Био -->
+                <!-- Обложка -->
+                <div class="space-y-4">
+                    <label class="block text-lg font-medium text-white">Обложка профиля</label>
+                    <div class="relative group">
+                        <div class="aspect-[3/1] rounded-xl overflow-hidden bg-purple-500/10">
+                            {% if profile.cover %}
+                                <img src="{{ profile.cover.url }}" 
+                                     alt="Cover" 
+                                     class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <i class="fas fa-image text-4xl text-purple-400/50"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Кнопка загрузки обложки -->
+                            <label for="id_cover" class="absolute bottom-4 right-4 px-4 py-2 bg-purple-500 rounded-lg flex items-center cursor-pointer hover:bg-purple-600 transition-colors">
+                                <i class="fas fa-camera text-white mr-2"></i>
+                                <span class="text-white">Изменить обложку</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Добавляем поле формы для обложки -->
+                {{ form.cover }}
+
+                <!-- После блока с обложкой -->
+                {% if debug %}
+                <div class="mt-4 p-4 bg-red-500/10 rounded-lg">
+                    <h3 class="text-white font-bold mb-2">Cover Debug Info:</h3>
+                    <p class="text-gray-400">Public ID: {{ debug_cover.name }}</p>
+                    <p class="text-gray-400">URL: {{ debug_cover.url }}</p>
+                    <p class="text-gray-400">Resource Type: {{ debug_cover.resource_type }}</p>
+                </div>
+                {% endif %}
+
+                <!-- О себе -->
                 <div class="space-y-2">
-                    <label for="bio" class="block text-sm font-medium text-gray-400">
-                        О себе
-                    </label>
-                    <textarea name="bio" 
-                              id="bio" 
-                              rows="4"
-                              class="w-full bg-surface/50 border border-white/5 text-white rounded-xl px-4 py-3 
-                                     focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent
-                                     transition-all placeholder-gray-500"
-                              placeholder="Расскажите о себе...">{{ form.bio.value|default:'' }}</textarea>
+                    <label class="block text-sm font-medium text-gray-400">О себе</label>
+                    {{ form.bio }}
+                </div>
+
+                <!-- Местоположение -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-400">Местоположение</label>
+                    {{ form.location }}
+                </div>
+
+                <!-- Сайт -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-400">Веб-сайт</label>
+                    {{ form.website }}
+                </div>
+
+                <!-- Род деятельности -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-400">Род деятельности</label>
+                    {{ form.occupation }}
                 </div>
 
                 <!-- Кнопки -->
-                <div class="flex justify-end space-x-4 pt-6">
+                <div class="flex justify-end space-x-4">
                     <a href="{% url 'blog:profile' %}" 
-                       class="btn-secondary">
+                       class="px-6 py-3 bg-surface/50 text-white rounded-xl hover:bg-surface/70 transition-all">
                         Отмена
                     </a>
                     <button type="submit" 
-                            class="btn-primary">
-                        <i class="fas fa-save mr-2"></i>
+                            class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all">
                         Сохранить изменения
                     </button>
                 </div>
@@ -83,4 +119,113 @@
         </div>
     </div>
 </div>
+
+{% if messages %}
+<div class="fixed top-4 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div class="p-4 rounded-xl glass-panel {% if message.tags == 'success' %}bg-green-500/10 border-green-500/20{% else %}bg-red-500/10 border-red-500/20{% endif %} animate-fade-in-down">
+        <div class="flex items-center space-x-3">
+            <i class="fas {% if message.tags == 'success' %}fa-check text-green-400{% else %}fa-exclamation-circle text-red-400{% endif %}"></i>
+            <p class="text-white">{{ message }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Стили и скрипты -->
+<style>
+.glass-panel {
+    background: rgba(26, 22, 37, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-down {
+    animation: fadeInDown 0.3s ease-out forwards;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Предпросмотр аватара
+    const avatarInput = document.querySelector('input[name="avatar"]');
+    avatarInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.querySelector('.w-32.h-32 img') || document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'w-full h-full object-cover';
+                const container = document.querySelector('.w-32.h-32');
+                container.innerHTML = '';
+                container.appendChild(img);
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Предпросмотр обложки
+    const coverInput = document.querySelector('input[name="cover"]');
+    coverInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.querySelector('.aspect-\\[3\\/1\\] img') || document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'w-full h-full object-cover';
+                const container = document.querySelector('.aspect-\\[3\\/1\\]');
+                container.innerHTML = '';
+                container.appendChild(img);
+
+                // Добавляем уведомление о загрузке
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 z-50 p-4 rounded-xl bg-green-500/10 border border-green-500/20 animate-fade-in-down';
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-check text-green-400"></i>
+                        <p class="text-white">Обложка загружена. Не забудьте сохранить изменения!</p>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+
+                // Удаляем уведомление через 5 секунд
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+});
+</script>
+
+<!-- После формы -->
+{% if user.is_staff or user.is_superuser %}
+<div class="mt-4 p-4 bg-red-500/10 rounded-lg">
+    <h3 class="text-white font-bold mb-2">Debug Info:</h3>
+    <div class="mb-4">
+        <h4 class="text-purple-400">Avatar:</h4>
+        <p class="text-gray-400">Name: {{ debug_info.avatar.name }}</p>
+        <p class="text-gray-400">URL: {{ debug_info.avatar.url }}</p>
+    </div>
+    <div>
+        <h4 class="text-purple-400">Cover:</h4>
+        <p class="text-gray-400">Name: {{ debug_info.cover.name }}</p>
+        <p class="text-gray-400">URL: {{ debug_info.cover.url }}</p>
+    </div>
+</div>
+{% endif %}
 {% endblock %} 

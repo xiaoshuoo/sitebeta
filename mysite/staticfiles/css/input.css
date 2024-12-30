@@ -1,30 +1,29 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
+/* Локальные импорты */
 @import './components.css';
 @import './utilities.css';
 @import './mixins.css';
-@import 'tailwindcss/utilities';
 
-/* Добавляем префиксы для background-clip */
+/* Базовые стили */
+:root {
+    --primary-color: #8B5CF6;
+    --primary-dark: #7C3AED;
+    --secondary-color: #EC4899;
+    --background: #0F0A1F;
+    --surface: #1A1625;
+    --text-primary: #E2E8F0;
+    --text-secondary: #94A3B8;
+}
+
+/* Утилиты */
 .bg-clip-text {
     -webkit-background-clip: text;
     background-clip: text;
 }
 
-/* Добавляем кросс-браузерные анимации */
-@-webkit-keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .5; }
-}
-
+/* Анимации */
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: .5; }
-}
-
-@-webkit-keyframes spin {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(360deg); }
 }
 
 @keyframes spin {
@@ -32,12 +31,10 @@
     to { transform: rotate(360deg); }
 }
 
-/* Добавляем поддержку для старых браузеров */
-@supports not (line-clamp: 2) {
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
+/* Поддержка line-clamp */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
