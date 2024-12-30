@@ -28,6 +28,3 @@ python manage.py collectstatic --no-input
 
 # Run migrations
 python manage.py migrate
-
-# Start gunicorn
-exec gunicorn config.wsgi:application --bind=0.0.0.0:$PORT --workers=4 --log-level=error
