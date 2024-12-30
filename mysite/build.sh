@@ -32,5 +32,5 @@ python manage.py migrate
 # Print success message
 echo "Build completed successfully"
 
-# Start gunicorn with config file
-exec gunicorn config.wsgi:application -c gunicorn.conf.py
+# Start gunicorn with config file and wait for it
+exec gunicorn config.wsgi:application -c gunicorn.conf.py --preload --capture-output
