@@ -317,6 +317,15 @@ CLOUDINARY_STORAGE = {
     'SECURE': True,
 }
 
+# Configure Cloudinary
+cloudinary.config( 
+    cloud_name = CLOUDINARY_STORAGE['CLOUD_NAME'],
+    api_key = CLOUDINARY_STORAGE['API_KEY'],
+    api_secret = CLOUDINARY_STORAGE['API_SECRET'],
+    secure = CLOUDINARY_STORAGE['SECURE']
+)
+
+# Keep these storage settings
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
@@ -375,23 +384,5 @@ LOGGING = {
         },
     },
 }
-
-# Cloudinary settings
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dztabzn19',
-    'API_KEY': '637516781124235',
-    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
-    'SECURE': True,
-}
-
-# Настройка хранилища для медиафайлов
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
-
-# Cloudinary credentials
-CLOUDINARY_URL = f"cloudinary://{CLOUDINARY_STORAGE['API_KEY']}:{CLOUDINARY_STORAGE['API_SECRET']}@{CLOUDINARY_STORAGE['CLOUD_NAME']}"
-
-# Media settings
-MEDIA_URL = '/media/'  # URL для доступа к медиафайлам
 
 
