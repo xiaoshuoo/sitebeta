@@ -16,8 +16,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'blog',
-    'cloudinary_storage',
-    'cloudinary',
 ]
 
 # Добавьте настройки TinyMCE

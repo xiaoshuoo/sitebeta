@@ -2,20 +2,21 @@
 # exit on error
 set -o errexit
 
-# Create necessary directories with proper permissions
+echo "Creating directories..."
 mkdir -p staticfiles
 mkdir -p static
 mkdir -p media
+
+echo "Setting permissions..."
 chmod -R 755 staticfiles
 chmod -R 755 static
 chmod -R 755 media
 
-# Install python dependencies
+echo "Installing dependencies..."
 pip install -r requirements.txt
 
-# Clean and collect static files
-rm -rf staticfiles/*
-python manage.py collectstatic --no-input
+echo "Collecting static files..."
+python manage.py collectstatic --noinput --clear
 
-# Apply database migrations
+echo "Running migrations..."
 python manage.py migrate
