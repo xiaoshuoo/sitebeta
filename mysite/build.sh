@@ -32,11 +32,13 @@ python manage.py migrate
 # Print success message
 echo "Build completed successfully"
 
-# Start gunicorn directly with minimal configuration
+# Start gunicorn with specific host binding
 exec gunicorn config.wsgi:application \
     --bind=0.0.0.0:$PORT \
     --workers=4 \
     --timeout=120 \
     --access-logfile=- \
     --error-logfile=- \
-    --log-level=info
+    --log-level=info \
+    --forwarded-allow-ips="*" \
+    --proxy-allow-ips="*"

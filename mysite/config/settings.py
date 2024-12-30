@@ -20,6 +20,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = [
     '*',
     '.onrender.com',
+    'your-actual-app-name.onrender.com'  # Replace with your actual Render domain
 ]
 
 # Application definition

@@ -6,10 +6,15 @@ from django.contrib.auth import views as auth_views
 from blog.views import register, upload_image
 from django.views.static import serve
 from django.urls import re_path
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.cache import never_cache
 
+@never_cache
 def health_check(request):
-    return HttpResponse("OK")
+    return JsonResponse({
+        "status": "ok",
+        "message": "Service is healthy"
+    }, status=200)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
