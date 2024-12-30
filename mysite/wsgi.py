@@ -1,15 +1,16 @@
+"""
+WSGI config for mysite project.
+
+It exposes the WSGI callable as a module-level variable named ``application``.
+"""
+
 import os
-import sys
-
-# Добавляем путь к проекту в PYTHONPATH для Render
-path = os.path.dirname(os.path.abspath(__file__))
-if path not in sys.path:
-    sys.path.append(path)
-
 from django.core.wsgi import get_wsgi_application
+from dotenv import load_dotenv
 
-# Устанавливаем настройки Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+# Load environment variables
+load_dotenv()
 
-# Получаем WSGI приложение
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
+
 application = get_wsgi_application()
