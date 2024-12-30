@@ -30,7 +30,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog.apps.BlogConfig',
     'cloudinary',
-    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -175,7 +174,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+# Whitenoise settings
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+WHITENOISE_MAX_AGE = 31536000  # 1 year
 
 # Media files (Uploads)
 MEDIA_URL = '/media/'
