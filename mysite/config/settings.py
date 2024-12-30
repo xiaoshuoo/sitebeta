@@ -171,45 +171,26 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-
-# Базовые пути для хранения файлов
-BASE_MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-BASE_STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-# Определяем пути для хранения файлов
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Настройки для Whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Общие директории для статических файлов
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Настройки для медиа файлов
+# Media files (Uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Cloudinary settings
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dztabzn19',
     'API_KEY': '637516781124235',
-    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c'
+    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
+    'SECURE': True,
 }
 
-# Настройки для загрузки файлов
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-
-# Настройки для обработки загрузки файлов
-FILE_UPLOAD_HANDLERS = [
-    'django.core.files.uploadhandler.MemoryFileUploadHandler',
-    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
-]
-
-# Настройки для медиа директоий
+# Настройки для медиа директорий
 MEDIA_DIRS = {
     'avatars': {
         'path': 'avatars',
@@ -228,27 +209,9 @@ MEDIA_DIRS = {
     }
 }
 
-# Настройки для хранения файлов
-DEFAULT_FILE_STORAGE = 'blog.cloudinary_storage.CustomCloudinaryStorage'
-FILE_UPLOAD_PERMISSIONS = 0o644
-FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
-
-# Добавляем настройки для сжатия изображений
-IMAGE_COMPRESSION = {
-    'enabled': False,  # Отключаем сжатие для GIF
-    'quality': 90,     # Качество для JPEG
-    'optimize': True   # Оптимизация PNG
-}
-
-# Настройки для синхронизации файлов
-SYNC_MEDIA = True
-SYNC_ON_SAVE = True  # Синхронизировать при сохранении файлов
-SYNC_DELETE = True   # Синхронизировать удаление файлов
-
-# Настройки для файлового хранилища
-DEFAULT_FILE_STORAGE = 'blog.cloudinary_storage.CustomCloudinaryStorage'
-FILE_UPLOAD_PERMISSIONS = 0o644
-FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+# Создаем директории для медиа файлов
+for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
+    os.makedirs(os.path.join(MEDIA_ROOT, dir_name), exist_ok=True)
 
 # Настройки для авторизации
 LOGIN_URL = '/login/'  # Изменено с 'login' на '/login/'
