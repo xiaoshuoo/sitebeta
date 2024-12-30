@@ -2,6 +2,9 @@
 # exit on error
 set -o errexit
 
+# Add the project directory to PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:/opt/render/project/src
+
 # Create directories
 mkdir -p /opt/render/project/src/staticfiles
 mkdir -p /opt/render/project/src/media/avatars
