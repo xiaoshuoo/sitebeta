@@ -8,13 +8,29 @@ from django.views.static import serve
 from django.urls import re_path
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
+from django.db import connection
+from django.utils import timezone
 
 @never_cache
+@require_GET
 def health_check(request):
-    return JsonResponse({
-        "status": "ok",
-        "message": "Service is healthy"
-    }, status=200)
+    try:
+        # Check database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        
+        return JsonResponse({
+            "status": "healthy",
+            "database": "connected",
+            "timestamp": timezone.now().isoformat()
+        })
+    except Exception as e:
+        return JsonResponse({
+            "status": "unhealthy",
+            "error": str(e)
+        }, status=500)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
