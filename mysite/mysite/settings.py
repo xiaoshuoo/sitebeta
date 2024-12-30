@@ -85,37 +85,25 @@ DATABASES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
 
-# Cloudinary settings
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dztabzn19',
-    'API_KEY': '637516781124235',
-    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
-    'SECURE': True,
-    'STATIC_TRANSFORMATIONS': {
-        'default': {
-            'quality': 'auto',
-            'fetch_format': 'auto',
-            'secure': True
-        }
-    }
-}
-
 # Static files settings
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-]
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Media files settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dztabzn19',
+    'API_KEY': '637516781124235',
+    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
+}
 
 # Middleware settings
 MIDDLEWARE = [
@@ -130,12 +118,12 @@ MIDDLEWARE = [
 ]
 
 # Debug settings
-DEBUG = False
+DEBUG = True  # Временно включим для отладки
 ALLOWED_HOSTS = ['*']
 
 # Security settings
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False  # Отключим для отладки
+SESSION_COOKIE_SECURE = False  # Отключим для отладки
+CSRF_COOKIE_SECURE = False  # Отключим для отладки
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True 
