@@ -328,38 +328,44 @@ CLOUDINARY_STORAGE = {
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-if DEBUG:
-    # Local development settings
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-else:
-    # Production settings
-    STATIC_ROOT = '/opt/render/project/src/staticfiles'
-    MEDIA_ROOT = '/opt/render/project/src/media'
-    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
-
 # Static files directories
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Storage settings
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+if DEBUG:
+    # Local development settings
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+else:
+    # Production settings
+    STATIC_ROOT = '/opt/render/project/src/staticfiles'
+    MEDIA_ROOT = '/opt/render/project/src/media'
+    STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Cloudinary URL
-CLOUDINARY_URL = f"cloudinary://{CLOUDINARY_STORAGE['API_KEY']}:{CLOUDINARY_STORAGE['API_SECRET']}@{CLOUDINARY_STORAGE['CLOUD_NAME']}"
+# Cloudinary settings
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dztabzn19',
+    'API_KEY': '637516781124235',
+    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
+    'SECURE': True,
+    'STATIC_TRANSFORMATIONS': {
+        'default': {
+            'quality': 'auto',
+            'fetch_format': 'auto',
+            'secure': True
+        }
+    }
+}
 
-# Настройки для загрузки файлов
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-
-# Настройки для обработки загрузки файлов
-FILE_UPLOAD_HANDLERS = [
-    'django.core.files.uploadhandler.MemoryFileUploadHandler',
-    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
-]
+# Create necessary directories
+for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
+    os.makedirs(os.path.join(MEDIA_ROOT, dir_name), exist_ok=True)
+    if not DEBUG:
+        os.chmod(os.path.join(MEDIA_ROOT, dir_name), 0o777)
 
 # Настройки авторизации
 LOGIN_URL = '/login/'  # Изменено с 'login' на '/login/'
