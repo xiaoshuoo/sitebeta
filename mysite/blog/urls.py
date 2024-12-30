@@ -6,6 +6,9 @@ from . import views
 from .views import ProfileUpdateView
 from django.conf import settings
 from django.conf.urls.static import static
+import logging
+
+logger = logging.getLogger('django.request')
 
 app_name = 'blog'
 
@@ -74,11 +77,18 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Обработчики ошибок
+def custom_400(request, exception):
+    logger.error(f"400 Bad Request: {exception}")
+    return render(request, 'blog/errors/400.html', status=400)
+
 def custom_404(request, exception):
+    logger.error(f"404 Not Found: {exception}")
     return render(request, 'blog/errors/404.html', status=404)
 
 def custom_500(request):
+    logger.error("500 Server Error")
     return render(request, 'blog/errors/500.html', status=500)
 
+handler400 = 'blog.urls.custom_400'
 handler404 = 'blog.urls.custom_404'
 handler500 = 'blog.urls.custom_500' 

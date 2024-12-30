@@ -280,21 +280,59 @@ for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'media.log'),
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
-        'blog.storage': {
-            'handlers': ['file'],
-            'level': 'INFO',
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
+
+# Настройки безопасности
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False
+
+# Настройки CSRF
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://sity-lvo8.onrender.com',
+]
+
+# Настройки сессий
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Разрешаем все хосты (временно для отладки)
+ALLOWED_HOSTS = ['*']
+
+# Отключаем HTTPS редирект (временно для отладки)
+SECURE_SSL_REDIRECT = False
+
+# Настройки для отладки
+DEBUG = True  # Временно включаем для отладки
 
 # Настройки для медиа-файлов
 MEDIA_BACKUP_ENABLED = True
