@@ -35,7 +35,7 @@ echo "Build completed successfully"
 # Function to check if service is healthy
 check_service() {
     for i in {1..30}; do
-        if curl -f http://localhost:$PORT/health/ >/dev/null 2>&1; then
+        if curl -f "http://localhost:$PORT/health/" >/dev/null 2>&1 || curl -f "http://0.0.0.0:$PORT/health/" >/dev/null 2>&1; then
             echo "Service is up!"
             return 0
         fi

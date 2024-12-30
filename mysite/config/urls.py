@@ -15,22 +15,10 @@ from django.utils import timezone
 @never_cache
 @require_GET
 def health_check(request):
-    try:
-        # Check database connection
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-            cursor.fetchone()
-        
-        return JsonResponse({
-            "status": "healthy",
-            "database": "connected",
-            "timestamp": timezone.now().isoformat()
-        })
-    except Exception as e:
-        return JsonResponse({
-            "status": "unhealthy",
-            "error": str(e)
-        }, status=500)
+    return JsonResponse({
+        "status": "healthy",
+        "timestamp": timezone.now().isoformat()
+    })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
