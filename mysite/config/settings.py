@@ -355,4 +355,15 @@ WHITENOISE_SKIP_COMPRESS_EXTENSIONS = [
     'rar', 'svg', 'woff', 'woff2'
 ]
 
+# Gunicorn settings
+GUNICORN_TIMEOUT = 300
+GUNICORN_WORKERS = 4
+GUNICORN_WORKER_CLASS = 'sync'
+
+# Render specific settings
+if not DEBUG:
+    ALLOWED_HOSTS = ['*.onrender.com', 'your-app-name.onrender.com']
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 

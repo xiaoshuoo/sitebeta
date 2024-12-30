@@ -32,16 +32,5 @@ python manage.py migrate
 # Print success message
 echo "Build completed successfully"
 
-# Start gunicorn with increased timeouts and graceful handling
-exec gunicorn config.wsgi:application \
-    --bind=0.0.0.0:$PORT \
-    --workers=4 \
-    --access-logfile - \
-    --error-logfile - \
-    --log-level debug \
-    --timeout 300 \
-    --graceful-timeout 60 \
-    --keep-alive 5 \
-    --max-requests 1000 \
-    --max-requests-jitter 50 \
-    --preload
+# Start gunicorn with config file
+exec gunicorn config.wsgi:application -c gunicorn.conf.py
