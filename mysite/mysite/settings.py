@@ -1,3 +1,4 @@
+# Django settings
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -8,6 +9,11 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Quick-start development settings - unsuitable for production
+DEBUG = True
+ALLOWED_HOSTS = ['*']
+
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -18,7 +24,65 @@ INSTALLED_APPS = [
     'blog',
 ]
 
-# Добавьте настройки TinyMCE
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'mysite.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'mysite.wsgi.application'
+
+# Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'b3fbgpfjiisirtqyqdry',
+        'USER': 'utihi7xqxpcfj2b5nzxr',
+        'PASSWORD': 'JMq9iLTaBX23jV4oFu9JsIqHIO45dB',
+        'HOST': 'b3fbgpfjiisirtqyqdry-postgresql.services.clever-cloud.com',
+        'PORT': '5432',
+    }
+}
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# TinyMCE settings
 TINYMCE_DEFAULT_CONFIG = {
     'height': 600,
     'width': 'auto',
@@ -38,91 +102,4 @@ TINYMCE_DEFAULT_CONFIG = {
     'content_css': 'dark',
     'branding': False,
     'promotion': False,
-    'content_style': '''
-        body {
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #e2e8f0;
-            background-color: #1a1625;
-            padding: 20px;
-            max-width: 100%;
-        }
-        p { margin: 1em 0; }
-        h1, h2, h3, h4, h5, h6 { color: #fff; }
-        a { color: #8B5CF6; }
-        img { max-width: 100%; height: auto; border-radius: 8px; }
-        pre { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 8px; }
-        blockquote { 
-            border-left: 4px solid #8B5CF6;
-            margin: 1.5em 0;
-            padding: 1em 1.5em;
-            background: rgba(139, 92, 246, 0.1);
-        }
-    '''
-}
-
-# Настройки для бэкапов
-BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
-
-# Создаем директорию для бэкапов, если она не существует
-if not os.path.exists(BACKUP_DIR):
-    os.makedirs(BACKUP_DIR)
-
-# Настройки для SQLite
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'BACKUP_ENABLED': True,  # Включаем бэкапы
-        'BACKUP_DIRECTORY': BACKUP_DIR,  # Директория для бэкапов
-    }
-}
-
-# Настройки медиа-файлов
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
-
-# Static files settings
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
-
-# Media files settings
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-# Cloudinary settings
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dztabzn19',
-    'API_KEY': '637516781124235',
-    'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
-    'MEDIA_TAG': 'media',
-}
-
-# Middleware settings
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-# Debug settings
-DEBUG = True  # Временно включим для отладки
-ALLOWED_HOSTS = ['*']
-
-# Security settings
-SECURE_SSL_REDIRECT = False  # Отключим для отладки
-SESSION_COOKIE_SECURE = False  # Отключим для отладки
-CSRF_COOKIE_SECURE = False  # Отключим для отладки
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True 
+} 
