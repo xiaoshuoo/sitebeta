@@ -1,0 +1,23 @@
+/* Стили для шаблонов текста */
+.template-card {
+    background: rgba(26, 22, 37, 0.7);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.template-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.1);
+}
+
+.template-actions {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.template-card:hover .template-actions {
+    opacity: 1;
+} 
