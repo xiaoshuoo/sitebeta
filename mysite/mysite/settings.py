@@ -15,9 +15,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'blog',
     'cloudinary_storage',
     'cloudinary',
-    'blog',
 ]
 
 # Добавьте настройки TinyMCE
@@ -91,7 +91,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files settings
 MEDIA_URL = '/media/'
@@ -103,6 +103,7 @@ CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dztabzn19',
     'API_KEY': '637516781124235',
     'API_SECRET': 'IlGJ1ZByBxMee-p-BwUWcN7498c',
+    'MEDIA_TAG': 'media',
 }
 
 # Middleware settings
