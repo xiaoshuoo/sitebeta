@@ -12,10 +12,12 @@ mkdir -p /opt/render/project/src/media/avatars
 mkdir -p /opt/render/project/src/media/posts
 mkdir -p /opt/render/project/src/media/covers
 mkdir -p /opt/render/project/src/media/thumbnails
+mkdir -p /opt/render/project/src/media_backup
 
 # Set permissions
 chmod -R 777 /opt/render/project/src/media
 chmod -R 777 /opt/render/project/src/staticfiles
+chmod -R 777 /opt/render/project/src/media_backup
 
 # Install dependencies
 python -m pip install --upgrade pip
