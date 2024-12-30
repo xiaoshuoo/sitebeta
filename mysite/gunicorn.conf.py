@@ -56,4 +56,4 @@ def pre_exec(server):
     server.log.info("Pre-exec: Forked child, re-executing.")
 
 def worker_exit(server, worker):
-    server.log.info(f"Worker {worker.pid} exited (signal: {worker.exitcode})")
+    server.log.info(f"Worker {worker.pid} exited")
