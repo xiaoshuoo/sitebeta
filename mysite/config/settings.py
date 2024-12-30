@@ -239,7 +239,7 @@ FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 # Настройки для Whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Общие директории для статических айлов
 STATICFILES_DIRS = [
@@ -339,5 +339,21 @@ STATICFILES_DIRS = [
 # Media settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Whitenoise settings
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+# Whitenoise options
+WHITENOISE_MIMETYPES = {
+    '.svg': 'image/svg+xml',
+    '.woff': 'application/font-woff',
+    '.woff2': 'application/font-woff2',
+}
+
+WHITENOISE_ALLOW_ALL_ORIGINS = True
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = [
+    'jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'gz', 'tgz', 'bz2',
+    'rar', 'svg', 'woff', 'woff2'
+]
 
 

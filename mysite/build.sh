@@ -20,8 +20,11 @@ pip install -r requirements.txt
 # Create static directory if it doesn't exist
 python -c "import os; os.makedirs('static', exist_ok=True)"
 
-# Collect static files
-python manage.py collectstatic --no-input --clear
+# Clean up old static files
+rm -rf /opt/render/project/src/staticfiles/*
+
+# Collect static files without post-processing
+python manage.py collectstatic --no-input --noppost-process
 
 # Run migrations
 python manage.py migrate
