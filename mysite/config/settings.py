@@ -20,7 +20,8 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = [
     '*',
     '.onrender.com',
-    'your-actual-app-name.onrender.com'  # Replace with your actual Render domain
+    'sity-lvo8.onrender.com',  # Ваш актуальный домен
+    'sitebeta.onrender.com'    # Старый домен, если нужен
 ]
 
 # Application definition
