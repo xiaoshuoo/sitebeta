@@ -2,20 +2,14 @@
 # exit on error
 set -o errexit
 
-# Install python dependencies
+# Установка зависимостей
 pip install -r requirements.txt
 
-# Create necessary directories
+# Создание директории для статических файлов
 mkdir -p staticfiles
-mkdir -p static/css
-mkdir -p static/js
-mkdir -p static/images
 
-# Clean up old static files
-rm -rf staticfiles/*
-
-# Collect static files
+# Сбор статических файлов
 python manage.py collectstatic --no-input
 
-# Apply database migrations
+# Применение миграций
 python manage.py migrate
