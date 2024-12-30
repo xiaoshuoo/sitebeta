@@ -28,9 +28,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'blog.apps.BlogConfig',
-    'cloudinary',
     'cloudinary_storage',
+    'cloudinary',
+    'blog.apps.BlogConfig',
 ]
 
 MIDDLEWARE = [
@@ -309,7 +309,7 @@ for dir_name in ['avatars', 'posts', 'thumbnails', 'covers']:
     os.makedirs(os.path.join(MEDIA_ROOT, dir_name), exist_ok=True)
     os.makedirs(os.path.join(MEDIA_BACKUP_ROOT, dir_name), exist_ok=True)
 
-# Настройки Cloudinary
+# Cloudinary settings
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dztabzn19',
     'API_KEY': '637516781124235',
@@ -325,15 +325,12 @@ cloudinary.config(
     secure = CLOUDINARY_STORAGE['SECURE']
 )
 
-# Keep these storage settings
+# Storage settings
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
 
-# Cloudinary credentials
-CLOUDINARY_URL = f"cloudinary://{CLOUDINARY_STORAGE['API_KEY']}:{CLOUDINARY_STORAGE['API_SECRET']}@{CLOUDINARY_STORAGE['CLOUD_NAME']}"
-
 # Media settings
-MEDIA_URL = '/media/'  # URL для доступа к медиафайлам
+MEDIA_URL = '/media/'
 
 # Настройки для загрузки файлов
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
