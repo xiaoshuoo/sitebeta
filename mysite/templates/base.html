@@ -15,8 +15,25 @@
     <script src="https://cdn.tiny.cloud/1/69ivue7aox9alaq0v8pv90xk8iysctulgxmx7px3ler2pnp4/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <!-- Alpine.js с defer -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS Production Build -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'background': '#1A1625',
+                        'surface': '#2D2A3D',
+                        'primary': {
+                            500: '#8B5CF6',
+                            600: '#7C3AED',
+                            700: '#6D28D9',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <!-- Font Awesome -->

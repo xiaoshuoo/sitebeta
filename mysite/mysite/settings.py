@@ -5,10 +5,19 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 INSTALLED_APPS = [
-    # ... другие приложения ...
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
     'blog',
-    # ... остальные приложения ...
+    'tinymce',
+    'tailwind',
+    'theme',
 ]
+
+TAILWIND_APP_NAME = 'theme'
 
 # Добавьте настройки TinyMCE
 TINYMCE_DEFAULT_CONFIG = {
