@@ -3,18 +3,18 @@
   "version": "1.0.0",
   "description": "My Django Blog",
   "scripts": {
-    "build:css": "NODE_ENV=production tailwindcss -i static/css/main.css -o static/css/dist/main.css --minify",
+    "build:css": "tailwindcss -i static/css/main.css -o static/css/dist/main.css --minify",
     "watch:css": "tailwindcss -i static/css/main.css -o static/css/dist/main.css --watch"
   },
   "dependencies": {
-    "@tailwindcss/aspect-ratio": "^0.4.2",
-    "@tailwindcss/forms": "^0.5.7",
-    "@tailwindcss/typography": "^0.5.10",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
-    "tailwindcss": "^3.3.5"
+    "tailwindcss": "^3.3.5",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "@tailwindcss/aspect-ratio": "^0.4.2"
   }
 }
