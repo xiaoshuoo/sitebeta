@@ -1,39 +1,33 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # exit on error
 set -o errexit
 
-# Создаем необходимые директории
-mkdir -p staticfiles
-mkdir -p static/css/dist
-mkdir -p media
+# Create directories
+mkdir -p /opt/render/project/src/staticfiles
+mkdir -p /opt/render/project/src/media/avatars
+mkdir -p /opt/render/project/src/media/posts
+mkdir -p /opt/render/project/src/media/covers
+mkdir -p /opt/render/project/src/media/thumbnails
 
-# Устанавливаем зависимости Python
+# Set permissions
+chmod -R 777 /opt/render/project/src/media
+chmod -R 777 /opt/render/project/src/staticfiles
+
+# Install dependencies
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# Устанавливаем Node.js через nvm
-export NVM_DIR="$HOME/.nvm"
-mkdir -p $NVM_DIR
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-. "$NVM_DIR/nvm.sh"
-nvm install 16
-nvm use 16
+# Create static directory if it doesn't exist
+python -c "import os; os.makedirs('static', exist_ok=True)"
 
-# Очищаем npm кэш и node_modules
-rm -rf node_modules
-npm cache clean --force
+# Clean up old static files
+rm -rf /opt/render/project/src/staticfiles/*
 
-# Устанавливаем зависимости npm и собираем CSS
-npm install --no-optional
+# Collect static files without post-processing
+python manage.py collectstatic --no-input --no-post-process
 
-# Копируем custom.css в директорию dist
-cp static/css/custom.css static/css/dist/
-
-# Собираем Tailwind CSS
-NODE_ENV=production npx tailwindcss -i ./static/css/main.css -o ./static/css/dist/main.css --minify
-
-# Собираем статические файлы Django
-python manage.py collectstatic --noinput
-
-# Применяем миграции
+# Run migrations
 python manage.py migrate
+
+# Start gunicorn
+exec gunicorn mysite.wsgi:application --bind=0.0.0.0:$PORT --workers=4
