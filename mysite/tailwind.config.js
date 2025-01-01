@@ -16,22 +16,6 @@ module.exports = {
           700: '#6D28D9',
         },
       },
-      animation: {
-        'float': 'float 15s infinite linear',
-        'twinkle': 'twinkle 5s infinite',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0) translateX(0)' },
-          '25%': { transform: 'translateY(-30vh) translateX(20vw)' },
-          '50%': { transform: 'translateY(-10vh) translateX(-20vw)' },
-          '75%': { transform: 'translateY(-25vh) translateX(10vw)' },
-        },
-        twinkle: {
-          '0%, 100%': { opacity: '0' },
-          '50%': { opacity: '1' },
-        },
-      },
     },
   },
   plugins: [

@@ -19,9 +19,13 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 nvm install 16
 nvm use 16
 
+# Очищаем npm кэш и node_modules
+rm -rf node_modules
+npm cache clean --force
+
 # Устанавливаем зависимости npm и собираем CSS
-npm install
-npm run build
+npm install --no-optional
+NODE_ENV=production npx tailwindcss -i ./static/css/main.css -o ./static/css/dist/main.css --minify
 
 # Собираем статические файлы Django
 python manage.py collectstatic --noinput
