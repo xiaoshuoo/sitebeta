@@ -7,6 +7,22 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>{% block title %}Мой блог{% endblock %}</title>
     
+    <!-- Tailwind CSS (загружаем первым) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        surface: '#1a1625',
+                        background: '#13111C',
+                    },
+                },
+            },
+        }
+    </script>
+    
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
@@ -24,8 +40,6 @@
     <script src="https://cdn.tiny.cloud/1/69ivue7aox9alaq0v8pv90xk8iysctulgxmx7px3ler2pnp4/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS (загружаем последним) -->
-    <script src="https://cdn.tailwindcss.com"></script>
     
     {% block extra_head %}{% endblock %}
 </head>

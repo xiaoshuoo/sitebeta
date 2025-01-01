@@ -12,6 +12,9 @@ mkdir -p media
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
+# Clean up old static files
+rm -rf staticfiles/*
+
 # Collect static files
 python manage.py collectstatic --no-input --clear
 
