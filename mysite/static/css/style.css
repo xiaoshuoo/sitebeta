@@ -1,5 +1,12 @@
 /* Empty file to ensure static directory is not empty */
 
+/* Reset default margins and padding */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
 /* Стили для частиц */
 .particle-container {
     position: fixed;

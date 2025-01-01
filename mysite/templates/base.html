@@ -130,8 +130,8 @@
     
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-background min-h-screen flex flex-col">
-    <div class="relative min-h-screen flex flex-col" style="z-index: 0;">
+<body class="bg-background min-h-screen flex flex-col m-0 p-0 overflow-x-hidden">
+    <div class="relative min-h-screen flex flex-col m-0" style="z-index: 0;">
         <div class="particle-container" id="particleContainer" style="z-index: 1;"></div>
         <div class="grid-bg" style="z-index: 1;"></div>
 
@@ -184,7 +184,7 @@
         });
         </script>
         <!-- Навигация -->
-        <nav class="bg-surface/30 backdrop-blur-sm border-b border-white/5 relative" style="z-index: 50;">
+        <nav class="bg-surface/30 backdrop-blur-sm border-b border-white/5 relative w-full top-0 left-0" style="z-index: 50;">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <!-- Логотип -->
@@ -349,7 +349,7 @@
         </nav>
 
         <!-- Основной контент -->
-        <main class="flex-grow relative" style="z-index: 2;">
+        <main class="flex-grow relative mt-0" style="z-index: 2;">
             {% block content %}{% endblock %}
         </main>
 
