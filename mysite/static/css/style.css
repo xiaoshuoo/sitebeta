@@ -1,1 +1,119 @@
 /* Empty file to ensure static directory is not empty */
+
+/* Базовые стили для навигации */
+.nav-button {
+    @apply px-4 py-2 text-gray-300 hover:text-white hover:bg-purple-500/10 rounded-xl transition-all duration-300;
+}
+
+.nav-button.active {
+    @apply bg-purple-500/20 text-white;
+}
+
+/* Анимации для частиц */
+.particle-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.particle {
+    position: absolute;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float 15s infinite linear;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0) translateX(0);
+    }
+    25% {
+        transform: translateY(-30vh) translateX(20vw);
+    }
+    50% {
+        transform: translateY(-10vh) translateX(-20vw);
+    }
+    75% {
+        transform: translateY(-25vh) translateX(10vw);
+    }
+    100% {
+        transform: translateY(0) translateX(0);
+    }
+}
+
+/* Звезды */
+.stars-container {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 5s infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Сетка на фоне */
+.grid-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+}
+
+/* Кастомные стили для кнопок */
+.btn-primary {
+    @apply px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl 
+           hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300;
+}
+
+.nav-link {
+    @apply text-gray-300 hover:text-white transition-colors duration-300;
+}
+
+/* Стили для форм */
+.form-input {
+    @apply bg-surface/50 border border-purple-500/20 rounded-xl px-4 py-2 text-white 
+           focus:ring-2 focus:ring-purple-500/50 focus:border-transparent;
+}
+
+/* Анимации для интерактивных элементов */
+.hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+}
+
+/* Стили для карточек */
+.card {
+    @apply bg-surface/30 backdrop-blur-sm border border-white/5 rounded-xl p-6;
+}
+
+/* Градиентный текст */
+.gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500;
+}
