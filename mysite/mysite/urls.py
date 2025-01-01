@@ -2,11 +2,6 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from blog.views import backup_database
-import atexit
-
-# Регистрируем функцию бэкапа при выключении
-atexit.register(backup_database)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

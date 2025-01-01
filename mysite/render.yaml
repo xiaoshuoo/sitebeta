@@ -7,6 +7,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: NODE_VERSION
+        value: 18.18.0
       - key: MEDIA_ROOT
         value: /opt/render/project/src/media
     disk:
