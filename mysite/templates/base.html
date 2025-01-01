@@ -4,27 +4,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>{% block title %}Мой блог{% endblock %}</title>
-    {% block extra_head %}{% endblock %}
-    <!-- jQuery (добавить перед Select2 и TinyMCE) -->
+    
+    <!-- Styles -->
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link href="{% static 'css/components.css' %}" rel="stylesheet">
+    <link href="{% static 'css/utilities.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <!-- Select2 -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
     <!-- TinyMCE -->
     <script src="https://cdn.tiny.cloud/1/69ivue7aox9alaq0v8pv90xk8iysctulgxmx7px3ler2pnp4/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <!-- Alpine.js с defer -->
+    
+    <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <!-- Добавляем явное указание кодировки -->
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    {% block extra_head %}{% endblock %}
+
+    <style>
+        .bg-background { background-color: #1a1625; }
+        .bg-surface { background-color: #2d2b3a; }
+        
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100vw);
+                opacity: 0;
+            }
+        }
+
+        .nav-button {
+            padding: 0.5rem 1rem;
+            color: rgb(209 213 219);
+            transition: all 0.3s;
+        }
+        
+        .nav-button:hover {
+            color: white;
+        }
+        
+        .nav-button.active {
+            color: rgb(139 92 246);
+        }
+
+        .btn-primary {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(to right, rgb(139 92 246), rgb(236 72 153), rgb(139 92 246));
+            color: white;
+            border-radius: 0.75rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.25);
+            transform: translateY(-1px);
+        }
+    </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col">
     <div class="relative min-h-screen flex flex-col" style="z-index: 0;">
