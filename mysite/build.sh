@@ -25,6 +25,11 @@ npm cache clean --force
 
 # Устанавливаем зависимости npm и собираем CSS
 npm install --no-optional
+
+# Копируем custom.css в директорию dist
+cp static/css/custom.css static/css/dist/
+
+# Собираем Tailwind CSS
 NODE_ENV=production npx tailwindcss -i ./static/css/main.css -o ./static/css/dist/main.css --minify
 
 # Собираем статические файлы Django
