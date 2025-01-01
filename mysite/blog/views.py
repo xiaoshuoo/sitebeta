@@ -1314,3 +1314,33 @@ def delete_public_template(request, template_id):
             messages.error(request, f'Ошибка при удалении шаблона: {str(e)}')
     
     return redirect('blog:public_templates')
+
+def public_templates(request):
+    """
+    Отображение публичных шаблонов текста
+    """
+    templates = TextTemplate.objects.all().order_by('category', '-updated_at')
+    return render(request, 'blog/public_templates.html', {'templates': templates})
+
+def edit_public_template(request, template_id):
+    """
+    Редактирование публичного шаблона
+    """
+    template = get_object_or_404(TextTemplate, id=template_id)
+    if request.method == 'POST':
+        template.title = request.POST.get('title')
+        template.category = request.POST.get('category')
+        template.content = request.POST.get('content')
+        template.save()
+        messages.success(request, 'Шаблон успешно обновлен')
+        return redirect('blog:public_templates')
+    return render(request, 'blog/edit_public_template.html', {'template': template})
+
+def delete_public_template(request, template_id):
+    """
+    Удаление публичного шаблона
+    """
+    template = get_object_or_404(TextTemplate, id=template_id)
+    template.delete()
+    messages.success(request, 'Шаблон успешно удален')
+    return redirect('blog:public_templates')
