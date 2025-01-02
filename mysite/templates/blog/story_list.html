@@ -15,9 +15,12 @@
             <span>Поиск историй</span>
         </a>
         {% if user.is_authenticated %}
-        <a href="{% url 'blog:create_story' %}" class="anime-button">
-            <i class="fas fa-plus mr-2"></i>
-            Добавить историю
+        <a href="{% url 'blog:create_story' %}" 
+           class="group px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl
+                  flex items-center space-x-2 transform hover:-translate-y-0.5 hover:shadow-lg 
+                  hover:shadow-purple-500/25 transition-all duration-300">
+            <i class="fas fa-plus group-hover:scale-110 transition-transform duration-300"></i>
+            <span class="text-white">Добавить историю</span>
         </a>
         {% endif %}
     </div>
@@ -25,7 +28,8 @@
     {% if stories %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for story in stories %}
-        <div class="admin-card group hover:scale-[1.02] transition-all duration-300">
+        <div class="admin-card group hover:scale-[1.02] transition-all duration-300 relative">
+            <a href="{% url 'blog:story_detail' pk=story.pk %}" class="absolute inset-0 z-10"></a>
             <div class="relative h-48 rounded-t-xl overflow-hidden">
                 {% if story.cover %}
                 <img src="{{ story.cover.url }}" alt="{{ story.title }}" class="w-full h-full object-cover">
@@ -38,7 +42,9 @@
             </div>
             
             <div class="p-6">
-                <h2 class="text-xl font-bold text-white mb-2 line-clamp-2">{{ story.title }}</h2>
+                <h2 class="text-xl font-bold text-white mb-2 line-clamp-2 relative z-20">
+                    <a href="{% url 'blog:story_detail' pk=story.pk %}" class="hover:text-purple-400 transition-colors">{{ story.title }}</a>
+                </h2>
                 {% if story.alt_title %}
                 <p class="text-gray-400 text-sm mb-3">{{ story.alt_title }}</p>
                 {% endif %}
@@ -53,27 +59,29 @@
                         {{ story.views_count }}
                     </div>
                 </div>
-                
-                <p class="text-gray-300 mb-4 line-clamp-3">{{ story.description }}</p>
-                
+
+                <p class="text-gray-400 text-sm line-clamp-2 mb-4">{{ story.description }}</p>
+
                 {% if story.tags.all %}
                 <div class="flex flex-wrap gap-2 mb-4">
                     {% for tag in story.tags.all %}
-                    <span class="px-2 py-1 bg-purple-500/10 text-purple-400 rounded-lg text-sm">
+                    <span class="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-sm">
                         #{{ tag.name }}
                     </span>
                     {% endfor %}
                 </div>
                 {% endif %}
-                
-                <div class="flex justify-between items-center">
-                    <a href="{% url 'blog:story_detail' pk=story.pk %}" class="text-purple-400 hover:text-purple-300 transition-colors">
+
+                <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center space-x-2 text-gray-400">
+                        <i class="fas fa-user"></i>
+                        <span>{{ story.author.username }}</span>
+                    </div>
+                    <a href="{% url 'blog:story_detail' pk=story.pk %}" 
+                       class="text-purple-400 hover:text-purple-300 transition-colors relative z-20">
                         Подробнее
                         <i class="fas fa-arrow-right ml-1"></i>
                     </a>
-                    <div class="text-sm text-gray-400">
-                        {{ story.created_at|date:"d.m.Y" }}
-                    </div>
                 </div>
             </div>
         </div>

@@ -43,6 +43,31 @@
               }">
             {% csrf_token %}
 
+            <style>
+                /* Custom form field styles */
+                .form-input {
+                    @apply w-full px-6 py-4 bg-surface/30 border border-purple-500/20 rounded-xl text-white placeholder-gray-400 
+                           focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none 
+                           transition-all duration-300 hover:border-purple-500/40;
+                }
+                .form-textarea {
+                    @apply w-full px-6 py-4 bg-surface/30 border border-purple-500/20 rounded-xl text-white placeholder-gray-400 
+                           focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none 
+                           transition-all duration-300 hover:border-purple-500/40 min-h-[150px];
+                }
+                /* Override Django form widget styles */
+                #id_title, #id_tags, #id_description, #id_link_title, #id_link_url, #id_chapters_count {
+                    @apply form-input bg-[#1a1625] text-white;
+                }
+                #id_description {
+                    @apply form-textarea bg-[#1a1625] text-white;
+                }
+                /* Additional styles for dynamic fields */
+                input[type="text"], input[type="url"], textarea {
+                    @apply bg-[#1a1625] text-white placeholder-gray-400;
+                }
+            </style>
+
             <!-- Обложка с улучшенной анимацией -->
             <div class="space-y-2">
                 <label class="block text-white font-medium flex items-center space-x-2">
@@ -78,7 +103,12 @@
                             <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
                         </button>
                     </div>
-                    {{ form.title }}
+                    <div class="relative">
+                        <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
+                               class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               placeholder="Введите название истории"
+                               {% if form.title.value %}value="{{ form.title.value }}"{% endif %}>
+                    </div>
                     {% if form.title.errors %}
                     <p class="text-red-400 text-sm flex items-center">
                         <i class="fas fa-exclamation-circle mr-1"></i>
@@ -102,7 +132,7 @@
                             </button>
                         </div>
                         <input type="text" :name="'alt_title_' + title.id" 
-                               class="w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
                                placeholder="🔤 Альтернативное название">
                     </div>
                 </template>
@@ -114,7 +144,10 @@
                         <span>Количество глав</span>
                     </label>
                     <div class="relative">
-                        {{ form.chapters_count }}
+                        <input type="number" name="{{ form.chapters_count.name }}" id="{{ form.chapters_count.id_for_label }}"
+                               class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               placeholder="Укажите количество глав"
+                               {% if form.chapters_count.value %}value="{{ form.chapters_count.value }}"{% endif %}>
                         <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
                             <i class="fas fa-book-open text-purple-400"></i>
                         </div>
@@ -131,7 +164,12 @@
                         <i class="fas fa-hashtag text-purple-400"></i>
                         <span>Хештеги</span>
                     </label>
-                    {{ form.tags }}
+                    <div class="relative">
+                        <input type="text" name="{{ form.tags.name }}" id="{{ form.tags.id_for_label }}"
+                               class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               placeholder="Введите хештеги через запятую"
+                               {% if form.tags.value %}value="{{ form.tags.value }}"{% endif %}>
+                    </div>
                     <p class="text-sm text-gray-400 flex items-center">
                         <i class="fas fa-info-circle mr-1"></i>
                         Разделяйте хештеги запятыми
@@ -145,7 +183,11 @@
                     <i class="fas fa-align-left text-purple-400"></i>
                     <span>Описание истории</span>
                 </label>
-                {{ form.description }}
+                <div class="relative">
+                    <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}"
+                              class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40 min-h-[150px]"
+                              placeholder="Опишите вашу историю">{% if form.description.value %}{{ form.description.value }}{% endif %}</textarea>
+                </div>
             </div>
 
             <!-- Ссылки -->
@@ -161,14 +203,24 @@
                         <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
                     </button>
                 </div>
-                {{ form.link_title }}
+                <div class="relative">
+                    <input type="text" name="{{ form.link_title.name }}" id="{{ form.link_title.id_for_label }}"
+                           class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                           placeholder="Введите название ссылки"
+                           {% if form.link_title.value %}value="{{ form.link_title.value }}"{% endif %}>
+                </div>
             </div>
             <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
                 <label class="block text-white font-medium flex items-center space-x-2">
                     <i class="fas fa-link text-purple-400"></i>
                     <span>URL ссылки</span>
                 </label>
-                {{ form.link_url }}
+                <div class="relative">
+                    <input type="url" name="{{ form.link_url.name }}" id="{{ form.link_url.id_for_label }}"
+                           class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                           placeholder="https://example.com"
+                           {% if form.link_url.value %}value="{{ form.link_url.value }}"{% endif %}>
+                </div>
             </div>
 
             <!-- Динамические ссылки -->
@@ -186,7 +238,7 @@
                             </button>
                         </div>
                         <input type="text" :name="'link_title_' + url.id"
-                               class="w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
                                placeholder="🔖 Название ссылки">
                     </div>
                     <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
@@ -195,7 +247,7 @@
                             <span>Дополнительный URL</span>
                         </label>
                         <input type="url" :name="'link_url_' + url.id"
-                               class="w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
                                placeholder="🔗 https://example.com">
                     </div>
                 </div>
