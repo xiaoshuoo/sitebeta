@@ -204,6 +204,13 @@
                                 <i class="fas fa-home mr-2"></i>
                                 Главная
                             </a>
+                            {% if user.is_staff %}
+                            <a href="{% url 'blog:story_list' %}" 
+                               class="nav-button {% if request.resolver_match.url_name == 'story_list' %}active{% endif %}">
+                                <i class="fas fa-book mr-2"></i>
+                                Истории
+                            </a>
+                            {% endif %}
                             <a href="{% url 'blog:categories' %}" 
                                class="nav-button {% if request.resolver_match.url_name == 'categories' %}active{% endif %}">
                                 <i class="fas fa-folder mr-2"></i>
