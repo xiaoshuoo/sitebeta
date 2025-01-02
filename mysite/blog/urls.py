@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from . import views
-from .views import ProfileUpdateView
+from .views import ProfileUpdateView, search
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -68,6 +68,16 @@ urlpatterns = [
     path('templates/litvininkov/', views.public_templates, name='public_templates'),
     path('templates/litvininkov/<int:template_id>/edit/', views.edit_public_template, name='edit_public_template'),
     path('templates/litvininkov/<int:template_id>/delete/', views.delete_public_template, name='delete_public_template'),
+    path('panel/generate-backup/', views.generate_backup, name='generate_backup'),
+    path('panel/users/<int:user_id>/toggle/', views.toggle_user_status, name='toggle_user_status'),
+    path('panel/users/<int:user_id>/reset-password/', views.reset_user_password, name='reset_user_password'),
+    path('stories/', views.story_list, name='story_list'),
+    path('stories/create/', views.create_story, name='create_story'),
+    path('stories/<int:pk>/', views.story_detail, name='story_detail'),
+    path('stories/<int:pk>/edit/', views.edit_story, name='edit_story'),
+    path('my-stories/', views.my_stories, name='my_stories'),
+    path('story/<int:pk>/delete/', views.delete_story, name='delete_story'),
+    path('stories/search/', views.search_stories, name='search_stories'),
 ]
 
 if settings.DEBUG:

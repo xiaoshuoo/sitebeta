@@ -216,10 +216,24 @@ class Category(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank=False)
     
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug and self.name:
+            self.slug = slugify(self.name)
+            # Если slug пустой после slugify, генерируем уникальный
+            if not self.slug:
+                self.slug = f"tag-{uuid.uuid4().hex[:8]}"
+            # Проверяем уникальность
+            counter = 1
+            original_slug = self.slug
+            while Tag.objects.filter(slug=self.slug).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
 
 class Post(models.Model):
     title = models.CharField(max_length=200)
@@ -394,3 +408,36 @@ class TextTemplate(models.Model):
 
     def __str__(self):
         return self.title
+
+class Story(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stories')
+    cover = models.ImageField(upload_to='stories/covers/', null=True, blank=True)
+    title = models.CharField(max_length=200)
+    alt_title = models.CharField(max_length=200, blank=True)
+    alt_titles = models.JSONField(default=list, blank=True)  # Для хранения дополнительных названий
+    chapters_count = models.PositiveIntegerField(default=0)
+    tags = models.ManyToManyField(Tag, blank=True)
+    description = models.TextField()
+    link_title = models.CharField(max_length=200, blank=True)
+    link_url = models.URLField(blank=True)
+    additional_links = models.JSONField(default=list, blank=True)  # Для хранения дополнительных ссылок
+    is_draft = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    views_count = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'История'
+        verbose_name_plural = 'Истории'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse('blog:story_detail', kwargs={'pk': self.pk})
+
+    def get_cover_url(self):
+        if self.cover:
+            return self.cover.url
+        return None

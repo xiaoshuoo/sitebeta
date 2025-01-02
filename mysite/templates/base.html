@@ -196,8 +196,9 @@
                     </div>
 
                     <!-- Основная навигация -->
-                    <div class="hidden md:block">
-                        <div class="ml-10 flex items-center space-x-4">
+                    <div class="hidden md:flex flex-1 items-center justify-between px-8">
+                        <!-- Навигационные кнопки -->
+                        <div class="flex items-center space-x-4">
                             <a href="{% url 'blog:home' %}" 
                                class="nav-button {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                                 <i class="fas fa-home mr-2"></i>
@@ -213,19 +214,145 @@
                                 <i class="fas fa-envelope mr-2"></i>
                                 Связь со мной
                             </a>
+                        </div>
+
+                        <!-- Правая часть навигации -->
+                        <div class="flex items-center space-x-4">
+                            <!-- Поиск (сворачиваемый) -->
+                            <div x-data="{
+                                searchQuery: '',
+                                searchType: 'all',
+                                isOpen: false,
+                                isExpanded: false,
+                                isLoading: false,
+                                results: [],
+                                closeSearch() {
+                                    this.isExpanded = false;
+                                    this.isOpen = false;
+                                    this.searchQuery = '';
+                                    this.results = [];
+                                },
+                                async search() {
+                                    if (this.searchQuery.length < 2) {
+                                        this.results = [];
+                                        return;
+                                    }
+                                    
+                                    this.isLoading = true;
+                                    try {
+                                        const response = await fetch(`/search/?q=${encodeURIComponent(this.searchQuery)}&type=${this.searchType}`);
+                                        const data = await response.json();
+                                        this.results = data.results || [];
+                                    } catch (error) {
+                                        console.error('Search error:', error);
+                                        this.results = [];
+                                    } finally {
+                                        this.isLoading = false;
+                                    }
+                                }
+                            }" 
+                            @click.away="closeSearch()" 
+                            @keydown.escape.window="closeSearch()" 
+                            class="relative">
+                                <!-- Кнопка поиска -->
+                                <button @click="isExpanded = !isExpanded; if(isExpanded) $nextTick(() => $refs.searchInput.focus())"
+                                        class="flex items-center justify-center w-10 h-10 rounded-xl
+                                               bg-surface/80 border-2 border-purple-500/20 text-purple-400
+                                               hover:bg-surface hover:border-purple-500/40 hover:text-purple-300
+                                               focus:outline-none focus:ring-2 focus:ring-purple-500/50
+                                               transition-all duration-300 group">
+                                    <i class="fas fa-search text-lg group-hover:scale-110 transition-transform"></i>
+                                </button>
+
+                                <!-- Развернутый поиск -->
+                                <div x-show="isExpanded"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     @click.away="closeSearch()"
+                                     class="absolute right-0 mt-2 w-[500px] origin-top-right">
+                                    <div class="relative">
+                                        <!-- Search input -->
+                                        <div class="relative">
+                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                            <input type="text" 
+                                                   x-ref="searchInput"
+                                                   x-model="searchQuery"
+                                                   @input.debounce.300ms="search()"
+                                                   @keydown.escape.prevent="closeSearch()"
+                                                   placeholder="Поиск постов, тегов, категорий..."
+                                                   class="w-full h-10 bg-surface/50 text-white placeholder-gray-400 rounded-lg 
+                                                          border-2 border-purple-500/20 pl-10 pr-4
+                                                          focus:outline-none focus:ring-2 focus:ring-purple-500/50
+                                                          focus:bg-surface focus:border-purple-500/40
+                                                          hover:bg-surface/90 hover:border-purple-500/30
+                                                          transition-all duration-300">
+                                            
+                                            <!-- Search type selector -->
+                                            <div class="absolute inset-y-0 right-0 flex items-center">
+                                                <select x-model="searchType"
+                                                        @change="search()"
+                                                        class="h-10 bg-surface/50 text-gray-300 rounded-lg border-2 border-purple-500/20
+                                                               focus:outline-none focus:ring-2 focus:ring-purple-500/50 
+                                                               focus:bg-surface focus:border-purple-500/40
+                                                               hover:bg-surface/90 hover:border-purple-500/30
+                                                               px-3 pr-8 appearance-none cursor-pointer transition-all duration-300">
+                                                    <option value="all">Везде</option>
+                                                    <option value="posts">Посты</option>
+                                                    <option value="tags">Теги</option>
+                                                    <option value="categories">Категории</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Search results dropdown -->
+                                        <div x-show="searchQuery.length >= 2"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                                             class="absolute z-50 w-full mt-2 bg-surface border-2 border-purple-500/20 rounded-lg shadow-lg overflow-hidden">
+                                            
+                                            <!-- Loading state -->
+                                            <div x-show="isLoading" class="py-6 px-4 text-gray-400 text-center">
+                                                <i class="fas fa-spinner fa-spin mr-2"></i>
+                                                Поиск...
+                                            </div>
+
+                                            <!-- No results state -->
+                                            <div x-show="!isLoading && results.length === 0" class="py-6 px-4 text-gray-400 text-center">
+                                                Ничего не найдено для "<span class="text-white font-medium" x-text="searchQuery"></span>"
+                                            </div>
+
+                                            <!-- Results list -->
+                                            <template x-for="result in results" :key="result.url">
+                                                <a :href="result.url" class="block px-4 py-3 hover:bg-purple-500/10 transition-colors duration-200">
+                                                    <div class="flex items-center">
+                                                        <i :class="['fas', result.icon, 'text-purple-500 mr-3']"></i>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="text-white font-medium truncate" x-text="result.title"></div>
+                                                            <div class="text-gray-400 text-sm truncate" x-text="result.subtitle"></div>
+                                                            <div x-show="result.highlight" class="text-gray-500 text-sm mt-1" x-text="result.highlight"></div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопка создания поста -->
                             {% if user.is_authenticated %}
                             <a href="{% url 'blog:create_post' %}" 
-                               class="px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 
+                               class="h-10 px-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 
                                       text-white rounded-xl hover:shadow-lg hover:shadow-purple-500/25 
                                       transition-all duration-300 flex items-center group relative 
                                       overflow-hidden transform hover:-translate-y-1">
-                                <!-- Анимированный фон -->
-                                <div class="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 
-                                            opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                <!-- Блики -->
-                                <div class="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300
-                                            bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.4),transparent_80%)]"></div>
-                                <!-- Контент -->
                                 <div class="relative flex items-center">
                                     <i class="fas fa-pen-fancy mr-2 group-hover:scale-110 group-hover:rotate-12 
                                              transition-all duration-300"></i>
@@ -233,12 +360,9 @@
                                 </div>
                             </a>
                             {% endif %}
-                        </div>
-                    </div>
 
-                    <!-- Пользовательское меню -->
-                    <div class="flex items-center space-x-4" style="z-index: 51;">
-                        {% if user.is_authenticated %}
+                            <!-- Пользовательское меню -->
+                            {% if user.is_authenticated %}
                             <div class="relative" x-data="{ isOpen: false }" @click.away="isOpen = false">
                                 <button @click="isOpen = !isOpen" 
                                         class="flex items-center space-x-2 px-4 py-2 bg-purple-500/10 rounded-xl hover:bg-purple-500/20 text-white transition-all">
@@ -253,7 +377,7 @@
                                     {% endif %}
                                     <span class="font-medium">{{ user.username }}</span>
                                     <i class="fas fa-chevron-down text-sm transition-transform duration-200"
-                                       :class="{ 'transform rotate-180': isOpen }"></i>
+                                               :class="{ 'transform rotate-180': isOpen }"></i>
                                 </button>
 
                                 <!-- Выпадающее меню -->
@@ -335,14 +459,15 @@
                                     </div>
                                 </div>
                             </div>
-                        {% else %}
-                            <a href="{% url 'login' %}" class="nav-link">
-                                <i class="fas fa-sign-in-alt mr-2"></i>Войти
-                            </a>
-                            <a href="{% url 'blog:register' %}" class="btn btn-primary">
-                                Регистрация
-                            </a>
-                        {% endif %}
+                            {% else %}
+                                <a href="{% url 'login' %}" class="nav-link">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>Войти
+                                </a>
+                                <a href="{% url 'blog:register' %}" class="btn btn-primary">
+                                    Регистрация
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -363,5 +488,23 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     {% block extra_js %}{% endblock %}
+
+    <!-- Добавьте стили для кастомного скроллбара -->
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.5);
+        }
+    </style>
 </body>
 </html> 

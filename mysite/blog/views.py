@@ -11,8 +11,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
-from .models import Category, Post, Profile, Tag, Comment, PostView, InviteCode, PageSettings, Title, TextTemplate
-from .forms import CustomUserCreationForm, ProfileForm, PostForm, CommentForm
+from .models import Category, Post, Profile, Tag, Comment, PostView, InviteCode, PageSettings, Title, TextTemplate, Story
+from .forms import CustomUserCreationForm, ProfileForm, PostForm, CommentForm, StoryForm
 import json
 import os
 from .cloudinary_storage import CustomCloudinaryStorage
@@ -41,6 +41,10 @@ from io import BytesIO
 from django.template.defaultfilters import register
 from django.views.decorators.csrf import csrf_exempt
 from functools import wraps
+from django.utils.html import escape
+from django.urls import reverse
+from django.contrib.auth.decorators import user_passes_test
+from datetime import timedelta
 
 # Настраиваем logger
 logger = logging.getLogger(__name__)
@@ -532,98 +536,98 @@ def my_posts(request):
     }
     return render(request, 'blog/my_posts.html', context)
 
-@staff_member_required
+def is_admin(user):
+    return user.is_authenticated and user.is_staff
+
+@login_required
+@user_passes_test(is_admin)
 def admin_panel(request):
+    """Админ панель"""
+    # Получаем статистику
+    total_users = User.objects.count()
+    total_posts = Post.objects.count()
+    total_comments = Comment.objects.count()
+    total_views = Post.objects.aggregate(Sum('views_count'))['views_count__sum'] or 0
+    
+    # Получаем последние действия
+    recent_users = User.objects.order_by('-date_joined')[:5]
+    recent_posts = Post.objects.order_by('-created_at')[:5]
+    recent_comments = Comment.objects.order_by('-created_date')[:5]
+    
+    # Получаем настройки страниц
+    page_settings = PageSettings.objects.all()
+    page_settings_dict = {settings.page_name: settings for settings in page_settings}
+    
+    # Получаем инвайт-коды
+    invite_codes = InviteCode.objects.filter(created_by=request.user).order_by('-created_at')
+    
+    # Получаем текстовые шаблоны
+    templates = TextTemplate.objects.filter(created_by=request.user).order_by('-created_at')[:6]
+    
+    # Получаем информацию о базе данных
     try:
-        # Получаем информацию о БД
         with connection.cursor() as cursor:
-            cursor.execute("SELECT version();")
-            db_version = cursor.fetchone()[0]
-            
+            # Получаем размер базы данных
             cursor.execute("""
                 SELECT pg_size_pretty(pg_database_size(current_database()))
             """)
             db_size = cursor.fetchone()[0]
             
+            # Получаем количество таблиц
             cursor.execute("""
-                SELECT count(*) FROM information_schema.tables 
+                SELECT count(*) 
+                FROM information_schema.tables 
                 WHERE table_schema = 'public'
             """)
             tables_count = cursor.fetchone()[0]
             
-            cursor.execute("""
-                SELECT relname as table, n_live_tup as rows
-                FROM pg_stat_user_tables
-                ORDER BY n_live_tup DESC
-            """)
-            tables_stats = cursor.fetchall()
-
+            database_info = {
+                'connected': True,
+                'size': db_size,
+                'tables_count': tables_count,
+                'error': None
+            }
+    except Exception as e:
         database_info = {
-            'connected': True,
-            'size': db_size,
-            'tables_count': tables_count,
-            'tables_stats': tables_stats,
-            'name': settings.DATABASES['default']['NAME'],
-            'host': settings.DATABASES['default']['HOST'],
-            'engine': 'PostgreSQL'
+            'connected': False,
+            'size': 'N/A',
+            'tables_count': 0,
+            'error': str(e)
         }
-
-        # Получаем настройки страниц
-        page_settings = {
-            'create_post': PageSettings.objects.get_or_create(
-                page_name='create_post',
-                defaults={'is_active': True}
-            )[0],
-            'contacts': PageSettings.objects.get_or_create(
-                page_name='contacts',
-                defaults={'is_active': True}
-            )[0],
-            'about': PageSettings.objects.get_or_create(
-                page_name='about',
-                defaults={'is_active': True}
-            )[0]
-        }
-
-        # Статистика
-        stats = {
+    
+    context = {
+        'stats': {
             'users': {
-                'total': User.objects.count(),
+                'total': total_users,
                 'active': User.objects.filter(is_active=True).count(),
-                'new': User.objects.filter(date_joined__gte=timezone.now() - timezone.timedelta(days=30)).count()
+                'new': User.objects.filter(date_joined__gte=timezone.now() - timedelta(days=7)).count()
             },
             'posts': {
-                'total': Post.objects.count(),
+                'total': total_posts,
                 'published': Post.objects.filter(is_published=True).count(),
                 'draft': Post.objects.filter(is_published=False).count()
+            },
+            'comments': {
+                'total': total_comments
+            },
+            'views': {
+                'total': total_views
             }
-        }
-
-        # Последняя активность
-        recent_activity = {
-            'posts': Post.objects.select_related('author').order_by('-created_at')[:5],
-            'users': User.objects.order_by('-date_joined')[:5],
-            'comments': Comment.objects.select_related('post', 'author').order_by('-created_date')[:5]
-        }
-
-        # Добавляем инвайт-коды в контекст
-        invite_codes = InviteCode.objects.select_related('created_by', 'used_by').order_by('-created_at')
-
-        context = {
-            'database': database_info,
-            'stats': stats,
-            'page_settings': page_settings,
-            'recent_activity': recent_activity,
-            'text_templates': TextTemplate.objects.all()[:3],
-            'invite_codes': invite_codes  # Добавляем в контекст
-        }
-
-        return render(request, 'blog/admin_panel.html', context)
-
-    except Exception as e:
-        messages.error(request, f'Ошибка при загрузке админ панели: {str(e)}')
-        return render(request, 'blog/admin_panel.html', {
-            'database': {'connected': False, 'error': str(e)}
-        })
+        },
+        'database': database_info,
+        'total_users': total_users,
+        'total_posts': total_posts,
+        'total_comments': total_comments,
+        'total_views': total_views,
+        'recent_users': recent_users,
+        'recent_posts': recent_posts,
+        'recent_comments': recent_comments,
+        'page_settings': page_settings_dict,
+        'invite_codes': invite_codes,
+        'templates': templates,
+    }
+    
+    return render(request, 'blog/admin_panel.html', context)
 
 @login_required
 @require_POST
@@ -736,17 +740,42 @@ def clear_cache(request):
         messages.error(request, f'Ошибка при очистке кэша: {str(e)}')
     return redirect('blog:admin_panel')
 
-@staff_member_required
+@login_required
+@user_passes_test(is_admin)
 def toggle_user_status(request, user_id):
-    """Блокировка/разблокиока пользователя"""
-    try:
-        user = User.objects.get(id=user_id)
-        user.is_active = not user.is_active
-        user.save()
-        status = 'раболокирован' if user.is_active else 'заблокирован'
-        messages.success(request, f'Пользователь {user.username} {status}')
-    except User.DoesNotExist:
-        messages.error(request, 'Пользователь не найден')
+    """Включение/отключение пользователя"""
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(id=user_id)
+            # Не позволяем блокировать администраторов
+            if not user.is_staff:
+                user.is_active = not user.is_active
+                user.save()
+                status = 'активирован' if user.is_active else 'заблокирован'
+                messages.success(request, f'Пользователь {user.username} {status}')
+            else:
+                messages.error(request, 'Невозможно заблокировать администратора')
+        except User.DoesNotExist:
+            messages.error(request, 'Пользователь не найден')
+    return redirect('blog:admin_panel')
+
+@login_required
+@user_passes_test(is_admin)
+def reset_user_password(request, user_id):
+    """Сброс пароля пользователя"""
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(id=user_id)
+            # Генерируем случайный пароль
+            new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+            user.set_password(new_password)
+            user.save()
+            messages.success(
+                request,
+                f'Новый пароль для пользователя {user.username}: {new_password}'
+            )
+        except User.DoesNotExist:
+            messages.error(request, 'Пользователь не найден')
     return redirect('blog:admin_panel')
 
 @staff_member_required
@@ -782,23 +811,15 @@ def deactivate_invite(request, code):
 @csrf_exempt
 def toggle_page_status(request, page_name):
     """Включение/отключение страницы"""
-    try:
-        page_settings = PageSettings.objects.get_or_create(
-            page_name=page_name,
-            defaults={
-                'is_active': True,
-                'updated_by': request.user
-            }
-        )[0]
-        
-        page_settings.is_active = not page_settings.is_active
-        page_settings.updated_by = request.user
-        page_settings.save()
-        
-        messages.success(request, f'Страница {page_settings.get_page_name_display()} {"включена" if page_settings.is_active else "отключена"}')
-    except Exception as e:
-        messages.error(request, f'Ошибка при изменении статуса страницы: {str(e)}')
-    
+    if request.method == 'POST':
+        try:
+            page_setting = PageSettings.objects.get(page_name=page_name)
+            page_setting.is_active = not page_setting.is_active
+            page_setting.save()
+            status = 'включена' if page_setting.is_active else 'отключена'
+            messages.success(request, f'Страница {page_setting.get_page_name_display()} {status}')
+        except PageSettings.DoesNotExist:
+            messages.error(request, 'Страница не найдена')
     return redirect('blog:admin_panel')
 
 @staff_member_required
@@ -853,78 +874,31 @@ def health_check(request):
 def generate_backup(request):
     """Создание резервной копии данных"""
     try:
-        # Словарь для хранения всех данных
-        data = {
-            'users': [],
-            'profiles': [],
-            'categories': [],
-            'tags': [],
-            'posts': [],
-            'comments': [],
-            'post_views': [],
-            'invite_codes': [],
-            'page_settings': [],
-            'titles': [],
-            'text_templates': []
+        # Получаем данные для бэкапа
+        users = list(User.objects.values())
+        posts = list(Post.objects.values())
+        categories = list(Category.objects.values())
+        tags = list(Tag.objects.values())
+
+        # Формируем данные бэкапа
+        backup_data = {
+            'users': users,
+            'posts': posts,
+            'categories': categories,
+            'tags': tags,
+            'generated_at': datetime.now().isoformat()
         }
 
-        # Экспортируем пользоватеей
-        users = User.objects.all()
-        data['users'] = json.loads(serializers.serialize('json', users))
-
-        # Экспортируем профили
-        profiles = Profile.objects.all()
-        data['profiles'] = json.loads(serializers.serialize('json', profiles))
-
-        # Экспортируем категории
-        categories = Category.objects.all()
-        data['categories'] = json.loads(serializers.serialize('json', categories))
-
-        # Экспортируем теги
-        tags = Tag.objects.all()
-        data['tags'] = json.loads(serializers.serialize('json', tags))
-
-        # Экспртруем посты
-        posts = Post.objects.all()
-        data['posts'] = json.loads(serializers.serialize('json', posts))
-
-        # Экпортируем коментари
-        comments = Comment.objects.all()
-        data['comments'] = json.loads(serializers.serialize('json', comments))
-
-        # Экспортируем просмотры
-        post_views = PostView.objects.all()
-        data['post_views'] = json.loads(serializers.serialize('json', post_views))
-
-        # Экспортируем инвайт-коды
-        invite_codes = InviteCode.objects.all()
-        data['invite_codes'] = json.loads(serializers.serialize('json', invite_codes))
-
-        # Экспортируем настойки страниц
-        page_settings = PageSettings.objects.all()
-        data['page_settings'] = json.loads(serializers.serialize('json', page_settings))
-
-        # Экспортируем титулы
-        titles = Title.objects.all()
-        data['titles'] = json.loads(serializers.serialize('json', titles))
-
-        # Экспортируем шаблоны тексто
-        text_templates = TextTemplate.objects.all()
-        data['text_templates'] = json.loads(serializers.serialize('json', text_templates))
-
-        # Сздаем имя файла с текущей датой
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f'backup_{timestamp}.json'
-
-        # Сохраняе в файл
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-        messages.success(request, f'Резервная копия успешно создана: {filename}')
+        # Создаем JSON-файл
+        response = HttpResponse(
+            json.dumps(backup_data, indent=2, ensure_ascii=False),
+            content_type='application/json'
+        )
+        response['Content-Disposition'] = f'attachment; filename="backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json"'
+        return response
     except Exception as e:
-        messages.error(request, f'Ошибка при создании резерной копии: {str(e)}')
-
-    return redirect('blog:admin_panel')
+        messages.error(request, f'Ошибка при создании бэкапа: {str(e)}')
+        return redirect('blog:admin_panel')
 
 @staff_member_required
 def restore_database(request):
@@ -990,19 +964,19 @@ def restore_media(request):
 @staff_member_required
 def reset_user_password(request, user_id):
     """Сброс пароля пользователя"""
-    try:
-        user = User.objects.get(id=user_id)
-        # Генерируем новы случайный пароль
-        new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-        user.password = make_password(new_password)
-        user.save()
-        
-        messages.success(
-            request, 
-            f'Пароль пользователя {user.username} сброшен. Новый пароль: {new_password}'
-        )
-    except User.DoesNotExist:
-        messages.error(request, 'Пользователь не найден')
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(id=user_id)
+            # Генерируем случайный пароль
+            new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+            user.set_password(new_password)
+            user.save()
+            messages.success(
+                request,
+                f'Новый пароль для пользователя {user.username}: {new_password}'
+            )
+        except User.DoesNotExist:
+            messages.error(request, 'Пользователь не найден')
     return redirect('blog:admin_panel')
 
 @staff_member_required
@@ -1239,13 +1213,92 @@ def create_template(request):
     return redirect('blog:text_templates')
 
 def search(request):
-    """Поиск по сайту"""
-    query = request.GET.get('q', '')
-    results = Post.objects.filter(
-        Q(title__icontains=query) | Q(content__icontains=query),
-        is_published=True
-    ) if query else Post.objects.none()
-    return render(request, 'blog/search.html', {'results': results, 'query': query})
+    query = request.GET.get('q', '').strip()
+    search_type = request.GET.get('type', 'all')
+    
+    print(f"Search request received - Query: {query}, Type: {search_type}")  # Отладочная информация
+    
+    if not query or len(query) < 2:
+        print("Query too short or empty")  # Отладочная информация
+        return JsonResponse({'results': []})
+    
+    results = []
+    
+    if search_type in ['all', 'posts']:
+        posts = Post.objects.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tags__name__icontains=query) |
+            Q(category__name__icontains=query)
+        ).distinct().order_by('-created_at')[:5]
+        
+        print(f"Found {posts.count()} posts")  # Отладочная информация
+        
+        for post in posts:
+            # Находим контекст для подсветки
+            content = post.content
+            start_idx = content.lower().find(query.lower())
+            if start_idx != -1:
+                start = max(0, start_idx - 50)
+                end = min(len(content), start_idx + len(query) + 50)
+                highlight = '...' + escape(content[start:end]) + '...'
+            else:
+                highlight = escape(content[:100]) + '...'
+
+            results.append({
+                'type': 'post',
+                'icon': 'fa-file-alt',
+                'title': escape(post.title),
+                'url': reverse('blog:post_detail', kwargs={'slug': post.slug}),
+                'subtitle': f'В категории {escape(post.category.name)}',
+                'highlight': highlight
+            })
+    
+    if search_type in ['all', 'categories']:
+        categories = Category.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        ).distinct()[:3]
+        
+        print(f"Found {categories.count()} categories")  # Отладочная информация
+        
+        for category in categories:
+            post_count = category.posts.count()
+            results.append({
+                'type': 'category',
+                'icon': 'fa-folder',
+                'title': escape(category.name),
+                'url': reverse('blog:category_detail', kwargs={'slug': category.slug}),
+                'subtitle': f'{post_count} {post_count % 10 == 1 and post_count % 100 != 11 and "пост" or "постов"}',
+                'highlight': escape(category.description[:100]) if category.description else ''
+            })
+    
+    if search_type in ['all', 'tags']:
+        tags = Tag.objects.filter(name__icontains=query).distinct()[:5]
+        
+        print(f"Found {tags.count()} tags")  # Отладочная информация
+        
+        for tag in tags:
+            post_count = tag.posts.count()
+            results.append({
+                'type': 'tag',
+                'icon': 'fa-tag',
+                'title': escape(tag.name),
+                'url': reverse('blog:tag_detail', kwargs={'slug': tag.slug}),
+                'subtitle': f'{post_count} {post_count % 10 == 1 and post_count % 100 != 11 and "пост" or "постов"}',
+                'highlight': ''
+            })
+    
+    print(f"Total results: {len(results)}")  # Отладочная информация
+    
+    response_data = {
+        'results': results,
+        'query': query,
+        'total': len(results)
+    }
+    print(f"Sending response: {response_data}")  # Отладочная информация
+    
+    return JsonResponse(response_data)
 
 def post_list(request):
     """Список всех постов"""
@@ -1314,3 +1367,122 @@ def delete_public_template(request, template_id):
             messages.error(request, f'Ошибка при удалении шаблона: {str(e)}')
     
     return redirect('blog:public_templates')
+
+@login_required
+def create_story(request):
+    """Создание новой истории"""
+    if request.method == 'POST':
+        form = StoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            story = form.save(commit=False)
+            story.author = request.user
+            story.is_draft = 'is_draft' in request.POST
+            story.save()
+            form.save_m2m()  # Сохраняем теги
+            messages.success(request, 'История успешно создана')
+            return redirect('blog:story_detail', pk=story.pk)
+    else:
+        form = StoryForm()
+    
+    return render(request, 'blog/create_story.html', {'form': form})
+
+@login_required
+def edit_story(request, pk):
+    """Редактирование истории"""
+    story = get_object_or_404(Story, pk=pk, author=request.user)
+    
+    if request.method == 'POST':
+        form = StoryForm(request.POST, request.FILES, instance=story)
+        if form.is_valid():
+            story = form.save(commit=False)
+            story.is_draft = 'is_draft' in request.POST
+            story.save()
+            form.save_m2m()
+            messages.success(request, 'История успешно обновлена')
+            return redirect('blog:story_detail', pk=story.pk)
+    else:
+        form = StoryForm(instance=story)
+        # Подготавливаем теги для формы
+        form.initial['tags'] = ', '.join(tag.name for tag in story.tags.all())
+    
+    return render(request, 'blog/edit_story.html', {'form': form, 'story': story})
+
+def story_detail(request, pk):
+    """Просмотр истории"""
+    story = get_object_or_404(Story, pk=pk)
+    
+    # Увеличиваем счетчик просмотров
+    story.views_count += 1
+    story.save()
+    
+    return render(request, 'blog/story_detail.html', {'story': story})
+
+def story_list(request):
+    """Список всех историй"""
+    stories = Story.objects.filter(is_draft=False).order_by('-created_at')
+    
+    # Пагинация
+    paginator = Paginator(stories, 12)
+    page = request.GET.get('page')
+    stories = paginator.get_page(page)
+    
+    return render(request, 'blog/story_list.html', {'stories': stories})
+
+@login_required
+def my_stories(request):
+    """Мои истории"""
+    stories = Story.objects.filter(author=request.user).order_by('-created_at')
+    return render(request, 'blog/my_stories.html', {'stories': stories})
+
+@login_required
+def delete_story(request, pk):
+    story = get_object_or_404(Story, pk=pk)
+    
+    # Проверяем, является ли пользователь автором истории
+    if request.user != story.author:
+        messages.error(request, 'У вас нет прав для удаления этой истории.')
+        return redirect('blog:story_detail', pk=pk)
+    
+    # Удаляем историю
+    story.delete()
+    messages.success(request, 'История успешно удалена.')
+    return redirect('blog:stories')  # Перенаправляем на список историй
+
+def search_stories(request):
+    """Поиск историй по названию и тегам"""
+    query = request.GET.get('q', '')
+    tag = request.GET.get('tag', '')
+    
+    stories = Story.objects.filter(is_draft=False)
+    
+    if query:
+        stories = stories.filter(
+            Q(title__icontains=query) |
+            Q(alt_titles__icontains=query) |
+            Q(description__icontains=query)
+        )
+    
+    if tag:
+        stories = stories.filter(tags__name__icontains=tag)
+    
+    # Удаляем дубликаты, если они появились из-за поиска по нескольким полям
+    stories = stories.distinct().order_by('-created_at')
+    
+    # Пагинация
+    paginator = Paginator(stories, 12)
+    page = request.GET.get('page')
+    stories = paginator.get_page(page)
+    
+    # Получаем популярные теги для облака тегов
+    popular_tags = Tag.objects.annotate(
+        stories_count=Count('story')
+    ).filter(stories_count__gt=0).order_by('-stories_count')[:20]
+    
+    context = {
+        'stories': stories,
+        'query': query,
+        'tag': tag,
+        'popular_tags': popular_tags,
+    }
+    
+    return render(request, 'blog/search_stories.html', context)

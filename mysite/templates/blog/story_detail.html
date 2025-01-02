@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8" x-data="{ showDeleteModal: false }">
+    <div class="bg-surface rounded-2xl shadow-lg overflow-hidden">
+        <!-- Обложка истории -->
+        {% if story.cover %}
+        <div class="relative h-80 w-full">
+            <img src="{{ story.get_cover_url }}" alt="{{ story.title }}" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+        </div>
+        {% endif %}
+
+        <div class="p-8">
+            <!-- Основная информация -->
+            <div class="space-y-6">
+                <!-- Заголовок -->
+                <div>
+                    <h1 class="text-3xl font-bold text-white mb-2">{{ story.title }}</h1>
+                    
+                    <!-- Альтернативные названия -->
+                    {% if story.alt_titles %}
+                    <div class="space-y-2 mt-4">
+                        <h3 class="text-lg font-medium text-gray-400">Альтернативные названия:</h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for alt_title in story.alt_titles %}
+                            <span class="px-4 py-2 bg-surface-700/30 rounded-lg text-gray-300">
+                                {{ alt_title }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Мета-информация -->
+                <div class="flex flex-wrap gap-4 text-gray-400">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user text-purple-400"></i>
+                        <span>{{ story.author.username }}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-calendar text-purple-400"></i>
+                        <span>{{ story.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-book text-purple-400"></i>
+                        <span>{{ story.chapters_count }} глав</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-eye text-purple-400"></i>
+                        <span>{{ story.views_count }} просмотров</span>
+                    </div>
+                </div>
+
+                <!-- Теги -->
+                {% if story.tags.all %}
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in story.tags.all %}
+                    <span class="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-sm">
+                        #{{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Описание -->
+                <div class="prose prose-invert max-w-none">
+                    {{ story.description|linebreaks }}
+                </div>
+
+                <!-- Ссылки -->
+                {% if story.link_url %}
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-400">Ссылки:</h3>
+                    <div class="space-y-2">
+                        <a href="{{ story.link_url }}" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center space-x-2 text-purple-400 hover:text-purple-300 transition-colors">
+                            <i class="fas fa-link"></i>
+                            <span>{{ story.link_title|default:story.link_url }}</span>
+                        </a>
+                        
+                        {% if story.additional_links %}
+                        {% for link in story.additional_links %}
+                        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center space-x-2 text-purple-400 hover:text-purple-300 transition-colors">
+                            <i class="fas fa-link"></i>
+                            <span>{{ link.title }}</span>
+                        </a>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Кнопки управления -->
+        {% if user == story.author %}
+        <div class="p-8 pt-0 flex justify-end space-x-4">
+            <a href="{% url 'blog:edit_story' pk=story.pk %}" 
+               class="px-6 py-3 bg-surface-700/50 text-gray-300 rounded-xl flex items-center space-x-2
+                      hover:bg-surface-700/70 transform hover:-translate-y-0.5 transition-all duration-300">
+                <i class="fas fa-edit"></i>
+                <span>Редактировать</span>
+            </a>
+            <button @click="showDeleteModal = true"
+                    class="px-6 py-3 bg-red-500/10 text-red-400 rounded-xl flex items-center space-x-2
+                           hover:bg-red-500/20 transform hover:-translate-y-0.5 transition-all duration-300">
+                <i class="fas fa-trash-alt"></i>
+                <span>Удалить</span>
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div x-show="showDeleteModal" 
+         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="bg-surface rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             @click.away="showDeleteModal = false">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-triangle text-3xl text-red-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Удалить историю?</h3>
+                <p class="text-gray-400 mb-6">
+                    Вы уверены, что хотите удалить историю "{{ story.title }}"? 
+                    Это действие нельзя будет отменить.
+                </p>
+                <div class="flex justify-center space-x-4">
+                    <button @click="showDeleteModal = false"
+                            class="px-6 py-3 bg-surface-700/50 text-gray-300 rounded-xl flex items-center justify-center space-x-2
+                                   hover:bg-surface-700/70 transform hover:-translate-y-0.5 transition-all duration-300 min-w-[120px]">
+                        <i class="fas fa-times"></i>
+                        <span>Отмена</span>
+                    </button>
+                    <form method="post" action="{% url 'blog:delete_story' pk=story.pk %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="px-6 py-3 bg-red-500/10 text-red-400 rounded-xl flex items-center justify-center space-x-2
+                                       hover:bg-red-500/20 transform hover:-translate-y-0.5 transition-all duration-300 min-w-[120px]">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Удалить</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

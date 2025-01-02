@@ -1,7 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Post, Category, Tag, InviteCode, Profile, Comment
+from .models import Post, Category, Tag, InviteCode, Profile, Comment, Story
+from django.template.defaultfilters import slugify
+import uuid
 
 class PostForm(forms.ModelForm):
     content = forms.CharField(
@@ -329,3 +331,99 @@ class CommentForm(forms.ModelForm):
         if commit:
             comment.save()
         return comment
+
+class StoryForm(forms.ModelForm):
+    tags = forms.CharField(
+        required=False, 
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+            'placeholder': '✨ Введите хештеги через запятую'
+        })
+    )
+    
+    class Meta:
+        model = Story
+        fields = ['cover', 'title', 'chapters_count', 'tags', 'description', 'link_title', 'link_url']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+                'placeholder': '✨ Введите название истории'
+            }),
+            'chapters_count': forms.NumberInput(attrs={
+                'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+                'placeholder': '📚 Количество глав',
+                'min': '0',
+                'style': 'color: white; background-color: rgba(26, 22, 37, 0.3);'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+                'placeholder': '✍️ Опишите вашу историю...',
+                'rows': '6'
+            }),
+            'link_title': forms.TextInput(attrs={
+                'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+                'placeholder': '🔖 Название ссылки'
+            }),
+            'link_url': forms.URLInput(attrs={
+                'class': 'w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40',
+                'placeholder': '🔗 https://example.com'
+            }),
+            'cover': forms.FileInput(attrs={
+                'class': 'hidden',
+                'accept': 'image/*'
+            })
+        }
+    
+    def clean_tags(self):
+        tags_str = self.cleaned_data.get('tags', '')
+        if not tags_str:
+            return []
+        tag_names = [tag.strip() for tag in tags_str.split(',') if tag.strip()]
+        tags = []
+        for tag_name in tag_names:
+            if not tag_name:  # Пропускаем пустые теги
+                continue
+            try:
+                tag = Tag.objects.get(name=tag_name)
+            except Tag.DoesNotExist:
+                # Генерируем уникальный slug
+                slug = slugify(tag_name)
+                if not slug:  # Если slugify вернул пустую строку
+                    slug = f"tag-{uuid.uuid4().hex[:8]}"
+                counter = 1
+                original_slug = slug
+                while Tag.objects.filter(slug=slug).exists():
+                    slug = f"{original_slug}-{counter}"
+                    counter += 1
+                tag = Tag.objects.create(name=tag_name, slug=slug)
+            tags.append(tag)
+        return tags
+    
+    def save(self, commit=True):
+        story = super().save(commit=False)
+        
+        # Собираем дополнительные названия
+        alt_titles = []
+        for key, value in self.data.items():
+            if key.startswith('alt_title_') and value.strip():
+                alt_titles.append(value.strip())
+        story.alt_titles = alt_titles
+        
+        # Собираем дополнительные ссылки
+        additional_links = []
+        for key, value in self.data.items():
+            if key.startswith('link_title_'):
+                link_id = key.split('_')[-1]
+                url_key = f'link_url_{link_id}'
+                if url_key in self.data and self.data[url_key].strip() and value.strip():
+                    additional_links.append({
+                        'title': value.strip(),
+                        'url': self.data[url_key].strip()
+                    })
+        story.additional_links = additional_links
+        
+        if commit:
+            story.save()
+            story.tags.clear()
+            story.tags.add(*self.cleaned_data['tags'])
+        return story

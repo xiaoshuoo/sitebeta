@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="admin-card p-8 relative overflow-hidden">
+        <!-- Декоративные элементы -->
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/2 -translate-y-1/2 -right-40 w-60 h-60 bg-gradient-to-tr from-blue-500/10 to-purple-500/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+
+        <!-- Заголовок с анимированным подчеркиванием -->
+        <div class="relative z-10 mb-8">
+            <h1 class="text-3xl font-bold text-white relative inline-block group">
+                <span class="relative z-10">Создание истории</span>
+                <div class="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full 
+                            transform origin-left transition-transform duration-300 group-hover:scale-x-110"></div>
+            </h1>
+            <p class="mt-2 text-gray-400">Поделитесь своей историей с сообществом</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-8 relative z-10" 
+              x-data="{ 
+                  altTitles: [], 
+                  urls: [],
+                  maxFields: 5,
+                  addAltTitle() {
+                      if (this.altTitles.length < this.maxFields) {
+                          this.altTitles.push({ id: Date.now() });
+                      }
+                  },
+                  removeAltTitle(id) {
+                      this.altTitles = this.altTitles.filter(title => title.id !== id);
+                  },
+                  addUrl() {
+                      if (this.urls.length < this.maxFields) {
+                          this.urls.push({ id: Date.now() });
+                      }
+                  },
+                  removeUrl(id) {
+                      this.urls = this.urls.filter(url => url.id !== id);
+                  }
+              }">
+            {% csrf_token %}
+
+            <!-- Обложка с улучшенной анимацией -->
+            <div class="space-y-2">
+                <label class="block text-white font-medium flex items-center space-x-2">
+                    <i class="fas fa-image text-purple-400"></i>
+                    <span>Обложка истории</span>
+                </label>
+                <div class="relative h-64 bg-surface/50 rounded-xl border-2 border-dashed border-purple-500/30 overflow-hidden group
+                            hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
+                    <input type="file" name="cover" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-center transform group-hover:scale-105 transition-transform duration-300">
+                            <i class="fas fa-cloud-upload-alt text-5xl text-purple-400 mb-3 group-hover:text-purple-300"></i>
+                            <p class="text-gray-400 group-hover:text-gray-300">Нажмите или перетащите файл</p>
+                            <p class="text-sm text-gray-500 mt-1">PNG, JPG или GIF</p>
+                        </div>
+                    </div>
+                    <img id="cover-preview" class="absolute inset-0 w-full h-full object-cover hidden">
+                </div>
+            </div>
+
+            <!-- Основная информация -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Название истории -->
+                <div class="space-y-2 md:col-span-2 transform hover:scale-[1.01] transition-transform duration-300">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-white font-medium flex items-center space-x-2">
+                            <i class="fas fa-heading text-purple-400"></i>
+                            <span>Название истории</span>
+                        </label>
+                        <button type="button" @click="addAltTitle" 
+                                class="group p-2 hover:bg-purple-500/10 rounded-lg transition-all duration-300"
+                                :class="{ 'opacity-50 cursor-not-allowed': altTitles.length >= maxFields }">
+                            <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
+                        </button>
+                    </div>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <p class="text-red-400 text-sm flex items-center">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        {{ form.title.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Динамические альтернативные названия -->
+                <template x-for="title in altTitles" :key="title.id">
+                    <div class="space-y-2 md:col-span-2 transform hover:scale-[1.01] transition-transform duration-300">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-white font-medium flex items-center space-x-2">
+                                <i class="fas fa-font text-purple-400"></i>
+                                <span>Альтернативное название</span>
+                            </label>
+                            <button type="button" @click="removeAltTitle(title.id)" 
+                                    class="group p-2 hover:bg-red-500/10 rounded-lg transition-all duration-300"
+                                    :class="{ 'opacity-0': altTitles.length === 1 }">
+                                <i class="fas fa-times text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </button>
+                        </div>
+                        <input type="text" :name="'alt_title_' + title.id" 
+                               class="w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               placeholder="🔤 Альтернативное название">
+                    </div>
+                </template>
+
+                <!-- Количество глав -->
+                <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                    <label class="block text-white font-medium flex items-center space-x-2">
+                        <i class="fas fa-list-ol text-purple-400"></i>
+                        <span>Количество глав</span>
+                    </label>
+                    <div class="relative">
+                        {{ form.chapters_count }}
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                            <i class="fas fa-book-open text-purple-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-400 flex items-center mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Укажите количество глав в истории
+                    </p>
+                </div>
+
+                <!-- Хештеги -->
+                <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                    <label class="block text-white font-medium flex items-center space-x-2">
+                        <i class="fas fa-hashtag text-purple-400"></i>
+                        <span>Хештеги</span>
+                    </label>
+                    {{ form.tags }}
+                    <p class="text-sm text-gray-400 flex items-center">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Разделяйте хештеги запятыми
+                    </p>
+                </div>
+            </div>
+
+            <!-- Описание -->
+            <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                <label class="block text-white font-medium flex items-center space-x-2">
+                    <i class="fas fa-align-left text-purple-400"></i>
+                    <span>Описание истории</span>
+                </label>
+                {{ form.description }}
+            </div>
+
+            <!-- Ссылки -->
+            <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                <div class="flex items-center justify-between">
+                    <label class="block text-white font-medium flex items-center space-x-2">
+                        <i class="fas fa-tag text-purple-400"></i>
+                        <span>Название ссылки</span>
+                    </label>
+                    <button type="button" @click="addUrl" 
+                            class="group p-2 hover:bg-purple-500/10 rounded-lg transition-all duration-300"
+                            :class="{ 'opacity-50 cursor-not-allowed': urls.length >= maxFields }">
+                        <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
+                    </button>
+                </div>
+                {{ form.link_title }}
+            </div>
+            <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                <label class="block text-white font-medium flex items-center space-x-2">
+                    <i class="fas fa-link text-purple-400"></i>
+                    <span>URL ссылки</span>
+                </label>
+                {{ form.link_url }}
+            </div>
+
+            <!-- Динамические ссылки -->
+            <template x-for="url in urls" :key="url.id">
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-white font-medium flex items-center space-x-2">
+                                <i class="fas fa-tag text-purple-400"></i>
+                                <span>Дополнительное название ссылки</span>
+                            </label>
+                            <button type="button" @click="removeUrl(url.id)" 
+                                    class="group p-2 hover:bg-red-500/10 rounded-lg transition-all duration-300">
+                                <i class="fas fa-times text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
+                            </button>
+                        </div>
+                        <input type="text" :name="'link_title_' + url.id"
+                               class="w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               placeholder="🔖 Название ссылки">
+                    </div>
+                    <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                        <label class="block text-white font-medium flex items-center space-x-2">
+                            <i class="fas fa-link text-purple-400"></i>
+                            <span>Дополнительный URL</span>
+                        </label>
+                        <input type="url" :name="'link_url_' + url.id"
+                               class="w-full px-6 py-4 bg-surface-700/30 border border-purple-500/20 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               placeholder="🔗 https://example.com">
+                    </div>
+                </div>
+            </template>
+
+            <!-- Кнопки с улучшенной анимацией -->
+            <div class="flex justify-end space-x-4 pt-8">
+                <button type="submit" name="is_draft" value="true" 
+                        class="group px-6 py-3 bg-surface-700/50 text-gray-300 rounded-xl flex items-center space-x-2
+                               hover:bg-surface-700/70 transform hover:-translate-y-0.5 transition-all duration-300">
+                    <i class="fas fa-save group-hover:scale-110 transition-transform duration-300"></i>
+                    <span>Сохранить черновик</span>
+                </button>
+                <button type="submit" 
+                        class="group px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl
+                               flex items-center space-x-2 transform hover:-translate-y-0.5 hover:shadow-lg 
+                               hover:shadow-purple-500/25 transition-all duration-300">
+                    <i class="fas fa-paper-plane group-hover:scale-110 transition-transform duration-300"></i>
+                    <span>Опубликовать</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        const preview = document.getElementById('cover-preview');
+        const container = preview.parentElement;
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+            container.querySelector('.text-center').classList.add('hidden');
+        }
+        
+        reader.readAsDataURL(file);
+    }
+});
+
+// Анимация при фокусе на поля ввода
+document.querySelectorAll('input[type="text"], input[type="number"], input[type="url"], textarea').forEach(input => {
+    input.addEventListener('focus', function() {
+        this.closest('.space-y-2').querySelector('i').classList.add('text-purple-300');
+        this.closest('.space-y-2').classList.add('scale-[1.01]');
+    });
+    
+    input.addEventListener('blur', function() {
+        this.closest('.space-y-2').querySelector('i').classList.remove('text-purple-300');
+        this.closest('.space-y-2').classList.remove('scale-[1.01]');
+    });
+});
+
+// Анимация для декоративных элементов
+const decorativeElements = document.querySelectorAll('.blur-3xl');
+decorativeElements.forEach((element, index) => {
+    element.style.animationDelay = `${index * 0.5}s`;
+});
+</script>
+{% endblock %} 

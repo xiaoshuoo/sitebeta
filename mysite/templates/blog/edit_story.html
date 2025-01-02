@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="admin-card p-8">
+        <h1 class="text-3xl font-bold text-white mb-8 relative inline-block">
+            <span class="relative z-10">Редактирование истории</span>
+            <div class="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full"></div>
+        </h1>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6" x-data="{ showPreview: false }">
+            {% csrf_token %}
+
+            <!-- Обложка -->
+            <div class="space-y-2">
+                <label class="block text-white font-medium">
+                    Обложка
+                </label>
+                <div class="relative h-64 bg-surface/50 rounded-xl border-2 border-dashed border-purple-500/30 overflow-hidden group hover:border-purple-500/50 transition-all">
+                    <input type="file" name="cover" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        {% if story.cover %}
+                        <img src="{{ story.cover.url }}" alt="{{ story.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="text-center">
+                            <i class="fas fa-image text-4xl text-purple-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                            <p class="text-gray-400">Нажмите или перетащите файл</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <img id="cover-preview" class="absolute inset-0 w-full h-full object-cover hidden">
+                </div>
+            </div>
+
+            <!-- Название истории -->
+            <div class="space-y-2">
+                <label class="block text-white font-medium">
+                    Название истории
+                </label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <p class="text-red-400 text-sm">{{ form.title.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Еще одно название -->
+            <div class="space-y-2">
+                <label class="block text-white font-medium">
+                    Еще одно название
+                </label>
+                {{ form.alt_title }}
+            </div>
+
+            <!-- Количество глав -->
+            <div class="space-y-2">
+                <label class="block text-white font-medium">
+                    Количество глав
+                </label>
+                {{ form.chapters_count }}
+            </div>
+
+            <!-- Хештеги -->
+            <div class="space-y-2">
+                <label class="block text-white font-medium">
+                    Хештеги
+                </label>
+                {{ form.tags }}
+                <p class="text-sm text-gray-400">Разделяйте хештеги запятыми</p>
+            </div>
+
+            <!-- Описание -->
+            <div class="space-y-2">
+                <label class="block text-white font-medium">
+                    Описание истории
+                </label>
+                {{ form.description }}
+            </div>
+
+            <!-- Ссылка -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="block text-white font-medium">
+                        Название ссылки
+                    </label>
+                    {{ form.link_title }}
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-white font-medium">
+                        Ссылка на сайт
+                    </label>
+                    {{ form.link_url }}
+                </div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="flex justify-end space-x-4 pt-6">
+                <button type="submit" name="is_draft" value="true" class="anime-button">
+                    <i class="fas fa-save mr-2"></i>
+                    Черновик
+                </button>
+                <button type="submit" class="anime-button">
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        const preview = document.getElementById('cover-preview');
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+        }
+        
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %} 
