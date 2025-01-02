@@ -1437,16 +1437,9 @@ def my_stories(request):
 @login_required
 def delete_story(request, pk):
     story = get_object_or_404(Story, pk=pk)
-    
-    # Проверяем, является ли пользователь автором истории
-    if request.user != story.author:
-        messages.error(request, 'У вас нет прав для удаления этой истории.')
-        return redirect('blog:story_detail', pk=pk)
-    
-    # Удаляем историю
-    story.delete()
-    messages.success(request, 'История успешно удалена.')
-    return redirect('blog:stories')  # Перенаправляем на список историй
+    if request.user == story.author:
+        story.delete()
+    return redirect('blog:story_list')  # Изменено с 'blog:stories' на 'blog:story_list'
 
 def search_stories(request):
     """Поиск историй по названию и тегам"""
