@@ -188,15 +188,17 @@
                 
                 <div class="flex flex-wrap gap-2">
                     {% for tag in tags %}
-                        <a href="{% url 'blog:tag_detail' tag.slug %}" 
-                           class="group px-4 py-2 rounded-lg bg-gradient-to-br from-pink-500/5 to-transparent
-                                  border border-pink-500/10 hover:border-pink-500/20 transition-all duration-300
-                                  hover:shadow-lg hover:shadow-pink-500/10 hover:scale-105 transform
-                                  flex items-center space-x-2">
-                            <i class="fas fa-tag text-pink-400 text-xs group-hover:rotate-12 transition-transform"></i>
-                            <span class="text-sm text-gray-300 group-hover:text-white transition-colors font-medium">{{ tag.name }}</span>
-                            <span class="text-xs text-pink-400/70 bg-pink-500/10 px-2 py-0.5 rounded-md">{{ tag.total_posts }}</span>
-                        </a>
+                        {% if tag.slug %}
+                            <a href="{% url 'blog:tag_detail' tag.slug %}" 
+                               class="group px-4 py-2 rounded-lg bg-gradient-to-br from-pink-500/5 to-transparent
+                                      border border-pink-500/10 hover:border-pink-500/20 transition-all duration-300
+                                      hover:shadow-lg hover:shadow-pink-500/10 hover:scale-105 transform
+                                      flex items-center space-x-2">
+                                <i class="fas fa-tag text-pink-400 text-xs group-hover:rotate-12 transition-transform"></i>
+                                <span class="text-sm text-gray-300 group-hover:text-white transition-colors font-medium">{{ tag.name }}</span>
+                                <span class="text-xs text-pink-400/70 bg-pink-500/10 px-2 py-0.5 rounded-md">{{ tag.total_posts }}</span>
+                            </a>
+                        {% endif %}
                     {% empty %}
                         <div class="text-center w-full py-8">
                             <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-pink-500/20 flex items-center justify-center animate-float">

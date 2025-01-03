@@ -1439,6 +1439,9 @@ def delete_story(request, pk):
     story = get_object_or_404(Story, pk=pk)
     if request.user == story.author:
         story.delete()
+        messages.success(request, 'История успешно удалена.')
+    else:
+        messages.error(request, 'У вас нет прав для удаления этой истории.')
     return redirect('blog:story_list')  # Изменено с 'blog:stories' на 'blog:story_list'
 
 def search_stories(request):
