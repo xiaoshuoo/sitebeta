@@ -92,22 +92,20 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Название истории -->
                 <div class="space-y-2 md:col-span-2 transform hover:scale-[1.01] transition-transform duration-300">
-                    <div class="flex items-center justify-between">
-                        <label class="block text-white font-medium flex items-center space-x-2">
-                            <i class="fas fa-heading text-purple-400"></i>
-                            <span>Название истории</span>
-                        </label>
-                        <button type="button" @click="addAltTitle" 
-                                class="group p-2 hover:bg-purple-500/10 rounded-lg transition-all duration-300"
-                                :class="{ 'opacity-50 cursor-not-allowed': altTitles.length >= maxFields }">
-                            <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
-                        </button>
-                    </div>
+                    <label class="block text-white font-medium flex items-center space-x-2">
+                        <i class="fas fa-heading text-purple-400"></i>
+                        <span>Название истории</span>
+                    </label>
                     <div class="relative">
                         <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
                                class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
                                placeholder="Введите название истории"
                                {% if form.title.value %}value="{{ form.title.value }}"{% endif %}>
+                        <button type="button" @click="addAltTitle" 
+                                class="group absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-purple-500/10 rounded-lg transition-all duration-300"
+                                :class="{ 'opacity-50 cursor-not-allowed': altTitles.length >= maxFields }">
+                            <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
+                        </button>
                     </div>
                     {% if form.title.errors %}
                     <p class="text-red-400 text-sm flex items-center">
@@ -120,20 +118,15 @@
                 <!-- Динамические альтернативные названия -->
                 <template x-for="title in altTitles" :key="title.id">
                     <div class="space-y-2 md:col-span-2 transform hover:scale-[1.01] transition-transform duration-300">
-                        <div class="flex items-center justify-between">
-                            <label class="block text-white font-medium flex items-center space-x-2">
-                                <i class="fas fa-font text-purple-400"></i>
-                                <span>Альтернативное название</span>
-                            </label>
+                        <div class="relative">
+                            <input type="text" :name="'alt_title_' + title.id" 
+                                   class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                                   placeholder="🔤 Альтернативное название">
                             <button type="button" @click="removeAltTitle(title.id)" 
-                                    class="group p-2 hover:bg-red-500/10 rounded-lg transition-all duration-300"
-                                    :class="{ 'opacity-0': altTitles.length === 1 }">
+                                    class="group absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-red-500/10 rounded-lg transition-all duration-300">
                                 <i class="fas fa-times text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
                             </button>
                         </div>
-                        <input type="text" :name="'alt_title_' + title.id" 
-                               class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
-                               placeholder="🔤 Альтернативное название">
                     </div>
                 </template>
 
@@ -191,31 +184,31 @@
             </div>
 
             <!-- Ссылки -->
-            <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
-                <div class="flex items-center justify-between">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-white font-medium flex items-center space-x-2">
+                            <i class="fas fa-tag text-purple-400"></i>
+                            <span>Название ссылки</span>
+                        </label>
+                    </div>
+                    <div class="relative">
+                        <input type="text" name="{{ form.link_title.name }}" id="{{ form.link_title.id_for_label }}"
+                               class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                               placeholder="Название ссылки"
+                               {% if form.link_title.value %}value="{{ form.link_title.value }}"{% endif %}>
+                        <button type="button" @click="addUrl" 
+                                class="group absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-purple-500/10 rounded-lg transition-all duration-300"
+                                :class="{ 'opacity-50 cursor-not-allowed': urls.length >= maxFields }">
+                            <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
                     <label class="block text-white font-medium flex items-center space-x-2">
-                        <i class="fas fa-tag text-purple-400"></i>
-                        <span>Название ссылки</span>
+                        <i class="fas fa-link text-purple-400"></i>
+                        <span>URL ссылки</span>
                     </label>
-                    <button type="button" @click="addUrl" 
-                            class="group p-2 hover:bg-purple-500/10 rounded-lg transition-all duration-300"
-                            :class="{ 'opacity-50 cursor-not-allowed': urls.length >= maxFields }">
-                        <i class="fas fa-plus text-purple-400 group-hover:scale-110 transition-transform duration-300"></i>
-                    </button>
-                </div>
-                <div class="relative">
-                    <input type="text" name="{{ form.link_title.name }}" id="{{ form.link_title.id_for_label }}"
-                           class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
-                           placeholder="Введите название ссылки"
-                           {% if form.link_title.value %}value="{{ form.link_title.value }}"{% endif %}>
-                </div>
-            </div>
-            <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
-                <label class="block text-white font-medium flex items-center space-x-2">
-                    <i class="fas fa-link text-purple-400"></i>
-                    <span>URL ссылки</span>
-                </label>
-                <div class="relative">
                     <input type="url" name="{{ form.link_url.name }}" id="{{ form.link_url.id_for_label }}"
                            class="w-full px-6 py-4 bg-[#13111C] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
                            placeholder="https://example.com"
@@ -225,27 +218,19 @@
 
             <!-- Динамические ссылки -->
             <template x-for="url in urls" :key="url.id">
-                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
-                        <div class="flex items-center justify-between">
-                            <label class="block text-white font-medium flex items-center space-x-2">
-                                <i class="fas fa-tag text-purple-400"></i>
-                                <span>Дополнительное название ссылки</span>
-                            </label>
+                        <div class="relative">
+                            <input type="text" :name="'link_title_' + url.id"
+                                   class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
+                                   placeholder="🔖 Название ссылки">
                             <button type="button" @click="removeUrl(url.id)" 
-                                    class="group p-2 hover:bg-red-500/10 rounded-lg transition-all duration-300">
+                                    class="group absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-red-500/10 rounded-lg transition-all duration-300">
                                 <i class="fas fa-times text-red-400 group-hover:scale-110 transition-transform duration-300"></i>
                             </button>
                         </div>
-                        <input type="text" :name="'link_title_' + url.id"
-                               class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
-                               placeholder="🔖 Название ссылки">
                     </div>
                     <div class="space-y-2 transform hover:scale-[1.01] transition-transform duration-300">
-                        <label class="block text-white font-medium flex items-center space-x-2">
-                            <i class="fas fa-link text-purple-400"></i>
-                            <span>Дополнительный URL</span>
-                        </label>
                         <input type="url" :name="'link_url_' + url.id"
                                class="w-full px-6 py-4 bg-[#1a1625] border border-purple-500/20 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all duration-300 hover:border-purple-500/40"
                                placeholder="🔗 https://example.com">

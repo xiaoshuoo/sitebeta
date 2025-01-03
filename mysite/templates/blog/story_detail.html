@@ -21,15 +21,11 @@
                     
                     <!-- Альтернативные названия -->
                     {% if story.alt_titles %}
-                    <div class="space-y-2 mt-4">
-                        <h3 class="text-lg font-medium text-gray-400">Альтернативные названия:</h3>
-                        <div class="flex flex-wrap gap-2">
-                            {% for alt_title in story.alt_titles %}
-                            <span class="px-4 py-2 bg-surface-700/30 rounded-lg text-gray-300">
-                                {{ alt_title }}
-                            </span>
-                            {% endfor %}
-                        </div>
+                    <div class="mt-2">
+                        <div class="text-lg font-medium text-gray-400 mb-1">Альтернативные названия:</div>
+                        {% for alt_title in story.alt_titles %}
+                        <div class="text-gray-300">{{ alt_title }}</div>
+                        {% endfor %}
                     </div>
                     {% endif %}
                 </div>
