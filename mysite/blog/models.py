@@ -38,6 +38,12 @@ def thumbnail_upload_path(instance, filename):
     # Возвращаем путь без media/
     return f"thumbnails/{new_filename}"
 
+def story_cover_path(instance, filename):
+    """Генерация пути для обложки истории"""
+    ext = filename.split('.')[-1].lower()
+    new_filename = f"{uuid.uuid4()}.{ext}"
+    return f"stories/covers/{new_filename}"
+
 class Title(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -411,7 +417,17 @@ class TextTemplate(models.Model):
 
 class Story(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stories')
-    cover = models.ImageField(upload_to='stories/covers/', null=True, blank=True)
+    cover = CloudinaryField('cover',
+        folder='stories/covers/',
+        null=True,
+        blank=True,
+        transformation={
+            'width': 800,
+            'height': 1200,
+            'crop': 'fill',
+            'gravity': 'center'
+        }
+    )
     title = models.CharField(max_length=200)
     alt_title = models.CharField(max_length=200, blank=True)
     alt_titles = models.JSONField(default=list, blank=True)  # Для хранения дополнительных названий
