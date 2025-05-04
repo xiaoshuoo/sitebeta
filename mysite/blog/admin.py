@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Post, Tag, InviteCode, Profile, PostView, Title, TextTemplate
+from .models import Category, Post, Tag, InviteCode, Profile, PostView, Title, TextTemplate, Story, Lecture
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -78,3 +78,14 @@ class TextTemplateAdmin(admin.ModelAdmin):
     list_filter = ('category', 'created_at')
     search_fields = ('title', 'content', 'category')
     date_hierarchy = 'created_at'
+
+@admin.register(Lecture)
+class LectureAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'updated_at')
+    search_fields = ('title', 'content')
+    list_filter = ('created_at',)
+
+@admin.register(Story)
+class StoryAdmin(admin.ModelAdmin):
+    # ... existing StoryAdmin ...
+    pass # Add pass to avoid indentation error

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Post, Category, Tag, InviteCode, Profile, Comment, Story
+from .models import Post, Category, Tag, InviteCode, Profile, Comment, Story, Lecture
 from django.template.defaultfilters import slugify
 import uuid
 
@@ -427,3 +427,24 @@ class StoryForm(forms.ModelForm):
             story.tags.clear()
             story.tags.add(*self.cleaned_data['tags'])
         return story
+
+class LectureForm(forms.ModelForm):
+    class Meta:
+        model = Lecture
+        fields = ['title', 'content']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20',
+                'required': True
+            }),
+            'content': forms.Textarea(attrs={
+                'rows': 10,
+                'class': 'w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl text-white font-mono focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20',
+                'placeholder': "say Первая строка лекции...\nsay Вторая строка лекции...\n/b Какая-то команда...",
+                'required': True
+            }),
+        }
+
+    def clean_content(self):
+        content = self.cleaned_data.get('content')
+        return content

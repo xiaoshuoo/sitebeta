@@ -457,3 +457,19 @@ class Story(models.Model):
         if self.cover:
             return self.cover.url
         return None
+
+class Lecture(models.Model):
+    title = models.CharField(max_length=255, verbose_name="Название лекции")
+    content = models.TextField(verbose_name="Содержание лекции", help_text="Каждая строка должна начинаться с 'say ' или '/b '.")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
+    # Optional: Add created_by if you want to track who created the lecture
+    # created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='lectures_created')
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Лекция"
+        verbose_name_plural = "Лекции"
+        ordering = ['title']

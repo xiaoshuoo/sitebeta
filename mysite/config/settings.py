@@ -348,4 +348,8 @@ WHITENOISE_SKIP_COMPRESS_EXTENSIONS = [
     'rar', 'svg', 'woff', 'woff2'
 ]
 
+# Authentication settings
+LOGIN_REDIRECT_URL = '/'  # Redirect to home page after login
+LOGOUT_REDIRECT_URL = '/'  # Redirect to home page after logout
+
 

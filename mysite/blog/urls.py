@@ -29,6 +29,7 @@ urlpatterns = [
     path('about/', views.about, name='about'),
     path('contacts/', views.contacts, name='contacts'),
     path('search/', views.search, name='search'),
+    path('lecture/', views.lecture_page, name='lecture_page'),
     path('posts/', views.post_list, name='post_list'),
     path('password_change/', 
          auth_views.PasswordChangeView.as_view(
@@ -56,6 +57,7 @@ urlpatterns = [
     path('panel/restore-media/', views.restore_media, name='restore_media'),
     path('panel/create-invite/', views.create_invite, name='create_invite'),
     path('panel/deactivate-invite/<str:code>/', views.deactivate_invite, name='deactivate_invite'),
+    path('panel/users/<int:user_id>/deactivate/', views.deactivate_user, name='deactivate_user'),
     path('panel/text-templates/', views.text_templates, name='text_templates'),
     path('panel/text-templates/<int:template_id>/edit/', views.edit_template, name='edit_template'),
     path('panel/text-templates/<int:template_id>/delete/', views.delete_template, name='delete_template'),
@@ -78,6 +80,9 @@ urlpatterns = [
     path('my-stories/', views.my_stories, name='my_stories'),
     path('story/<int:pk>/delete/', views.delete_story, name='delete_story'),
     path('stories/search/', views.search_stories, name='search_stories'),
+    path('lecture/create/', views.create_lecture, name='create_lecture'),
+    path('lecture/<int:pk>/edit/', views.edit_lecture, name='edit_lecture'),
+    path('lecture/<int:pk>/delete/', views.delete_lecture, name='delete_lecture'),
 ]
 
 if settings.DEBUG:

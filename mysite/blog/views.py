@@ -11,8 +11,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
-from .models import Category, Post, Profile, Tag, Comment, PostView, InviteCode, PageSettings, Title, TextTemplate, Story
-from .forms import CustomUserCreationForm, ProfileForm, PostForm, CommentForm, StoryForm
+from .models import Category, Post, Profile, Tag, Comment, PostView, InviteCode, PageSettings, Title, TextTemplate, Story, Lecture
+from .forms import CustomUserCreationForm, ProfileForm, PostForm, CommentForm, StoryForm, LectureForm
 import json
 import os
 from .cloudinary_storage import CustomCloudinaryStorage
@@ -1482,3 +1482,77 @@ def search_stories(request):
     }
     
     return render(request, 'blog/search_stories.html', context)
+
+@login_required
+@user_passes_test(is_admin)
+def deactivate_user(request, user_id):
+    """Деактивация пользователя"""
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(id=user_id)
+            if user != request.user:  # Prevent self-deactivation
+                user.is_active = False
+                user.save()
+                messages.success(request, f'Пользователь {user.username} деактивирован')
+            else:
+                messages.error(request, 'Вы не можете деактивировать свой аккаунт')
+        except User.DoesNotExist:
+            messages.error(request, 'Пользователь не найден')
+    return redirect('blog:admin_panel')
+
+def lecture_page(request):
+    lecture_list = Lecture.objects.all() # Fetch from database, order by title is default in model
+    paginator = Paginator(lecture_list, 10) # Show 10 lectures per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'lectures': page_obj # Pass page object instead of full list
+    }
+    return render(request, 'blog/lecture_page.html', context)
+
+@user_passes_test(is_admin)
+@login_required
+def create_lecture(request):
+    if request.method == 'POST':
+        form = LectureForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Лекция успешно создана')
+            return redirect('blog:lecture_page')
+        else:
+            # Optionally handle form errors, maybe via AJAX if the form is modal
+            # For now, just redirect back with an error message for simplicity
+            messages.error(request, 'Ошибка при создании лекции. Проверьте форму.') 
+            return redirect('blog:lecture_page')
+    # GET request is not expected directly, form is shown via JS modal
+    return redirect('blog:lecture_page')
+
+@user_passes_test(is_admin)
+@login_required
+def edit_lecture(request, pk):
+    lecture = get_object_or_404(Lecture, pk=pk)
+    if request.method == 'POST':
+        form = LectureForm(request.POST, instance=lecture)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Лекция успешно обновлена')
+            return redirect('blog:lecture_page')
+        else:
+            messages.error(request, 'Ошибка при обновлении лекции. Проверьте форму.')
+            return redirect('blog:lecture_page') # Redirect back
+    # GET request not expected directly
+    return redirect('blog:lecture_page')
+
+@user_passes_test(is_admin)
+@login_required
+@require_POST # Ensure this view only accepts POST requests
+def delete_lecture(request, pk):
+    lecture = get_object_or_404(Lecture, pk=pk)
+    try:
+        lecture.delete()
+        messages.success(request, 'Лекция успешно удалена')
+    except Exception as e:
+        messages.error(request, f'Ошибка при удалении лекции: {e}')
+    return redirect('blog:lecture_page')

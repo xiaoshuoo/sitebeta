@@ -1,43 +1,98 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Регистрация{% endblock %}
+{% block extra_head %}
+<link href="{% static 'css/auth.css' %}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-md mx-auto">
-        <h1 class="text-2xl font-bold text-white mb-8">Регистрация</h1>
+<!-- Geometric Background -->
+<div class="geometric-bg">
+    {% for i in "12345" %}
+    <div class="geometric-line"></div>
+    {% endfor %}
+</div>
+
+<div class="auth-container">
+    <div class="auth-header">
+        <h1 class="auth-title">Регистрация</h1>
+        <p class="auth-subtitle">ARISE FROM THE SHADOW</p>
+    </div>
+
+    <form method="post" class="auth-form">
+        {% csrf_token %}
         
-        <form method="post" class="space-y-6">
-            {% csrf_token %}
-            
-            {% if form.errors %}
-            <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
-                <p class="text-red-400">Пожалуйста, исправьте следующие ошибки:</p>
-                {{ form.errors }}
+        {% if form.errors %}
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            Пожалуйста, исправьте ошибки ниже
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label class="form-label" for="username">Имя пользователя</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.username.errors.0 }}
             </div>
             {% endif %}
-            
-            {% for field in form %}
-            <div class="space-y-2">
-                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-300">
-                    {{ field.label }}
-                </label>
-                {{ field }}
-                {% if field.help_text %}
-                <p class="text-sm text-gray-500">{{ field.help_text }}</p>
-                {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.email.errors.0 }}
             </div>
-            {% endfor %}
-            
-            <button type="submit" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300">
-                Зарегистрироваться
-            </button>
-        </form>
-        
-        <p class="mt-6 text-center text-gray-400">
-            Уже есть аккаунт? 
-            <a href="{% url 'login' %}" class="text-purple-400 hover:text-purple-300">Войти</a>
-        </p>
-    </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password1">Пароль</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.password1.errors.0 }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password2">Подтверждение пароля</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.password2.errors.0 }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="invite_code">Инвайт-код</label>
+            {{ form.invite_code }}
+            {% if form.invite_code.errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ form.invite_code.errors.0 }}
+            </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="submit-btn">
+            <span>Зарегистрироваться</span>
+        </button>
+
+        <div class="auth-links">
+            Уже есть аккаунт? <a href="{% url 'login' %}" class="auth-link">Войти</a>
+        </div>
+    </form>
 </div>
 {% endblock %} 

@@ -1,0 +1,494 @@
+{% extends 'base.html' %}
+{% load static %} {# Убедитесь, что static загружен, если еще нет #}
+
+{% block title %}Лекции{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-background cosmic-bg">
+
+    {# Display Django Messages #}
+    {% if messages %}
+        <div class="fixed top-4 right-4 z-[100] w-full max-w-xs sm:max-w-sm">
+            {% for message in messages %}
+                <div 
+                    x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" 
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 transform translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform translate-y-2"
+                    class="mb-2 rounded-xl border p-4 shadow-lg 
+                        {% if message.tags == 'success' %} bg-green-500/10 border-green-500/20 text-green-300 
+                        {% elif message.tags == 'error' %} bg-red-500/10 border-red-500/20 text-red-300 
+                        {% elif message.tags == 'warning' %} bg-yellow-500/10 border-yellow-500/20 text-yellow-300 
+                        {% else %} bg-blue-500/10 border-blue-500/20 text-blue-300 
+                        {% endif %}"
+                    role="alert">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-2">
+                            {% if message.tags == 'success' %}<i class="fas fa-check-circle"></i>
+                            {% elif message.tags == 'error' %}<i class="fas fa-times-circle"></i>
+                            {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+                            {% else %}<i class="fas fa-info-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium">{{ message }}</p>
+                        </div>
+                        <button @click="show = false" class="ml-2 text-current opacity-70 hover:opacity-100">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {# End Display Django Messages #}
+
+    <div class="max-w-full mx-auto px-2 sm:px-4 py-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4 max-w-7xl mx-auto"> {# Reduced mb-6 to mb-4 #}
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center transform rotate-6">
+                        <i class="fas fa-chalkboard-teacher text-3xl text-white"></i> {# Changed Icon #}
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-blue-400 to-cyan-400 animate-gradient">
+                        Лекции
+                    </h1>
+                    <p class="text-gray-400 mt-1">Готовые тексты лекций для копирования</p>
+                </div>
+            </div>
+            {# Removed search and add button - will add back for admin later #}
+            {% if user.is_staff %}
+            <a href="{% url 'blog:create_lecture' %}" {# Use actual create URL #}
+               onclick="showCreateLectureForm(); return false;" {# JS function to show form #}
+               class="group px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl 
+                      hover:shadow-lg hover:shadow-green-500/25 transition-all relative overflow-hidden">
+                <span class="relative z-10 flex items-center">
+                    <i class="fas fa-plus mr-2 group-hover:rotate-180 transition-transform duration-500"></i>
+                    Добавить лекцию
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Main content area -->
+        <div class="flex-1 max-w-7xl mx-auto">
+            <!-- Lectures grid/list -->
+            <div class="lecture-grid space-y-3"> {# Reduced space-y-4 to space-y-3 #}
+                {% if lectures %}
+                    {% for lecture in lectures %}
+                        <div class="lecture-card glass-card rounded-xl overflow-hidden border border-white/5 shadow-xl hover:shadow-purple-500/5 hover:border-purple-500/10 transition-all" data-lecture-title="{{ lecture.title|lower }}" id="lecture-card-{{ lecture.id }}">
+                            <!-- Lecture header -->
+                            <div class="p-3 border-b border-white/5 flex justify-between items-center cursor-pointer" onclick="toggleLecture('lecture-{{ lecture.id }}')"> {# Reduced p-4 to p-3 #}
+                                <div class="flex items-center w-full">
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-blue-500/20 flex items-center justify-center text-green-400 font-bold mr-3 flex-shrink-0">
+                                        {{ forloop.counter }}
+                                    </div>
+                                    <div class="flex-1 mr-4">
+                                        <h3 class="text-lg font-bold text-white">{{ lecture.title }}</h3>
+                                    </div>
+                                    <button class="lecture-toggle p-2 hover:text-purple-400 text-gray-400 flex-shrink-0">
+                                        <i class="fas fa-chevron-down transition-transform duration-300" id="icon-lecture-{{ lecture.id }}"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Lecture content (collapsible) -->
+                            <div id="lecture-{{ lecture.id }}" class="hidden">
+                                <!-- Action buttons -->
+                                <div class="flex justify-end px-3 pt-2 space-x-2"> {# Reduced px-4 pt-3 to px-3 pt-2 #}
+                                    <button onclick="copyFullLecture('{{ lecture.id }}')"
+                                            class="btn-action p-2 bg-blue-500/5 text-blue-400/90 rounded-lg
+                                                   hover:bg-blue-500/10 hover:text-blue-400 transition-all transform hover:scale-105
+                                                   border border-blue-500/10 flex items-center text-sm">
+                                        <i class="fas fa-copy mr-1.5"></i>
+                                        Копировать всё
+                                    </button>
+                                    {% if user.is_staff %}
+                                    <a href="{% url 'blog:edit_lecture' lecture.id %}" {# Use actual edit URL #}
+                                       onclick="showEditLectureForm({{ lecture.id }}); return false;" 
+                                       data-title="{{ lecture.title|escapejs }}" {# Store title here #}
+                                       data-content="{{ lecture.content|escapejs }}" {# Store content here #}
+                                       class="edit-lecture-btn btn-action p-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500 hover:text-white transition-all flex items-center text-sm">
+                                        <i class="fas fa-edit mr-1.5"></i>
+                                        Редактировать
+                                    </a>
+                                    <form id="delete-lecture-form-{{ lecture.id }}" action="{% url 'blog:delete_lecture' lecture.id %}" method="POST" style="display: inline;"> {# Use actual delete URL #}
+                                        {% csrf_token %}
+                                        <button type="button"
+                                                onclick="confirmDeleteLecture({{ lecture.id }})"
+                                                class="btn-action p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all flex items-center text-sm">
+                                            <i class="fas fa-trash-alt mr-1.5"></i>
+                                            Удалить
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Content area -->
+                                <div class="content-area mx-3 my-2 rounded-lg p-2.5 space-y-1 shadow-inner bg-black/20 lecture-content-{{ lecture.id }}"> {# Reduced mx-4 my-3 p-3 space-y-1.5 #}
+                                    {% with lines=lecture.content|linebreaksbr|split:"<br>" %}
+                                        {% for line in lines %}
+                                            {% if line|striptags|trim != "" %}
+                                                <div class="relative group line-hover p-2 rounded-lg cursor-pointer transition-all select-none
+                                                            hover:bg-purple-500/10 hover:shadow-lg hover:shadow-purple-500/5" {# Reduced p-2.5 #}
+                                                     onclick="copyLineToClipboard(this)"
+                                                     data-content="{{ line|striptags }}"
+                                                     title="Нажмите, чтобы скопировать строку">
+                                                    <div class="flex items-center">
+                                                        <span class="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-md bg-purple-500/5
+                                                                     text-purple-400/70 text-xs font-mono border border-purple-500/10 mr-2"> {# Reduced w/h-6, mr-2.5 #}
+                                                            {{ forloop.counter }}
+                                                        </span>
+                                                        <span class="text-gray-300/90 font-mono text-sm break-words flex-1">{{ line|safe }}</span>
+                                                        <span class="hidden group-hover:flex ml-2 text-xs text-purple-400/70 bg-purple-500/5 px-2 py-1 rounded-md">
+                                                            <i class="fas fa-copy mr-1"></i> Копировать
+                                                        </span>
+                                                    </div>
+                                                    <div class="copy-success hidden absolute right-2 top-1/2 -translate-y-1/2
+                                                                text-green-400/90 bg-green-500/10 px-3 py-1 rounded-lg backdrop-blur-sm
+                                                                border border-green-500/10 text-xs">
+                                                        <i class="fas fa-check mr-1"></i> Скопировано!
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="glass-card p-16 text-center rounded-2xl">
+                        <div class="relative w-24 h-24 mx-auto mb-6">
+                            <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl transform rotate-6"></div>
+                            <div class="absolute inset-0 bg-[#1a1625] rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-chalkboard-teacher text-4xl text-green-400"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Нет лекций</h3>
+                        <p class="text-gray-400">{% if user.is_staff %}Создайте первую лекцию, нажав кнопку "Добавить лекцию".{% else %}Пока нет доступных лекций.{% endif %}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Pagination Controls #}
+            {% if lectures.has_other_pages %}
+            <div class="mt-8 flex items-center justify-center space-x-2 text-white">
+                {# Previous Button #}
+                {% if lectures.has_previous %}
+                    <a href="?page={{ lectures.previous_page_number }}" 
+                       class="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition-colors flex items-center">
+                        <i class="fas fa-chevron-left mr-2"></i>
+                        Пред.
+                    </a>
+                {% else %}
+                    <span class="px-4 py-2 bg-gray-500/10 border border-gray-500/20 rounded-lg text-gray-500 cursor-not-allowed flex items-center">
+                        <i class="fas fa-chevron-left mr-2"></i>
+                        Пред.
+                    </span>
+                {% endif %}
+
+                {# Page Numbers #}
+                {% for i in lectures.paginator.page_range %}
+                    {% if lectures.number == i %}
+                        <span class="px-4 py-2 bg-purple-500/30 border border-purple-500/40 rounded-lg font-bold">{{ i }}</span>
+                    {% elif i > lectures.number|add:'-3' and i < lectures.number|add:'3' %}
+                        <a href="?page={{ i }}" 
+                           class="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition-colors">
+                            {{ i }}
+                        </a>
+                    {% elif i == lectures.paginator.page_range.0 or i == lectures.paginator.page_range|last %}
+                         <span class="px-4 py-2 text-gray-500">...</span> {# Ellipsis for gaps #}
+                    {% endif %}
+                {% endfor %}
+
+                {# Next Button #}
+                {% if lectures.has_next %}
+                    <a href="?page={{ lectures.next_page_number }}" 
+                       class="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 transition-colors flex items-center">
+                        След.
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </a>
+                {% else %}
+                    <span class="px-4 py-2 bg-gray-500/10 border border-gray-500/20 rounded-lg text-gray-500 cursor-not-allowed flex items-center">
+                        След.
+                        <i class="fas fa-chevron-right ml-2"></i>
+                    </span>
+                {% endif %}
+            </div>
+            {% endif %}
+            {# End Pagination Controls #}
+
+        </div> {# End flex-1 max-w-7xl #}
+    </div> {# End max-w-full #}
+
+    {# Add Lecture Modal Form (Hidden by default) - For Admins #}
+    {% if user.is_staff %}
+    <div id="lectureFormModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#1a1625] rounded-2xl p-6 sm:p-8 max-w-2xl w-full mx-auto border border-purple-500/10 shadow-xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="lectureFormTitle" class="text-2xl font-bold text-white">Добавить лекцию</h2>
+                <button onclick="hideLectureForm()" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="lectureForm" action="#" method="POST" class="space-y-5"> {# Placeholder action #}
+                {% csrf_token %}
+                <input type="hidden" name="lecture_id" id="lecture_id">
+                
+                <div>
+                    <label for="lecture_title" class="block text-sm font-medium text-gray-400 mb-2">Название</label>
+                    <input type="text" name="title" id="lecture_title" required
+                           class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                  text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20">
+                </div>
+                
+                <div>
+                    <label for="lecture_content" class="block text-sm font-medium text-gray-400 mb-2">Содержание (каждая строка должна начинаться с 'say ' или '/b ')</label>
+                    <textarea name="content" id="lecture_content" rows="10" required
+                              placeholder="say Первая строка лекции...
+say Вторая строка лекции...
+/b Какая-то команда..."
+                              class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                     text-white font-mono focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" onclick="hideLectureForm()"
+                            class="px-6 py-3 bg-gray-500/10 text-gray-400 rounded-xl hover:bg-gray-500/20 transition-all">
+                        Отмена
+                    </button>
+                    <button type="submit"
+                            class="px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-xl 
+                                   hover:shadow-lg hover:shadow-green-500/25 transition-all">
+                        <span id="lectureFormSubmitButton">Сохранить лекцию</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{# Include the same styles as text_templates.html #}
+<style>
+.cosmic-bg {
+    background:
+        radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 60%);
+    background-attachment: fixed;
+}
+
+.glass-card {
+    background: rgba(26, 22, 37, 0.25);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.content-area {
+    background: rgba(26, 22, 37, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    max-height: 450px; /* Increased height slightly */
+    overflow-y: auto;
+}
+
+.line-hover {
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.line-hover:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.15);
+}
+
+/* Improve scrollbar styling */
+.content-area::-webkit-scrollbar { width: 5px; }
+.content-area::-webkit-scrollbar-track { background: rgba(26, 22, 37, 0.1); border-radius: 3px; }
+.content-area::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.2); border-radius: 3px; }
+.content-area::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.3); }
+
+/* Enhanced button effects */
+.btn-action { position: relative; overflow: hidden; }
+.btn-action::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%); transition: transform 0.6s;
+}
+.btn-action:hover::after { transform: translateX(100%); }
+
+/* Improved animation for template expansion */
+@keyframes expand {
+    from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+    to { opacity: 1; transform: translateY(0); max-height: 1000px; }
+}
+.animate-expand { animation: expand 0.3s ease-out forwards; }
+
+/* Add slight hover effect to lecture cards */
+.lecture-card:hover { transform: translateY(-2px); }
+
+.copied-highlight {
+    background-color: rgba(74, 222, 128, 0.15); /* Subtle green background */
+    border-color: rgba(74, 222, 128, 0.2); /* Subtle green border */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+</style>
+
+{# Include the same JS functions, adapted for lectures #}
+<script>
+// Copy a single line
+function copyLineToClipboard(element) {
+    const text = element.getAttribute('data-content');
+    // NOTE: Prefix is already included in the displayed text from the view now
+    const textToCopy = text; 
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const successIndicator = element.querySelector('.copy-success');
+        successIndicator.classList.remove('hidden');
+        element.classList.add('copied-highlight');
+        setTimeout(() => {
+            successIndicator.classList.add('hidden');
+            element.classList.remove('copied-highlight');
+        }, 1500); // Shorter timeout for line copy
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = textToCopy;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        const successIndicator = element.querySelector('.copy-success');
+        successIndicator.classList.remove('hidden');
+        element.classList.add('copied-highlight');
+        setTimeout(() => {
+            successIndicator.classList.add('hidden');
+            element.classList.remove('copied-highlight');
+        }, 1500);
+    });
+}
+
+// Copy entire lecture
+function copyFullLecture(lectureId) {
+    const contentArea = document.querySelector('.lecture-content-' + lectureId);
+    const lines = contentArea.querySelectorAll('[data-content]');
+    let fullText = '';
+
+    lines.forEach(line => {
+        // NOTE: Prefix is already included in the displayed text
+        const lineText = line.getAttribute('data-content'); 
+        fullText += lineText + '\n';
+    });
+     fullText = fullText.trim(); // Remove trailing newline
+
+    navigator.clipboard.writeText(fullText).then(() => {
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center';
+        notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Вся лекция скопирована!';
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 3000);
+    });
+}
+
+// Toggle lecture visibility
+function toggleLecture(lectureId) {
+    const content = document.getElementById(lectureId);
+    const icon = document.getElementById('icon-' + lectureId);
+
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        content.classList.add('animate-expand');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        content.classList.add('hidden');
+        content.classList.remove('animate-expand');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+{% if user.is_staff %}
+// Modal functions for lecture form
+const lectureModal = document.getElementById('lectureFormModal');
+const lectureForm = document.getElementById('lectureForm');
+const lectureFormTitle = document.getElementById('lectureFormTitle');
+const lectureSubmitButton = document.getElementById('lectureFormSubmitButton');
+const lectureIdInput = document.getElementById('lecture_id');
+const lectureTitleInput = document.getElementById('lecture_title');
+const lectureContentInput = document.getElementById('lecture_content');
+
+function showCreateLectureForm() {
+    lectureForm.reset();
+    lectureFormTitle.textContent = 'Добавить лекцию';
+    lectureSubmitButton.textContent = 'Создать лекцию';
+    lectureIdInput.value = '';
+    lectureForm.action = "{% url 'blog:create_lecture' %}"; // Set create URL
+    lectureModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+}
+
+function showEditLectureForm(id) { // Now only takes id
+    const lectureCard = document.getElementById(`lecture-card-${id}`);
+    if (!lectureCard) return; 
+
+    const editButton = lectureCard.querySelector('.edit-lecture-btn');
+    if (!editButton) return;
+
+    const title = editButton.getAttribute('data-title');
+    const content = editButton.getAttribute('data-content');
+
+    lectureForm.reset();
+    lectureFormTitle.textContent = 'Редактировать лекцию';
+    lectureSubmitButton.textContent = 'Сохранить изменения';
+    lectureIdInput.value = id;
+    lectureTitleInput.value = title;
+    lectureContentInput.value = content.replace(/<br\s*\/?\s*>/gi, '\n'); // Convert <br> back to newlines for textarea
+    lectureForm.action = `/lecture/${id}/edit/`; // Set edit URL dynamically
+    lectureModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function hideLectureForm() {
+    lectureModal.classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore background scroll
+}
+
+// Close modal on outside click
+lectureModal.addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideLectureForm();
+    }
+});
+
+function confirmDeleteLecture(lectureId) {
+    if (confirm('Вы уверены, что хотите удалить эту лекцию? Это действие необратимо.')) {
+        const form = document.getElementById(`delete-lecture-form-${lectureId}`);
+        form.submit();
+    }
+}
+{% endif %}
+
+// Initialize tooltips on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-content]').forEach(element => {
+        // Tooltip added via title attribute in the HTML directly
+    });
+});
+</script>
+{% endblock %} 
