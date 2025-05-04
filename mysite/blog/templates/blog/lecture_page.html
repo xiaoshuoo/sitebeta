@@ -138,7 +138,7 @@
                                             {% if line|striptags|trim != "" %}
                                                 <div class="relative group line-hover p-2 rounded-lg cursor-pointer transition-all select-none
                                                             hover:bg-purple-500/10 hover:shadow-lg hover:shadow-purple-500/5" {# Reduced p-2.5 #}
-                                                     onclick="copyLineToClipboard(this)"
+                                                     onclick="copyLineToClipboard('{{ line|striptags|escapejs }}')"
                                                      data-content="{{ line|striptags }}"
                                                      title="Нажмите, чтобы скопировать строку">
                                                     <div class="flex items-center">
@@ -146,7 +146,7 @@
                                                                      text-purple-400/70 text-xs font-mono border border-purple-500/10 mr-2"> {# Reduced w/h-6, mr-2.5 #}
                                                             {{ forloop.counter }}
                                                         </span>
-                                                        <span class="text-gray-300/90 font-mono text-sm break-words flex-1">{{ line|safe }}</span>
+                                                        <span class="lecture-line-text text-gray-300/90 font-mono text-sm break-words flex-1">{{ line|safe }}</span>
                                                         <span class="hidden group-hover:flex ml-2 text-xs text-purple-400/70 bg-purple-500/5 px-2 py-1 rounded-md">
                                                             <i class="fas fa-copy mr-1"></i> Копировать
                                                         </span>
@@ -351,53 +351,63 @@ say Вторая строка лекции...
 
 {# Include the same JS functions, adapted for lectures #}
 <script>
-// Copy a single line
-function copyLineToClipboard(element) {
-    const text = element.getAttribute('data-content');
-    // NOTE: Prefix is already included in the displayed text from the view now
-    const textToCopy = text; 
+// Helper function to decode HTML entities
+function decodeHtmlEntities(text) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+}
 
+// Copy a single line - receives text directly
+function copyLineToClipboard(rawTextFromDjango) {
+    // Decode potential HTML entities first
+    const textToCopy = decodeHtmlEntities(rawTextFromDjango);
+    
+    // We now have the decoded text, copy it
     navigator.clipboard.writeText(textToCopy).then(() => {
-        const successIndicator = element.querySelector('.copy-success');
-        successIndicator.classList.remove('hidden');
-        element.classList.add('copied-highlight');
-        setTimeout(() => {
-            successIndicator.classList.add('hidden');
-            element.classList.remove('copied-highlight');
-        }, 1500); // Shorter timeout for line copy
+        // Need to find the element that was clicked to show feedback
+        // This is tricky without passing the element. Let's skip visual feedback *on the line* for now.
+        // Alternatively, we could pass the event object: onclick="copyLineToClipboard(event, '...')"
+        // For simplicity, let's just show a general notification for line copy.
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 flex items-center';
+        notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Строка скопирована!';
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 2000); 
+
     }).catch(err => {
         console.error('Failed to copy text: ', err);
         // Fallback
         const textarea = document.createElement('textarea');
-        textarea.value = textToCopy;
+        // Ensure fallback also uses decoded text
+        textarea.value = textToCopy; 
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-
-        const successIndicator = element.querySelector('.copy-success');
-        successIndicator.classList.remove('hidden');
-        element.classList.add('copied-highlight');
-        setTimeout(() => {
-            successIndicator.classList.add('hidden');
-            element.classList.remove('copied-highlight');
-        }, 1500);
+        // Show general notification on fallback too
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 flex items-center';
+        notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Строка скопирована! (fallback)';
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 2000); 
     });
 }
 
-// Copy entire lecture
+// Copy entire lecture - reads rendered text
 function copyFullLecture(lectureId) {
     const contentArea = document.querySelector('.lecture-content-' + lectureId);
-    const lines = contentArea.querySelectorAll('[data-content]');
+    const lineSpans = contentArea.querySelectorAll('.lecture-line-text'); 
     let fullText = '';
 
-    lines.forEach(line => {
-        // NOTE: Prefix is already included in the displayed text
-        const lineText = line.getAttribute('data-content'); 
-        fullText += lineText + '\n';
+    lineSpans.forEach(span => {
+        // Reading textContent/innerText should already provide decoded text
+        const lineText = (span.textContent || span.innerText || '').trim(); 
+        fullText += lineText + '\n'; 
     });
-     fullText = fullText.trim(); // Remove trailing newline
+     fullText = fullText.trim(); 
 
+    // Copy the composed text
     navigator.clipboard.writeText(fullText).then(() => {
         const notification = document.createElement('div');
         notification.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center';
@@ -451,14 +461,22 @@ function showEditLectureForm(id) { // Now only takes id
     if (!editButton) return;
 
     const title = editButton.getAttribute('data-title');
-    const content = editButton.getAttribute('data-content');
+    // Get content by reading the rendered text lines within the specific lecture content area
+    const contentArea = lectureCard.querySelector('.lecture-content-' + id);
+    const lineSpans = contentArea.querySelectorAll('.lecture-line-text');
+    let content = '';
+    lineSpans.forEach(span => {
+        content += (span.textContent || span.innerText || '').trim() + '\n';
+    });
+    content = content.trim();
 
     lectureForm.reset();
     lectureFormTitle.textContent = 'Редактировать лекцию';
     lectureSubmitButton.textContent = 'Сохранить изменения';
     lectureIdInput.value = id;
     lectureTitleInput.value = title;
-    lectureContentInput.value = content.replace(/<br\s*\/?\s*>/gi, '\n'); // Convert <br> back to newlines for textarea
+    // Set the raw content (with newlines) into the textarea
+    lectureContentInput.value = content;
     lectureForm.action = `/lecture/${id}/edit/`; // Set edit URL dynamically
     lectureModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -479,6 +497,7 @@ lectureModal.addEventListener('click', function(e) {
 function confirmDeleteLecture(lectureId) {
     if (confirm('Вы уверены, что хотите удалить эту лекцию? Это действие необратимо.')) {
         const form = document.getElementById(`delete-lecture-form-${lectureId}`);
+        // Action is already set in the form's HTML
         form.submit();
     }
 }
