@@ -1368,6 +1368,69 @@ def delete_public_template(request, template_id):
     
     return redirect('blog:public_templates')
 
+def gutierrez_templates(request):
+    """Публичная страница шаблонов Gutierrez (без авторизации)"""
+    if request.method == 'POST':
+        try:
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            category = request.POST.get('category', 'general')
+            
+            # Создаем публичный шаблон для Gutierrez (без автора)
+            TextTemplate.objects.create(
+                title=title,
+                content=content,
+                category=category,
+                created_by=None  # Явно указываем, что это публичный шаблон
+            )
+            messages.success(request, 'Шаблон успешно создан')
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании шаблона: {str(e)}')
+    
+    # Получаем только публичные шаблоны (без автора)
+    templates = TextTemplate.objects.filter(created_by=None).order_by('-created_at')
+    return render(request, 'blog/gutierrez_templates.html', {
+        'templates': templates,
+        'categories': TextTemplate.objects.filter(created_by=None).values_list('category', flat=True).distinct()
+    })
+
+def edit_gutierrez_template(request, template_id):
+    """Редактирование публичного шаблона Gutierrez"""
+    # Получаем только публичный шаблон
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None)
+    
+    if request.method == 'POST':
+        try:
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            category = request.POST.get('category', 'general')
+            
+            template.title = title
+            template.content = content
+            template.category = category
+            template.save()
+            
+            messages.success(request, 'Шаблон успешно обновлен')
+            return redirect('blog:gutierrez_templates')
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлении шаблона: {str(e)}')
+    
+    return render(request, 'blog/edit_gutierrez_template.html', {'template': template})
+
+def delete_gutierrez_template(request, template_id):
+    """Удаление публичного шаблона Gutierrez"""
+    # Получаем только публичный шаблон
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None)
+    
+    if request.method == 'POST':
+        try:
+            template.delete()
+            messages.success(request, 'Шаблон успешно удален')
+        except Exception as e:
+            messages.error(request, f'Ошибка при удалении шаблона: {str(e)}')
+    
+    return redirect('blog:gutierrez_templates')
+
 @login_required
 def create_story(request):
     """Создание новой истории"""

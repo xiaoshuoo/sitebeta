@@ -1,0 +1,598 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-background cosmic-bg">
+    <!-- Full-width container with minimal padding -->
+    <div class="max-w-full mx-auto px-2 sm:px-4 py-6">
+        <!-- Improved header -->
+        <div class="flex items-center justify-between mb-6 max-w-7xl mx-auto">
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center transform rotate-6 transition-transform group-hover:rotate-12">
+                        <i class="fas fa-file-alt text-3xl text-white"></i>
+                    </div>
+                    <div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                        <i class="fas fa-code text-white text-sm"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient">
+                        Шаблоны текстов Gutierrez
+                    </h1>
+                    <p class="text-gray-400 mt-1">Управление текстовыми шаблонами</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input id="templateSearch" type="text" placeholder="Поиск шаблонов..." 
+                           class="w-72 px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl text-white 
+                                  focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 pl-10">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <button onclick="showCreateForm()" 
+                    class="group px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl 
+                           hover:shadow-lg hover:shadow-purple-500/25 transition-all relative overflow-hidden">
+                <span class="relative z-10 flex items-center">
+                    <i class="fas fa-plus mr-2 group-hover:rotate-180 transition-transform duration-500"></i>
+                    Добавить шаблон
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
+        </div>
+        </div>
+
+        <!-- Mobile category selection dropdown (visible only on mobile) -->
+        <div class="lg:hidden mb-4 px-2">
+            <div class="relative">
+                <select id="mobile-category-select" class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                        text-white appearance-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 pr-10">
+                    <option value="all">Все категории</option>
+                    {% regroup templates by category as category_list %}
+                    {% for category in category_list %}
+                        <option value="{{ category.grouper|slugify }}">{{ category.grouper }} ({{ category.list|length }})</option>
+                    {% endfor %}
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-purple-400">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- More efficient two column layout with ultra-narrow sidebar -->
+        <div class="flex flex-wrap lg:flex-nowrap">
+            <!-- Extremely compact sidebar pushed to the left (hidden on mobile) -->
+            <div class="hidden lg:block lg:w-48 shrink-0 pl-0 pr-3">
+                <div class="sticky top-4 glass-card rounded-xl p-3 border border-white/5 shadow-xl category-sidebar">
+                    <h3 class="text-base font-bold text-white mb-3 flex items-center">
+                        <i class="fas fa-layer-group text-purple-400 mr-2"></i>
+                        Категории
+                    </h3>
+                    
+                    <div class="space-y-1.5 categories-list">
+                        <button id="category-all" onclick="filterCategory('all')" 
+                                class="w-full py-2.5 px-3 rounded-lg text-left category-filter active flex items-center
+                                      text-white hover:bg-purple-500/20 transition-all">
+                            <i class="fas fa-border-all mr-2 text-purple-400"></i>
+                            <span class="truncate">Все категории</span>
+                            <span class="ml-auto bg-purple-500/20 px-2 py-1 rounded-lg text-xs">
+                                {{ templates|length }}
+                            </span>
+                        </button>
+                        
+                        {% regroup templates by category as category_list %}
+                        {% for category in category_list %}
+                            <button id="category-{{ category.grouper|slugify }}" 
+                                    onclick="filterCategory('{{ category.grouper|slugify }}')" 
+                                    class="w-full py-2.5 px-3 rounded-lg text-left category-filter flex items-center
+                                         text-gray-300 hover:bg-purple-500/10 transition-all">
+                                <i class="fas fa-folder mr-2 text-purple-400/70"></i>
+                                <span class="truncate">{{ category.grouper }}</span>
+                                <span class="ml-auto bg-purple-500/10 px-2 py-1 rounded-lg text-xs flex-shrink-0">
+                                    {{ category.list|length }}
+                                </span>
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+        </div>
+
+            <!-- Maximized templates content area with category label -->
+            <div class="flex-1">
+                <!-- Current category indicator (especially useful when sidebar is hidden) -->
+                <div class="flex items-center justify-between mb-4 px-2 current-category-indicator">
+                    <div class="flex items-center">
+                        <i class="fas fa-folder text-purple-400 mr-2"></i>
+                        <h2 class="text-base font-semibold text-white" id="current-category-name">Все категории</h2>
+                    </div>
+                    <button class="lg:hidden text-purple-400 p-2 hover:bg-purple-500/10 rounded-lg toggle-categories-btn">
+                        <i class="fas fa-sliders-h"></i>
+                    </button>
+                </div>
+
+                <!-- Create form modal -->
+        <div id="createFormModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div class="bg-[#1a1625] rounded-2xl p-8 max-w-2xl w-full mx-4 border border-purple-500/10 shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white">Создать новый шаблон</h2>
+                    <button onclick="hideCreateForm()" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form action="{% url 'blog:gutierrez_templates' %}" method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Название</label>
+                        <input type="text" name="title" required
+                               class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                      text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Категория</label>
+                        <input type="text" name="category" required
+                               class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                      text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Содержание</label>
+                        <textarea name="content" rows="6" required
+                                  class="w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl 
+                                         text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4 pt-4">
+                        <button type="button" onclick="hideCreateForm()"
+                                class="px-6 py-3 bg-gray-500/10 text-gray-400 rounded-xl hover:bg-gray-500/20 transition-all">
+                            Отмена
+                        </button>
+                        <button type="submit"
+                                class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl 
+                                       hover:shadow-lg hover:shadow-purple-500/25 transition-all">
+                            Создать шаблон
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+                <!-- Full-width optimized card layout -->
+                <div class="template-grid grid gap-5 mr-2">
+        {% regroup templates by category as category_list %}
+        {% for category in category_list %}
+                    <div class="category-container" data-category="{{ category.grouper|slugify }}">
+                        <div class="flex items-center mb-4 px-2">
+                            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white flex items-center">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/5 flex items-center justify-center mr-2">
+                                    <i class="fas fa-folder text-purple-400"></i>
+                        </div>
+                            {{ category.grouper }}
+                        </h2>
+                            <div class="flex items-center ml-3">
+                                <span class="text-sm text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-lg">
+                                    {{ category.list|length }}
+                                </span>
+                    </div>
+                </div>
+
+                        <!-- Optimized single column layout -->
+                        <div class="space-y-4">
+                    {% for template in category.list %}
+                            <div class="template-card glass-card rounded-xl overflow-hidden border border-white/5 shadow-xl hover:shadow-purple-500/5 hover:border-purple-500/10 transition-all" data-template-title="{{ template.title|lower }}">
+                                <!-- Cleaner template header -->
+                                <div class="p-4 border-b border-white/5 flex justify-between items-center">
+                                    <div class="flex items-center cursor-pointer w-full" onclick="toggleTemplate('template-{{ template.id }}')">
+                                        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-purple-400 font-bold mr-3 flex-shrink-0">
+                                    {{ forloop.counter }}
+                                </div>
+                                        <div class="flex-1 mr-4">
+                                            <h3 class="text-lg font-bold text-white">{{ template.title }}</h3>
+                                            <p class="text-xs text-gray-400">{{ template.updated_at|timesince }} назад</p>
+                                        </div>
+                                        <button class="template-toggle p-2 hover:text-purple-400 text-gray-400 flex-shrink-0" onclick="toggleTemplate('template-{{ template.id }}')">
+                                            <i class="fas fa-chevron-down transition-transform duration-300" id="icon-template-{{ template.id }}"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Template content with efficient layout -->
+                                <div id="template-{{ template.id }}" class="hidden">
+                                    <!-- Action buttons with improved positioning -->
+                                    <div class="flex justify-end px-4 pt-3 space-x-2">
+                                <button onclick="copyTemplate('{{ template.id }}')"
+                                                class="btn-action p-2 bg-blue-500/5 text-blue-400/90 rounded-lg 
+                                               hover:bg-blue-500/10 hover:text-blue-400 transition-all transform hover:scale-105
+                                                       border border-blue-500/10 flex items-center text-sm">
+                                            <i class="fas fa-copy mr-1.5"></i>
+                                            Копировать всё
+                                </button>
+                                <a href="{% url 'blog:edit_gutierrez_template' template_id=template.id %}"
+                                           class="p-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500 hover:text-white transition-all flex items-center text-sm">
+                                            <i class="fas fa-edit mr-1.5"></i>
+                                            Редактировать
+                                </a>
+                                <button onclick="deleteTemplate('{{ template.id }}')"
+                                                class="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition-all flex items-center text-sm">
+                                            <i class="fas fa-trash-alt mr-1.5"></i>
+                                            Удалить
+                                </button>
+                        </div>
+
+                                    <!-- Content area optimized for readability -->
+                                    <div class="content-area mx-4 my-3 rounded-lg p-3 space-y-1.5 shadow-inner bg-black/20">
+                                {% with lines=template.content|safe|linebreaksbr|split:"<br>" %}
+                                    {% for line in lines %}
+                                        {% if line|striptags|trim != "" %}
+                                                <div class="relative group line-hover p-2.5 rounded-lg cursor-pointer transition-all select-none
+                                                            hover:bg-purple-500/10 hover:shadow-lg hover:shadow-purple-500/5"
+                                             onclick="copyToClipboard('{{ line|striptags }}')"
+                                             data-content="{{ line|striptags }}">
+                                                    <div class="flex items-center">
+                                                        <span class="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-md bg-purple-500/5 
+                                                                     text-purple-400/70 text-xs font-mono border border-purple-500/10 mr-2.5">
+                                                    {{ forloop.counter }}
+                                                </span>
+                                                        <span class="text-gray-300/90 font-mono text-sm break-words flex-1">{{ line|safe }}</span>
+                                                        <span class="hidden group-hover:flex ml-2 text-xs text-purple-400/70 bg-purple-500/5 px-2 py-1 rounded-md">
+                                                            <i class="fas fa-copy mr-1"></i> Копировать
+                                                        </span>
+                                            </div>
+                                            
+                                                    <div class="copy-success hidden absolute right-2 top-1/2 -translate-y-1/2 
+                                                                text-green-400/90 bg-green-500/10 px-3 py-1 rounded-lg backdrop-blur-sm
+                                                                border border-green-500/10 text-xs">
+                                                <i class="fas fa-check mr-1"></i> Скопировано!
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="glass-card p-16 text-center rounded-2xl">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl transform rotate-6"></div>
+                <div class="absolute inset-0 bg-[#1a1625] rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-file-alt text-4xl text-purple-400"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-3">Нет шаблонов</h3>
+            <p class="text-gray-400">Создайте свой первый шаблон прямо сейчас</p>
+        </div>
+        {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile category sidebar overlay -->
+<div id="mobile-category-sidebar" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden lg:hidden">
+    <div class="absolute right-0 top-0 h-full w-64 bg-[#1a1625] shadow-xl p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-white">Категории</h3>
+            <button id="close-mobile-categories" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-2">
+            <button id="mobile-category-all" onclick="filterCategoryMobile('all')" 
+                    class="w-full py-3 px-4 rounded-lg text-left mobile-category-filter active flex items-center
+                           bg-purple-500/10 text-white hover:bg-purple-500/20 transition-all">
+                <i class="fas fa-border-all mr-2 text-purple-400"></i>
+                <span>Все категории</span>
+                <span class="ml-auto bg-purple-500/20 px-2 py-1 rounded-lg text-xs">
+                    {{ templates|length }}
+                </span>
+            </button>
+            
+            {% regroup templates by category as category_list %}
+            {% for category in category_list %}
+                <button id="mobile-category-{{ category.grouper|slugify }}" 
+                        onclick="filterCategoryMobile('{{ category.grouper|slugify }}')" 
+                        class="w-full py-3 px-4 rounded-lg text-left mobile-category-filter flex items-center
+                               text-gray-300 hover:bg-purple-500/10 transition-all">
+                    <i class="fas fa-folder mr-2 text-purple-400/70"></i>
+                    <span>{{ category.grouper }}</span>
+                    <span class="ml-auto bg-purple-500/10 px-2 py-1 rounded-lg text-xs">
+                        {{ category.list|length }}
+                    </span>
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.cosmic-bg {
+    background: 
+        radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(236, 72, 153, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 60%);
+    background-attachment: fixed;
+}
+
+.glass-card {
+    background: rgba(26, 22, 37, 0.25);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.content-area {
+    background: rgba(26, 22, 37, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.line-hover {
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.line-hover:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.15);
+}
+
+/* Improve scrollbar styling */
+.content-area::-webkit-scrollbar, .categories-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.content-area::-webkit-scrollbar-track, .categories-list::-webkit-scrollbar-track {
+    background: rgba(26, 22, 37, 0.1);
+    border-radius: 3px;
+}
+
+.content-area::-webkit-scrollbar-thumb, .categories-list::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 3px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover, .categories-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.3);
+}
+
+/* Enhanced button effects */
+.btn-action {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.btn-action:hover::after {
+    transform: translateX(100%);
+}
+
+/* Improved category filter active state */
+.category-filter.active, .mobile-category-filter.active {
+    background: rgba(139, 92, 246, 0.2);
+    border-left: 3px solid rgba(139, 92, 246, 0.8);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.category-filter:hover {
+    transform: translateX(2px);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+/* Template card animations */
+.template-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 10px 25px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(139, 92, 246, 0.1);
+}
+
+/* Search highlight */
+.highlight {
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+/* Copy success animation */
+.copy-success {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px) translateY(-50%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) translateY(-50%);
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .glass-card {
+        margin: 0 0.5rem;
+    }
+}
+</style>
+
+<script>
+// Template toggle functionality
+function toggleTemplate(templateId) {
+    const content = document.getElementById(templateId);
+    const icon = document.getElementById('icon-' + templateId);
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Copy template content
+function copyTemplate(templateId) {
+    const templateCard = document.querySelector(`[data-template-id="${templateId}"]`);
+    if (!templateCard) return;
+    
+    const content = templateCard.querySelector('.content-area').textContent;
+    navigator.clipboard.writeText(content).then(() => {
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg z-50';
+        successMsg.textContent = 'Шаблон скопирован!';
+        document.body.appendChild(successMsg);
+        
+        setTimeout(() => {
+            successMsg.remove();
+        }, 2000);
+    });
+}
+
+// Copy individual line
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Find the clicked line and show success message
+        const lines = document.querySelectorAll('.line-hover');
+        lines.forEach(line => {
+            if (line.getAttribute('data-content') === text) {
+                const successMsg = line.querySelector('.copy-success');
+                if (successMsg) {
+                    successMsg.classList.remove('hidden');
+                    setTimeout(() => {
+                        successMsg.classList.add('hidden');
+                    }, 1500);
+                }
+            }
+        });
+    });
+}
+
+// Category filtering
+function filterCategory(category) {
+    const containers = document.querySelectorAll('.category-container');
+    const filters = document.querySelectorAll('.category-filter');
+    
+    // Update active filter
+    filters.forEach(filter => filter.classList.remove('active'));
+    document.getElementById('category-' + category).classList.add('active');
+    
+    // Update current category name
+    document.getElementById('current-category-name').textContent = 
+        category === 'all' ? 'Все категории' : document.getElementById('category-' + category).querySelector('span').textContent;
+    
+    // Show/hide containers
+    containers.forEach(container => {
+        if (category === 'all' || container.getAttribute('data-category') === category) {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    });
+}
+
+// Mobile category filtering
+function filterCategoryMobile(category) {
+    filterCategory(category);
+    document.getElementById('mobile-category-sidebar').classList.add('hidden');
+}
+
+// Search functionality
+document.getElementById('templateSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const templateCards = document.querySelectorAll('.template-card');
+    
+    templateCards.forEach(card => {
+        const title = card.getAttribute('data-template-title');
+        if (title.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Create form modal
+function showCreateForm() {
+    document.getElementById('createFormModal').classList.remove('hidden');
+}
+
+function hideCreateForm() {
+    document.getElementById('createFormModal').classList.add('hidden');
+}
+
+// Mobile category sidebar toggle
+document.querySelector('.toggle-categories-btn').addEventListener('click', function() {
+    document.getElementById('mobile-category-sidebar').classList.remove('hidden');
+});
+
+document.getElementById('close-mobile-categories').addEventListener('click', function() {
+    document.getElementById('mobile-category-sidebar').classList.add('hidden');
+});
+
+// Delete template
+function deleteTemplate(templateId) {
+    if (confirm('Вы уверены, что хотите удалить этот шаблон?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/templates/gutierrez/${templateId}/delete/`;
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Mobile category select change
+document.getElementById('mobile-category-select').addEventListener('change', function(e) {
+    filterCategory(e.target.value);
+});
+
+// Close modal when clicking outside
+document.getElementById('createFormModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        hideCreateForm();
+    }
+});
+</script>
+{% endblock %} 
