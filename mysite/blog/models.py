@@ -461,6 +461,7 @@ class Story(models.Model):
 class Lecture(models.Model):
     title = models.CharField(max_length=255, verbose_name="Название лекции")
     content = models.TextField(verbose_name="Содержание лекции", help_text="Каждая строка должна начинаться с 'say ' или '/b '.")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Категория")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
     # Optional: Add created_by if you want to track who created the lecture
@@ -468,6 +469,51 @@ class Lecture(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        # Если категория не указана, пытаемся найти или создать её по названию лекции
+        if not self.category:
+            # Извлекаем название категории из названия лекции (например, "Лекция по Python" -> "Python")
+            # Можно настроить логику извлечения категории по вашим потребностям
+            category_name = self.extract_category_from_title()
+            if category_name:
+                self.category, created = Category.objects.get_or_create(
+                    name=category_name,
+                    defaults={'slug': slugify(category_name)}
+                )
+        super().save(*args, **kwargs)
+
+    def extract_category_from_title(self):
+        """
+        Извлекает название категории из названия лекции.
+        Можно настроить логику под ваши потребности.
+        """
+        # Простая логика: берём первое слово после "Лекция" или "по"
+        title_lower = self.title.lower()
+        
+        # Если название содержит "лекция по", берём следующее слово
+        if "лекция по" in title_lower:
+            parts = title_lower.split("лекция по")
+            if len(parts) > 1:
+                category = parts[1].strip().split()[0]  # Первое слово после "по"
+                return category.title()  # Делаем первую букву заглавной
+        
+        # Если название содержит "по", берём следующее слово
+        elif " по " in title_lower:
+            parts = title_lower.split(" по ")
+            if len(parts) > 1:
+                category = parts[1].strip().split()[0]  # Первое слово после "по"
+                return category.title()
+        
+        # Если название содержит "лекция", берём следующее слово
+        elif "лекция" in title_lower:
+            parts = title_lower.split("лекция")
+            if len(parts) > 1:
+                category = parts[1].strip().split()[0]  # Первое слово после "лекция"
+                return category.title()
+        
+        # Если ничего не подходит, возвращаем "Общие"
+        return "Общие"
 
     class Meta:
         verbose_name = "Лекция"
