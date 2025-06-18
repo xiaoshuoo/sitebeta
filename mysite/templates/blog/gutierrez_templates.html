@@ -228,7 +228,11 @@
                                                 <div class="relative group line-hover p-2.5 rounded-lg cursor-pointer transition-all select-none
                                                             hover:bg-purple-500/10 hover:shadow-lg hover:shadow-purple-500/5"
                                              onclick="copyToClipboard('{{ line|striptags }}', this)"
-                                             data-content="{{ line|striptags }}">
+                                             data-content="{{ line|striptags }}"
+                                             data-template-id="{{ template.id }}"
+                                             data-line-number="{{ forloop.counter }}"
+                                             data-copied="false"
+                                             title="Нажмите, чтобы скопировать строку">
                                                     <div class="flex items-center">
                                                         <span class="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-md bg-purple-500/5 
                                                                      text-purple-400/70 text-xs font-mono border border-purple-500/10 mr-2.5">
@@ -352,6 +356,27 @@
     background: rgba(34, 197, 94, 0.15);
     border-color: rgba(34, 197, 94, 0.3);
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+
+/* Permanent highlight styles */
+.copied-highlight {
+    background-color: rgba(74, 222, 128, 0.15) !important; /* Subtle green background */
+    border-color: rgba(74, 222, 128, 0.2) !important; /* Subtle green border */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.copied-highlight:hover {
+    background-color: rgba(74, 222, 128, 0.2) !important; /* Slightly darker on hover */
+}
+
+/* Make sure the highlight overrides all other styles */
+.line-hover.copied-highlight {
+    background-color: rgba(74, 222, 128, 0.15) !important;
+    border-color: rgba(74, 222, 128, 0.2) !important;
+}
+
+.line-hover.copied-highlight:hover {
+    background-color: rgba(74, 222, 128, 0.2) !important;
 }
 
 /* Improve scrollbar styling */
@@ -501,23 +526,45 @@ function copyTemplate(templateId) {
 
 // Copy individual line
 function copyToClipboard(text, element) {
-    navigator.clipboard.writeText(text).then(() => {
-        // Add copied class to the line
-        element.classList.add('copied');
+    console.log('copyToClipboard called with element:', element);
+    console.log('Element data-copied:', element.getAttribute('data-copied'));
+    
+    // Check if element is already highlighted using data attribute
+    if (element.getAttribute('data-copied') === 'true') {
+        console.log('Element already highlighted, removing highlight');
+        // Remove highlight and hide success message
+        element.classList.remove('copied-highlight');
+        element.setAttribute('data-copied', 'false');
         
-        // Show success message
+        // Hide the success message
+        const successMsg = element.querySelector('.copy-success');
+        if (successMsg) {
+            successMsg.classList.add('hidden');
+        }
+        return;
+    }
+    
+    console.log('Adding highlight to element');
+    
+    navigator.clipboard.writeText(text).then(() => {
+        // Add permanent green highlight
+        element.classList.add('copied-highlight');
+        element.setAttribute('data-copied', 'true');
+        console.log('Highlight added successfully, data-copied set to true');
+        
+        // Show permanent success message
         const successMsg = element.querySelector('.copy-success');
         if (successMsg) {
             successMsg.classList.remove('hidden');
         }
         
-        // Remove copied class and hide success message after delay
-        setTimeout(() => {
-            element.classList.remove('copied');
-            if (successMsg) {
-                successMsg.classList.add('hidden');
-            }
-        }, 2000);
+        // Show temporary notification
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 flex items-center';
+        notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Строка скопирована!';
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 2000);
+
     }).catch(err => {
         console.error('Failed to copy text: ', err);
         // Fallback for older browsers
@@ -528,19 +575,23 @@ function copyToClipboard(text, element) {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         
-        // Still show success feedback
-        element.classList.add('copied');
+        // Still add highlight on fallback
+        element.classList.add('copied-highlight');
+        element.setAttribute('data-copied', 'true');
+        console.log('Highlight added on fallback, data-copied set to true');
+        
+        // Show permanent success message on fallback too
         const successMsg = element.querySelector('.copy-success');
         if (successMsg) {
             successMsg.classList.remove('hidden');
         }
         
-        setTimeout(() => {
-            element.classList.remove('copied');
-            if (successMsg) {
-                successMsg.classList.add('hidden');
-            }
-        }, 2000);
+        // Show temporary notification on fallback too
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 flex items-center';
+        notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Строка скопирована! (fallback)';
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 2000);
     });
 }
 

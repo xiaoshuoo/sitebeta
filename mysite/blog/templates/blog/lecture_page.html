@@ -138,8 +138,11 @@
                                             {% if line|striptags|trim != "" %}
                                                 <div class="relative group line-hover p-2 rounded-lg cursor-pointer transition-all select-none
                                                             hover:bg-purple-500/10 hover:shadow-lg hover:shadow-purple-500/5" {# Reduced p-2.5 #}
-                                                     onclick="copyLineToClipboard('{{ line|striptags|escapejs }}')"
+                                                     onclick="copyLineToClipboard('{{ line|striptags|escapejs }}', this)"
                                                      data-content="{{ line|striptags }}"
+                                                     data-lecture-id="{{ lecture.id }}"
+                                                     data-line-number="{{ forloop.counter }}"
+                                                     data-copied="false"
                                                      title="Нажмите, чтобы скопировать строку">
                                                     <div class="flex items-center">
                                                         <span class="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-md bg-purple-500/5
@@ -343,14 +346,29 @@ say Вторая строка лекции...
 .lecture-card:hover { transform: translateY(-2px); }
 
 .copied-highlight {
-    background-color: rgba(74, 222, 128, 0.15); /* Subtle green background */
-    border-color: rgba(74, 222, 128, 0.2); /* Subtle green border */
+    background-color: rgba(74, 222, 128, 0.15) !important; /* Subtle green background */
+    border-color: rgba(74, 222, 128, 0.2) !important; /* Subtle green border */
     transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.copied-highlight:hover {
+    background-color: rgba(74, 222, 128, 0.2) !important; /* Slightly darker on hover */
+}
+
+/* Make sure the highlight overrides all other styles */
+.line-hover.copied-highlight {
+    background-color: rgba(74, 222, 128, 0.15) !important;
+    border-color: rgba(74, 222, 128, 0.2) !important;
+}
+
+.line-hover.copied-highlight:hover {
+    background-color: rgba(74, 222, 128, 0.2) !important;
 }
 </style>
 
 {# Include the same JS functions, adapted for lectures #}
 <script>
+// Version: 1.1 - Fixed permanent highlighting
 // Helper function to decode HTML entities
 function decodeHtmlEntities(text) {
     const textarea = document.createElement('textarea');
@@ -359,16 +377,44 @@ function decodeHtmlEntities(text) {
 }
 
 // Copy a single line - receives text directly
-function copyLineToClipboard(rawTextFromDjango) {
+function copyLineToClipboard(rawTextFromDjango, element) {
+    console.log('copyLineToClipboard called with element:', element);
+    console.log('Element data-copied:', element.getAttribute('data-copied'));
+    
     // Decode potential HTML entities first
     const textToCopy = decodeHtmlEntities(rawTextFromDjango);
     
+    // Check if element is already highlighted using data attribute
+    if (element.getAttribute('data-copied') === 'true') {
+        console.log('Element already highlighted, removing highlight');
+        // Remove highlight and hide success message
+        element.classList.remove('copied-highlight');
+        element.setAttribute('data-copied', 'false');
+        
+        // Hide the success message
+        const successMsg = element.querySelector('.copy-success');
+        if (successMsg) {
+            successMsg.classList.add('hidden');
+        }
+        return;
+    }
+    
+    console.log('Adding highlight to element');
+    
     // We now have the decoded text, copy it
     navigator.clipboard.writeText(textToCopy).then(() => {
-        // Need to find the element that was clicked to show feedback
-        // This is tricky without passing the element. Let's skip visual feedback *on the line* for now.
-        // Alternatively, we could pass the event object: onclick="copyLineToClipboard(event, '...')"
-        // For simplicity, let's just show a general notification for line copy.
+        // Add permanent green highlight
+        element.classList.add('copied-highlight');
+        element.setAttribute('data-copied', 'true');
+        console.log('Highlight added successfully, data-copied set to true');
+        
+        // Show permanent success message
+        const successMsg = element.querySelector('.copy-success');
+        if (successMsg) {
+            successMsg.classList.remove('hidden');
+        }
+        
+        // Show temporary notification
         const notification = document.createElement('div');
         notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 flex items-center';
         notification.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Строка скопирована!';
@@ -385,6 +431,18 @@ function copyLineToClipboard(rawTextFromDjango) {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
+        
+        // Still add highlight on fallback
+        element.classList.add('copied-highlight');
+        element.setAttribute('data-copied', 'true');
+        console.log('Highlight added on fallback, data-copied set to true');
+        
+        // Show permanent success message on fallback too
+        const successMsg = element.querySelector('.copy-success');
+        if (successMsg) {
+            successMsg.classList.remove('hidden');
+        }
+        
         // Show general notification on fallback too
         const notification = document.createElement('div');
         notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 flex items-center';
