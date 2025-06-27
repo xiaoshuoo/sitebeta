@@ -507,10 +507,23 @@ function toggleTemplate(templateId) {
 
 // Copy template content
 function copyTemplate(templateId) {
-    const templateCard = document.querySelector(`[data-template-id="${templateId}"]`);
-    if (!templateCard) return;
+    // Получаем все строки шаблона
+    const lines = document.querySelectorAll(`#template-${templateId} .line-hover`);
+    if (!lines || lines.length === 0) {
+        console.error('Lines not found for template:', templateId);
+        return;
+    }
     
-    const content = templateCard.querySelector('.content-area').textContent;
+    // Собираем чистый текст из каждой строки
+    let content = '';
+    lines.forEach(line => {
+        const lineText = line.getAttribute('data-content');
+        if (lineText) {
+            content += lineText + '\n';
+        }
+    });
+    
+    // Копируем в буфер обмена
     navigator.clipboard.writeText(content).then(() => {
         // Show success message
         const successMsg = document.createElement('div');
@@ -521,6 +534,22 @@ function copyTemplate(templateId) {
         setTimeout(() => {
             successMsg.remove();
         }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy template:', err);
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = content;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        // Show temporary notification for fallback too
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg z-50';
+        notification.textContent = 'Шаблон скопирован!';
+        document.body.appendChild(notification);
+        setTimeout(() => { notification.remove(); }, 2000);
     });
 }
 
