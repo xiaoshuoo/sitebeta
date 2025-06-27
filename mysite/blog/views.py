@@ -1381,23 +1381,34 @@ def gutierrez_templates(request):
                 title=title,
                 content=content,
                 category=category,
-                created_by=None  # Явно указываем, что это публичный шаблон
+                created_by=None,  # Явно указываем, что это публичный шаблон
+                template_type='gutierrez'  # Явно указываем тип шаблона
             )
             messages.success(request, 'Шаблон успешно создан')
         except Exception as e:
             messages.error(request, f'Ошибка при создании шаблона: {str(e)}')
     
-    # Получаем только публичные шаблоны (без автора)
-    templates = TextTemplate.objects.filter(created_by=None).order_by('-created_at')
+    # Получаем только публичные шаблоны Gutierrez (без автора)
+    templates = TextTemplate.objects.filter(created_by=None, template_type='gutierrez').order_by('-created_at')
+    
+    # Для существующих шаблонов без указанного типа, но созданных до добавления поля template_type (исторические шаблоны Gutierrez)
+    # проставляем тип 'gutierrez' и сохраняем
+    old_templates = TextTemplate.objects.filter(created_by=None, template_type__isnull=True)
+    if old_templates.exists():
+        for template in old_templates:
+            if template.category != 'rossi':  # Проверяем, что это не шаблон Rossi
+                template.template_type = 'gutierrez'
+                template.save(update_fields=['template_type'])
+    
     return render(request, 'blog/gutierrez_templates.html', {
         'templates': templates,
-        'categories': TextTemplate.objects.filter(created_by=None).values_list('category', flat=True).distinct()
+        'categories': TextTemplate.objects.filter(created_by=None, template_type='gutierrez').values_list('category', flat=True).distinct()
     })
 
 def edit_gutierrez_template(request, template_id):
     """Редактирование публичного шаблона Gutierrez"""
-    # Получаем только публичный шаблон
-    template = get_object_or_404(TextTemplate, id=template_id, created_by=None)
+    # Получаем только публичный шаблон типа gutierrez
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None, template_type='gutierrez')
     
     if request.method == 'POST':
         try:
@@ -1419,8 +1430,8 @@ def edit_gutierrez_template(request, template_id):
 
 def delete_gutierrez_template(request, template_id):
     """Удаление публичного шаблона Gutierrez"""
-    # Получаем только публичный шаблон
-    template = get_object_or_404(TextTemplate, id=template_id, created_by=None)
+    # Получаем только публичный шаблон типа gutierrez
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None, template_type='gutierrez')
     
     if request.method == 'POST':
         try:
@@ -1619,3 +1630,68 @@ def delete_lecture(request, pk):
     except Exception as e:
         messages.error(request, f'Ошибка при удалении лекции: {e}')
     return redirect('blog:lecture_page')
+
+def rossi_templates(request):
+    """Публичная страница шаблонов Rossi (без авторизации)"""
+    if request.method == 'POST':
+        try:
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            category = request.POST.get('category', 'general')
+            # Создаем публичный шаблон для Rossi (без автора)
+            TextTemplate.objects.create(
+                title=title,
+                content=content,
+                category=category,
+                created_by=None,
+                template_type='rossi'  # Явно указываем тип шаблона
+            )
+            messages.success(request, 'Шаблон успешно создан')
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании шаблона: {str(e)}')
+    
+    # Получаем только публичные шаблоны Rossi (без автора)
+    templates = TextTemplate.objects.filter(created_by=None, template_type='rossi').order_by('-created_at')
+    
+    # Для существующих шаблонов Rossi (фильтрация по категории 'rossi'), проставляем тип 'rossi'
+    old_templates = TextTemplate.objects.filter(created_by=None, category='rossi', template_type__isnull=True)
+    if old_templates.exists():
+        for template in old_templates:
+            template.template_type = 'rossi'
+            template.save(update_fields=['template_type'])
+            
+    return render(request, 'blog/rossi_templates.html', {
+        'templates': templates,
+        'categories': TextTemplate.objects.filter(created_by=None, template_type='rossi').values_list('category', flat=True).distinct()
+    })
+
+def edit_rossi_template(request, template_id):
+    """Редактирование публичного шаблона Rossi"""
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None, template_type='rossi')
+    if request.method == 'POST':
+        try:
+            title = request.POST.get('title')
+            content = request.POST.get('content')
+            category = request.POST.get('category', 'general')  # Теперь можно не жестко задавать категорию
+            
+            template.title = title
+            template.content = content
+            template.category = category
+            template.save()
+            
+            messages.success(request, 'Шаблон успешно обновлен')
+            return redirect('blog:rossi_templates')
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлении шаблона: {str(e)}')
+    return render(request, 'blog/edit_rossi_template.html', {'template': template})
+
+def delete_rossi_template(request, template_id):
+    """Удаление публичного шаблона Rossi"""
+    template = get_object_or_404(TextTemplate, id=template_id, created_by=None, template_type='rossi')
+    if request.method == 'POST':
+        try:
+            template.delete()
+            messages.success(request, 'Шаблон успешно удален')
+        except Exception as e:
+            messages.error(request, f'Ошибка при удалении шаблона: {str(e)}')
+    return redirect('blog:rossi_templates')

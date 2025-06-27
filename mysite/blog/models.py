@@ -402,12 +402,20 @@ class PageSettings(models.Model):
         return f"{self.get_page_name_display()} ({'Активна' if self.is_active else 'Отключена'})"
 
 class TextTemplate(models.Model):
+    TEMPLATE_TYPE_CHOICES = [
+        ('gutierrez', 'Gutierrez'),
+        ('rossi', 'Rossi'),
+        (None, 'Other'),
+    ]
+    
     title = models.CharField(max_length=200)
     content = models.TextField()
     category = models.CharField(max_length=50, default='general')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    template_type = models.CharField(max_length=20, choices=TEMPLATE_TYPE_CHOICES, null=True, blank=True, 
+                                    help_text="Тип шаблона для разделения на разных страницах")
 
     class Meta:
         ordering = ['-created_at']
