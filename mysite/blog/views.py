@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 from .models import Category, Post, Profile, Tag, Comment, PostView, InviteCode, PageSettings, Title, TextTemplate, Story, Lecture
-from .forms import CustomUserCreationForm, ProfileForm, PostForm, CommentForm, StoryForm, LectureForm
+from .forms import CustomUserCreationForm, ProfileForm, PostForm, CommentForm, StoryForm, LectureForm, LectureImportForm
 import json
 import os
 from .cloudinary_storage import CustomCloudinaryStorage
@@ -1575,14 +1575,25 @@ def deactivate_user(request, user_id):
     return redirect('blog:admin_panel')
 
 def lecture_page(request):
-    lecture_list = Lecture.objects.all() # Fetch from database, order by title is default in model
-    paginator = Paginator(lecture_list, 10) # Show 10 lectures per page
-
+    from blog.models import Category
+    category_slug = request.GET.get('category')
+    if category_slug:
+        selected_category = Category.objects.filter(slug=category_slug).first()
+        if selected_category:
+            lecture_list = Lecture.objects.filter(category=selected_category)
+        else:
+            lecture_list = Lecture.objects.none()
+    else:
+        selected_category = None
+        lecture_list = Lecture.objects.all()
+    paginator = Paginator(lecture_list, 100)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+    categories = Category.objects.filter(lecture__isnull=False).distinct().order_by('name')
     context = {
-        'lectures': page_obj # Pass page object instead of full list
+        'lectures': page_obj,
+        'categories': categories,
+        'selected_category': selected_category,
     }
     return render(request, 'blog/lecture_page.html', context)
 
@@ -1695,3 +1706,117 @@ def delete_rossi_template(request, template_id):
         except Exception as e:
             messages.error(request, f'Ошибка при удалении шаблона: {str(e)}')
     return redirect('blog:rossi_templates')
+
+@user_passes_test(is_admin)
+@login_required
+def import_lecture(request):
+    """Import lecture from text file"""
+    if request.method == 'POST':
+        form = LectureImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                # Get the uploaded file
+                file = request.FILES['file']
+                
+                # Use the file name as lecture title (remove extension)
+                file_name = file.name
+                if file_name.endswith('.txt'):
+                    file_name = file_name[:-4]  # Remove .txt extension
+                
+                # Replace underscores with spaces
+                title = file_name.replace('_', ' ')
+                
+                # Try different encodings
+                encodings = ['utf-8', 'cp1251', 'latin-1', 'iso-8859-1']
+                content = None
+                
+                for encoding in encodings:
+                    try:
+                        content = file.read().decode(encoding)
+                        # Remove null bytes which can cause database errors
+                        content = content.replace('\x00', '')
+                        break
+                    except UnicodeDecodeError:
+                        file.seek(0)  # Reset file pointer for next attempt
+                    except Exception as e:
+                        messages.error(request, f'Ошибка при чтении файла {file.name}: {str(e)}')
+                        break
+                
+                if content is None:
+                    messages.error(request, f'Не удалось декодировать файл {file.name}. Попробуйте сконвертировать его в UTF-8.')
+                    return redirect('blog:lecture_page')
+                
+                # Create new lecture
+                lecture = Lecture.objects.create(
+                    title=title,
+                    content=content,
+                )
+                
+                messages.success(request, f'Лекция "{title}" успешно импортирована')
+                
+            except Exception as e:
+                messages.error(request, f'Ошибка при импорте лекции: {str(e)}')
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
+    
+    return redirect('blog:lecture_page')
+
+@user_passes_test(is_admin)
+@login_required
+def import_lectures_from_directory(request):
+    """Import all lectures from utf8_converted directory"""
+    import os
+    import glob
+    
+    # Path to the directory with converted files
+    directory = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'utf8_converted')
+    
+    if not os.path.exists(directory):
+        messages.error(request, f'Директория {directory} не существует')
+        return redirect('blog:lecture_page')
+    
+    # Find all .txt files in the directory
+    txt_files = glob.glob(os.path.join(directory, '*.txt'))
+    
+    if not txt_files:
+        messages.warning(request, f'В директории {directory} не найдено .txt файлов')
+        return redirect('blog:lecture_page')
+    
+    successful_imports = 0
+    failed_imports = 0
+    
+    for file_path in txt_files:
+        try:
+            # Get file name for title
+            file_name = os.path.basename(file_path)
+            if file_name.endswith('.txt'):
+                file_name = file_name[:-4]  # Remove .txt extension
+            
+            # Replace underscores with spaces
+            title = file_name.replace('_', ' ')
+            
+            # Read file content
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                # Remove null bytes which can cause database errors
+                content = content.replace('\x00', '')
+            
+            # Create new lecture
+            lecture = Lecture.objects.create(
+                title=title,
+                content=content,
+            )
+            successful_imports += 1
+            
+        except Exception as e:
+            failed_imports += 1
+            continue
+    
+    # Show summary message
+    if successful_imports > 0:
+        messages.success(request, f'Успешно импортировано лекций: {successful_imports}')
+    if failed_imports > 0:
+        messages.warning(request, f'Не удалось импортировать файлов: {failed_imports}')
+    
+    return redirect('blog:lecture_page')

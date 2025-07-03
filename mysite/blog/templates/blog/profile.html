@@ -116,6 +116,7 @@
                 </div>
                 <div class="card-body">
                     {% for item in categories_with_counts %}
+                    {% if item.category and item.category.slug %}
                     <a href="{% url 'blog:category_detail' slug=item.category.slug %}" 
                        class="btn btn-outline-primary mb-2 d-block">
                         <i class="fas {{ item.category.icon }} me-2"></i>{{ item.category.name }}
@@ -123,6 +124,7 @@
                             {{ item.post_count }}
                         </span>
                     </a>
+                    {% endif %}
                     {% empty %}
                     <p class="text-muted mb-0">Нет публикаций в категориях</p>
                     {% endfor %}

@@ -58,7 +58,7 @@
 
                     <!-- Футер поста -->
                     <div class="flex items-center justify-between">
-                        {% if post.category %}
+                        {% if post.category and post.category.slug %}
                         <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
                            class="text-sm px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors">
                             <i class="{{ post.category.icon }} mr-1"></i>

@@ -216,7 +216,16 @@ class Category(models.Model):
                 self.refresh_from_db()
     
     def save(self, *args, **kwargs):
-        """Переопределяем метод save для автоматического обновления posts_count"""
+        # Генерируем уникальный и непустой slug
+        if not self.slug and self.name:
+            self.slug = slugify(self.name)
+            if not self.slug:
+                self.slug = f"category-{uuid.uuid4().hex[:8]}"
+            counter = 1
+            original_slug = self.slug
+            while Category.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
         super().save(*args, **kwargs)
         self.update_posts_count()
 
@@ -468,6 +477,7 @@ class Story(models.Model):
 
 class Lecture(models.Model):
     title = models.CharField(max_length=255, verbose_name="Название лекции")
+    slug = models.SlugField(unique=True, blank=True, verbose_name="URL-идентификатор")
     content = models.TextField(verbose_name="Содержание лекции", help_text="Каждая строка должна начинаться с 'say ' или '/b '.")
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Категория")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
@@ -479,6 +489,19 @@ class Lecture(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        # Генерируем slug если его нет
+        if not self.slug:
+            self.slug = slugify(self.title)
+            # Если slug пустой после slugify, генерируем уникальный
+            if not self.slug:
+                self.slug = f"lecture-{uuid.uuid4().hex[:8]}"
+            # Проверяем уникальность
+            counter = 1
+            original_slug = self.slug
+            while Lecture.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+                
         # Если категория не указана, пытаемся найти или создать её по названию лекции
         if not self.category:
             # Извлекаем название категории из названия лекции (например, "Лекция по Python" -> "Python")

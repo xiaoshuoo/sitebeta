@@ -77,7 +77,7 @@
 
                 <!-- Категория и просмотры -->
                 <div class="flex items-center justify-between">
-                    {% if post.category %}
+                    {% if post.category and post.category.slug %}
                     <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
                        class="flex items-center text-sm text-gray-400 hover:text-purple-500 transition-colors">
                         <i class="{{ post.category.icon }} mr-2"></i>

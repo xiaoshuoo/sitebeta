@@ -87,7 +87,7 @@
                     </div>
 
                     <!-- Категория -->
-                    {% if post.category %}
+                    {% if post.category and post.category.slug %}
                     <a href="{% url 'blog:category_detail' slug=post.category.slug %}" 
                        class="text-purple-400 hover:text-purple-300 transition-colors">
                         <i class="{{ post.category.icon }} mr-1"></i>

@@ -89,6 +89,8 @@ urlpatterns = [
     path('lecture/create/', views.create_lecture, name='create_lecture'),
     path('lecture/<int:pk>/edit/', views.edit_lecture, name='edit_lecture'),
     path('lecture/<int:pk>/delete/', views.delete_lecture, name='delete_lecture'),
+    path('lecture/import/', views.import_lecture, name='import_lecture'),
+    path('lecture/import-from-directory/', views.import_lectures_from_directory, name='import_lectures_from_directory'),
 ]
 
 if settings.DEBUG:

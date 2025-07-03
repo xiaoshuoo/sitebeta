@@ -434,17 +434,33 @@ class LectureForm(forms.ModelForm):
         fields = ['title', 'content']
         widgets = {
             'title': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20',
-                'required': True
+                'class': 'w-full px-4 py-3 bg-surface/50 border border-white/10 rounded-lg text-white',
+                'placeholder': 'Название лекции'
             }),
             'content': forms.Textarea(attrs={
-                'rows': 10,
-                'class': 'w-full px-4 py-3 bg-black/20 border border-purple-500/10 rounded-xl text-white font-mono focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20',
-                'placeholder': "say Первая строка лекции...\nsay Вторая строка лекции...\n/b Какая-то команда...",
-                'required': True
+                'class': 'w-full px-4 py-3 bg-surface/50 border border-white/10 rounded-lg text-white',
+                'placeholder': 'Содержание лекции',
+                'rows': 10
             }),
         }
 
     def clean_content(self):
         content = self.cleaned_data.get('content')
+        if content:
+            # Validate that lines start with 'say ' or '/b '
+            lines = content.strip().split('\n')
+            for line in lines:
+                line = line.strip()
+                if line and not line.startswith('say ') and not line.startswith('/b '):
+                    raise forms.ValidationError('Каждая строка должна начинаться с "say " или "/b "')
         return content
+
+class LectureImportForm(forms.Form):
+    file = forms.FileField(
+        widget=forms.FileInput(attrs={
+            'class': 'block w-full px-4 py-3 bg-surface/50 border border-white/10 rounded-lg text-white',
+            'accept': '.txt'
+        }),
+        label="Выберите .txt файл",
+        help_text="Загрузите .txt файл с содержанием лекции. Имя файла будет использовано как название лекции."
+    )
